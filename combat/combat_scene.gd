@@ -6,20 +6,20 @@ const ACTIVE_BOARD_CAP := 4
 const STARTING_BACKPACK_CAPACITY := 1
 const CARD_VIEW_SCENE = preload("res://cards/card_view.tscn")
 
-@onready var player_health_label = $RootLayout/TopBar/PlayerHealthLabel
-@onready var boss_health_label = $RootLayout/TopBar/BossHealthLabel
-@onready var round_label = $RootLayout/TopBar/RoundLabel
-@onready var gold_label = $RootLayout/TopBar/GoldLabel
-@onready var status_label = $RootLayout/TopBar/StatusLabel
+@onready var player_health_label = $RootLayout/StageCenter/Stage/TopBar/PlayerHealthLabel
+@onready var boss_health_label = $RootLayout/StageCenter/Stage/TopBar/BossHealthLabel
+@onready var round_label = $RootLayout/StageCenter/Stage/TopBar/RoundLabel
+@onready var gold_label = $RootLayout/StageCenter/Stage/TopBar/GoldLabel
+@onready var status_label = $RootLayout/StageCenter/Stage/TopBar/StatusLabel
 
-@onready var board_card_list = $RootLayout/PlayArea/BoardCenter/BoardSection/BoardCardList
+@onready var board_card_list = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardCardList
 
-@onready var left_hand_label = $RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/LeftHandLabel
-@onready var right_hand_label = $RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/RightHandLabel
-@onready var backpack_label = $RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/BackpackLabel
-@onready var take_first_monster_button = $RootLayout/ButtonBar/TakeFirstMonsterButton
-@onready var move_first_to_left_hand_button = $RootLayout/ButtonBar/MoveFirstToLeftHandButton
-@onready var move_first_to_backpack_button = $RootLayout/ButtonBar/MoveFirstToBackpackButton
+@onready var left_hand_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/LeftHandLabel
+@onready var right_hand_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/RightHandLabel
+@onready var backpack_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/BackpackLabel
+@onready var take_first_monster_button = $RootLayout/StageCenter/Stage/ButtonBar/TakeFirstMonsterButton
+@onready var move_first_to_left_hand_button = $RootLayout/StageCenter/Stage/ButtonBar/MoveFirstToLeftHandButton
+@onready var move_first_to_backpack_button = $RootLayout/StageCenter/Stage/ButtonBar/MoveFirstToBackpackButton
 
 var match_state: MatchCombatState
 var resolution_controller: ResolutionController
