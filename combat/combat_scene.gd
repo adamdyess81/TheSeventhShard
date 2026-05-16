@@ -282,3 +282,22 @@ func handle_drop_to_backpack(board_index: int) -> void:
 
  set_status("Dropped card into backpack.")
  _refresh_ui()
+
+
+func handle_drop_to_player_avatar(board_index: int) -> void:
+ print("handle_drop_to_player_avatar called with index: ", board_index)
+
+ var before_health = match_state.player_state.current_health
+ print("before resolve, player health: ", before_health)
+
+ var success := combat_controller.resolve_enemy_to_player(board_index)
+
+ var after_health = match_state.player_state.current_health
+ print("after resolve, player health: ", after_health)
+
+ if success:
+  set_status("Dropped monster onto player.")
+ else:
+  set_status("Only monsters can be dropped onto the player.")
+
+ _refresh_ui()

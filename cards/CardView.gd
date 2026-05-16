@@ -32,8 +32,19 @@ func _get_drag_data(_at_position):
 
  var data = {
   "source": "board",
-  "board_index": board_index
+  "board_index": board_index,
+  "card_family": _get_card_family()
  }
 
  print("drag data: ", data)
  return data
+
+
+func _get_card_family() -> String:
+ if card_data is CardRuntimeState:
+  return String(card_data.get_family())
+
+ if card_data is Dictionary:
+  return String(card_data.get("family", ""))
+
+ return ""
