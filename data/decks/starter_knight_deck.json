@@ -1,0 +1,10 @@
+{
+  "id": "starter_knight_deck",
+  "name": "Starter Knight Deck",
+  "cards": [
+	{ "card_id": "small_health_potion", "quantity": 5 },
+	{ "card_id": "large_health_potion", "quantity": 2 },
+	{ "card_id": "small_shield", "quantity": 4 },
+	{ "card_id": "short_sword", "quantity": 4 }
+  ]
+}

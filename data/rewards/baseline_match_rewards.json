@@ -1,0 +1,32 @@
+{
+  "id": "baseline_match_rewards",
+  "name": "Baseline Match Rewards",
+  "theme_tags": ["baseline", "prototype", "combat"],
+  "defeat_victory": {
+	"keep_temporary_gold": true,
+	"keep_carried_chests": true,
+	"grant_xp": true,
+	"xp_rule": "full_match_xp",
+	"grant_completion_rewards": true,
+	"grant_campaign_progress": true
+  },
+  "survival_outcome": {
+	"keep_temporary_gold": true,
+	"keep_carried_chests": true,
+	"grant_xp": true,
+	"xp_rule": "survival_bonus_xp",
+	"grant_completion_rewards": false,
+	"grant_campaign_progress": false
+  },
+  "failure": {
+	"keep_previous_victory_loot": true,
+	"keep_previous_victory_gold": true,
+	"keep_previous_victory_xp": true,
+	"keep_lost_match_xp": true,
+	"keep_lost_match_temporary_gold": false,
+	"keep_deposited_gold_only": true,
+	"keep_lost_match_loot": false,
+	"grant_campaign_progress": false
+  },
+  "notes": "Baseline reward behavior for early combat and campaign testing."
+}

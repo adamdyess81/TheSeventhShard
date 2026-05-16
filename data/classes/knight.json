@@ -1,0 +1,21 @@
+{
+  "id": "knight",
+  "name": "Knight",
+  "archetype": "defender",
+  "description": "A stable martial baseline focused on shields, healing support, and melee tools.",
+  "theme_tags": ["starter", "melee", "defense"],
+  "starting_health_modifier": 0,
+  "max_deck_size_modifier": 0,
+  "starting_deck_id": null,
+  "starting_loadout_id": "loadout_knight_starter_01",
+  "starting_card_grants": [
+	{ "card_id": "small_health_potion", "quantity": 5 },
+	{ "card_id": "large_health_potion", "quantity": 2 },
+	{ "card_id": "small_shield", "quantity": 4 },
+	{ "card_id": "short_sword", "quantity": 4 }
+  ],
+  "starting_rune_ids": [],
+  "class_passive_rule_ids": [],
+  "unlocked_by_default": true,
+  "notes": "First prototype class label used for the baseline Ossara slice."
+}

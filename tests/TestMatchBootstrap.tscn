@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://p4ffwomhhh0"]
+
+[ext_resource type="Script" uid="uid://dj7nv8hr8wmj3" path="res://tests/TestMatchBootstrap.gd" id="1_4fyll"]
+
+[node name="TestMatchBootstrap" type="Node" unique_id=1840496707]
+
+[node name="Control" type="Control" parent="." unique_id=1416313361]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_4fyll")

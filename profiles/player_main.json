@@ -1,0 +1,27 @@
+{
+  "player_profile_id": "player_main",
+  "profile_name": "Main Profile",
+  "created_at": null,
+  "updated_at": null,
+  "player_level": 1,
+  "total_xp": 0,
+  "persistent_gold": 0,
+  "starting_health_base": 15,
+  "max_deck_size_base": 15,
+  "unlocked_classes": ["knight"],
+  "active_class_id": "knight",
+  "owned_card_counts": {
+	"small_health_potion": 5,
+	"large_health_potion": 2,
+	"small_shield": 4,
+	"short_sword": 4
+  },
+  "owned_rune_ids": [],
+  "owned_relic_ids": [],
+  "saved_loadout_ids": ["loadout_knight_starter_01"],
+  "unlocked_branch_ids": ["ossara"],
+  "unlocked_campaign_ids": ["ossara_short_01"],
+  "hovel_upgrade_ids": [],
+  "progression_flag_ids": [],
+  "notes": "First baseline profile for prototype testing."
+}

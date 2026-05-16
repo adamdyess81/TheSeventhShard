@@ -1,0 +1,108 @@
+[gd_scene format=3 uid="uid://bc888g84l60uc"]
+
+[ext_resource type="Script" uid="uid://ddy7p7fwnmhhr" path="res://combat/combat_scene.gd" id="1_q5cen"]
+[ext_resource type="Script" uid="uid://cw08f63aan686" path="res://cards/DropZone.gd" id="2_a5s3s"]
+
+[node name="CombatScene" type="Control" unique_id=72309142]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_q5cen")
+
+[node name="RootLayout" type="VBoxContainer" parent="." unique_id=247386464]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="TopBar" type="HBoxContainer" parent="RootLayout" unique_id=1510757556]
+layout_mode = 2
+
+[node name="PlayerHealthLabel" type="Label" parent="RootLayout/TopBar" unique_id=1065283008]
+layout_mode = 2
+text = "Player HP:"
+
+[node name="BossHealthLabel" type="Label" parent="RootLayout/TopBar" unique_id=1819988801]
+layout_mode = 2
+text = "Boss HP:"
+
+[node name="RoundLabel" type="Label" parent="RootLayout/TopBar" unique_id=1670232191]
+layout_mode = 2
+text = "Round:"
+
+[node name="GoldLabel" type="Label" parent="RootLayout/TopBar" unique_id=254140172]
+layout_mode = 2
+text = "Gold:"
+
+[node name="StatusLabel" type="Label" parent="RootLayout/TopBar" unique_id=1057061874]
+layout_mode = 2
+text = "Ready."
+horizontal_alignment = 2
+
+[node name="ButtonBar" type="HBoxContainer" parent="RootLayout" unique_id=678403159]
+layout_mode = 2
+
+[node name="TakeFirstMonsterButton" type="Button" parent="RootLayout/ButtonBar" unique_id=988054690]
+layout_mode = 2
+text = "Take First Monster"
+
+[node name="MoveFirstToLeftHandButton" type="Button" parent="RootLayout/ButtonBar" unique_id=2093251546]
+layout_mode = 2
+text = "Move First To Left Hand"
+
+[node name="MoveFirstToBackpackButton" type="Button" parent="RootLayout/ButtonBar" unique_id=1206476387]
+layout_mode = 2
+text = "Move First To Backpack"
+
+[node name="BoardSection" type="VBoxContainer" parent="RootLayout" unique_id=1821397121]
+layout_mode = 2
+
+[node name="BoardTitle" type="Label" parent="RootLayout/BoardSection" unique_id=401729791]
+layout_mode = 2
+text = "Active Board Cards"
+
+[node name="BoardCardList" type="VBoxContainer" parent="RootLayout/BoardSection" unique_id=1796195183]
+layout_mode = 2
+
+[node name="EquipmentSection" type="VBoxContainer" parent="RootLayout" unique_id=586308777]
+layout_mode = 2
+
+[node name="LeftHandDropZone" type="PanelContainer" parent="RootLayout/EquipmentSection" unique_id=462332348]
+layout_mode = 2
+script = ExtResource("2_a5s3s")
+drop_target = "left_hand"
+combat_scene_path = NodePath("../../..")
+
+[node name="Label" type="Label" parent="RootLayout/EquipmentSection/LeftHandDropZone" unique_id=1195069394]
+layout_mode = 2
+text = "Drop To Left Hand"
+
+[node name="RightHandDropZone" type="PanelContainer" parent="RootLayout/EquipmentSection" unique_id=1720654289]
+layout_mode = 2
+script = ExtResource("2_a5s3s")
+drop_target = "right_hand"
+combat_scene_path = NodePath("../../..")
+
+[node name="Label" type="Label" parent="RootLayout/EquipmentSection/RightHandDropZone" unique_id=962472168]
+layout_mode = 2
+text = "Drop To Right Hand"
+
+[node name="BackpackDropZone" type="PanelContainer" parent="RootLayout/EquipmentSection" unique_id=1831735766]
+layout_mode = 2
+script = ExtResource("2_a5s3s")
+drop_target = "backpack"
+combat_scene_path = NodePath("../../..")
+
+[node name="Label" type="Label" parent="RootLayout/EquipmentSection/BackpackDropZone" unique_id=1243900246]
+layout_mode = 2
+text = "Drop To Backpack"
+
+[node name="LeftHandLabel" type="Label" parent="RootLayout/EquipmentSection" unique_id=410085116]
+layout_mode = 2
+text = "Left Hand: [empty]"
+
+[node name="RightHandLabel" type="Label" parent="RootLayout/EquipmentSection" unique_id=1986592454]
+layout_mode = 2
+text = "Right Hand: [empty]"
+
+[node name="BackpackLabel" type="Label" parent="RootLayout/EquipmentSection" unique_id=1126222258]
+layout_mode = 2
+text = "Backpack: [empty]"

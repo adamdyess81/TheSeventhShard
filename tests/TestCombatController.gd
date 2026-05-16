@@ -1,0 +1,283 @@
+extends Node
+
+const PLAYER_STARTING_HEALTH := 15
+const BOSS_STARTING_HEALTH := 12
+const STARTING_BACKPACK_CAPACITY := 1
+
+func _ready() -> void:
+    var loader = GameDataLoader.new()
+    loader.build_card_registry()
+
+    var controller_board_state := BoardState.new()
+    controller_board_state.setup(4)
+
+    var controller_player_state := PlayerCombatState.new()
+    controller_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+
+    var controller_boss_state := BossCombatState.new()
+    controller_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
+
+    var controller_shared_deck := SharedDeckState.new()
+    controller_shared_deck.setup([
+        loader.get_card("risen_bones").duplicate(true),
+        loader.get_card("gold_10").duplicate(true)
+    ])
+
+    controller_board_state.get_active_cards().append(loader.get_card("grave_thrall").duplicate(true))
+    controller_board_state.get_active_cards().append(loader.get_card("short_sword").duplicate(true))
+
+    var controller_match_state := MatchCombatState.new()
+    controller_match_state.setup(
+        controller_player_state,
+        controller_boss_state,
+        controller_board_state,
+        controller_shared_deck,
+        1
+    )
+
+    var controller_resolution := ResolutionController.new()
+    var controller_outcome := OutcomeController.new()
+
+    var combat_controller := CombatController.new()
+    combat_controller.setup(
+        controller_match_state,
+        controller_resolution,
+        controller_outcome
+    )
+
+    print("\n=== TEST COMBAT CONTROLLER ===")
+    print("Controller Test Board Start:")
+    _print_card_list(combat_controller.match_state.get_active_board_cards())
+    print("Controller Test Deck Remaining: ", combat_controller.match_state.shared_deck_state.remaining_count())
+    print("Controller Test Round: ", combat_controller.match_state.round_number)
+    print("Controller Test Outcome: ", combat_controller.get_current_outcome())
+
+    var controller_monster_result := combat_controller.resolve_enemy_to_player(0)
+    print("\nController resolved monster to player?: ", controller_monster_result)
+    print("Player Health After Controller Monster Resolve: ", combat_controller.match_state.player_state.current_health, "/", combat_controller.match_state.player_state.max_health)
+    print("Board After Controller Monster Resolve:")
+    _print_card_list(combat_controller.match_state.get_active_board_cards())
+    print("Deck Remaining After Auto-Refill: ", combat_controller.match_state.shared_deck_state.remaining_count())
+    print("Round After Auto-Refill: ", combat_controller.match_state.round_number)
+
+    var controller_left_hand_result := combat_controller.move_player_card_to_left_hand(0)
+    print("\nController moved player card to left hand?: ", controller_left_hand_result)
+    if combat_controller.match_state.player_state.left_hand_card is CardRuntimeState:
+        print("Left Hand After Controller Move: ", combat_controller.match_state.player_state.left_hand_card.card_id)
+        print("Left Hand Zone: ", combat_controller.match_state.player_state.left_hand_card.zone)
+    elif combat_controller.match_state.player_state.left_hand_card is Dictionary:
+        print("Left Hand After Controller Move: ", combat_controller.match_state.player_state.left_hand_card.get("id", "[none]"))
+        print("Left Hand Zone: ", combat_controller.match_state.player_state.left_hand_card.get("zone", "[none]"))
+    else:
+        print("Left Hand After Controller Move: [none]")
+
+    print("Board After Controller Left Hand Move:")
+    _print_card_list(combat_controller.match_state.get_active_board_cards())
+    print("Deck Remaining After Second Auto-Refill: ", combat_controller.match_state.shared_deck_state.remaining_count())
+    print("Round After Second Auto-Refill: ", combat_controller.match_state.round_number)
+    var backpack_board_state := BoardState.new()
+    backpack_board_state.setup(4)
+
+    var backpack_player_state := PlayerCombatState.new()
+    backpack_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+
+    var backpack_boss_state := BossCombatState.new()
+    backpack_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
+
+    var backpack_shared_deck := SharedDeckState.new()
+    backpack_shared_deck.setup([
+        loader.get_card("small_shield").duplicate(true)
+    ])
+
+    backpack_board_state.refill_from_deck(backpack_shared_deck)
+
+    var backpack_match_state := MatchCombatState.new()
+    backpack_match_state.setup(
+        backpack_player_state,
+        backpack_boss_state,
+        backpack_board_state,
+        backpack_shared_deck,
+        1
+    )
+
+    var backpack_resolution := ResolutionController.new()
+    var backpack_outcome := OutcomeController.new()
+
+    var backpack_controller := CombatController.new()
+    backpack_controller.setup(
+        backpack_match_state,
+        backpack_resolution,
+        backpack_outcome
+    )
+
+    print("\n=== BACKPACK ZONE TEST ===")
+    print("Backpack Test Board Start:")
+    _print_card_list(backpack_controller.match_state.get_active_board_cards())
+
+    var backpack_move_result := backpack_controller.move_player_card_to_backpack(0)
+    print("Moved player card to backpack?: ", backpack_move_result)
+
+    if backpack_controller.match_state.player_state.backpack_cards.size() > 0:
+        var backpack_card = backpack_controller.match_state.player_state.backpack_cards[0]
+
+        if backpack_card is CardRuntimeState:
+            print("Backpack Card ID: ", backpack_card.card_id)
+            print("Backpack Card Zone: ", backpack_card.zone)
+        elif backpack_card is Dictionary:
+            print("Backpack Card ID: ", backpack_card.get("id", "[none]"))
+            print("Backpack Card Zone: ", backpack_card.get("zone", "[none]"))
+    else:
+        print("Backpack is empty.")
+        print("\n=== RIGHT HAND ZONE TEST ===")
+
+    var right_hand_board_state := BoardState.new()
+    right_hand_board_state.setup(4)
+
+    var right_hand_player_state := PlayerCombatState.new()
+    right_hand_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+
+    var right_hand_boss_state := BossCombatState.new()
+    right_hand_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
+
+    var right_hand_shared_deck := SharedDeckState.new()
+    right_hand_shared_deck.setup([
+        loader.get_card("short_sword").duplicate(true)
+    ])
+
+    right_hand_board_state.refill_from_deck(right_hand_shared_deck)
+
+    var right_hand_match_state := MatchCombatState.new()
+    right_hand_match_state.setup(
+        right_hand_player_state,
+        right_hand_boss_state,
+        right_hand_board_state,
+        right_hand_shared_deck,
+        1
+    )
+
+    var right_hand_resolution := ResolutionController.new()
+    var right_hand_outcome := OutcomeController.new()
+
+    var right_hand_controller := CombatController.new()
+    right_hand_controller.setup(
+        right_hand_match_state,
+        right_hand_resolution,
+        right_hand_outcome
+    )
+
+    print("Right Hand Test Board Start:")
+    _print_card_list(right_hand_controller.match_state.get_active_board_cards())
+
+    var right_hand_move_result := right_hand_controller.move_player_card_to_right_hand(0)
+    print("Moved player card to right hand?: ", right_hand_move_result)
+
+    var right_hand_card = right_hand_controller.match_state.player_state.right_hand_card
+
+    if right_hand_card is CardRuntimeState:
+        print("Right Hand Card ID: ", right_hand_card.card_id)
+        print("Right Hand Card Zone: ", right_hand_card.zone)
+    elif right_hand_card is Dictionary:
+        print("Right Hand Card ID: ", right_hand_card.get("id", "[none]"))
+        print("Right Hand Card Zone: ", right_hand_card.get("zone", "[none]"))
+    else:
+        print("Right Hand is empty.")
+        print("\n=== RUNTIME FLAG TESTS ===")
+
+    var flag_board_state := BoardState.new()
+    flag_board_state.setup(4)
+
+    var flag_player_state := PlayerCombatState.new()
+    flag_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+
+    var flag_boss_state := BossCombatState.new()
+    flag_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
+
+    var flag_shared_deck := SharedDeckState.new()
+    flag_shared_deck.setup([
+        loader.get_card("short_sword").duplicate(true),
+        loader.get_card("small_health_potion").duplicate(true)
+    ])
+
+    flag_board_state.refill_from_deck(flag_shared_deck)
+
+    var flag_match_state := MatchCombatState.new()
+    flag_match_state.setup(
+        flag_player_state,
+        flag_boss_state,
+        flag_board_state,
+        flag_shared_deck,
+        1
+    )
+
+    var flag_resolution := ResolutionController.new()
+    var flag_outcome := OutcomeController.new()
+
+    var flag_controller := CombatController.new()
+    flag_controller.setup(
+        flag_match_state,
+        flag_resolution,
+        flag_outcome
+    )
+
+    print("Flag Test Board Start:")
+    _print_card_list(flag_controller.match_state.get_active_board_cards())
+
+    var flag_move_result := flag_controller.move_player_card_to_left_hand(0)
+    print("Moved first card to left hand?: ", flag_move_result)
+
+    var left_flag_card = flag_controller.match_state.player_state.left_hand_card
+    if left_flag_card is CardRuntimeState:
+        print("Left Hand Card ID: ", left_flag_card.card_id)
+        print("Left Hand Card Resolved?: ", left_flag_card.is_resolved)
+        print("Left Hand Card Exhausted?: ", left_flag_card.is_exhausted)
+        print("Left Hand Card Destroyed?: ", left_flag_card.is_destroyed)
+
+    flag_controller.match_state.player_state.take_damage(5)
+
+    var potion_move_result := flag_controller.move_player_card_to_right_hand(0)
+    print("Moved second card to right hand?: ", potion_move_result)
+
+    var right_flag_card = flag_controller.match_state.player_state.right_hand_card
+    if right_flag_card is CardRuntimeState:
+        print("Right Hand Card ID Before Use: ", right_flag_card.card_id)
+        print("Right Hand Card Resolved Before Use?: ", right_flag_card.is_resolved)
+        print("Right Hand Card Exhausted Before Use?: ", right_flag_card.is_exhausted)
+        print("Right Hand Card Destroyed Before Use?: ", right_flag_card.is_destroyed)
+
+    var potion_use_result := flag_controller.use_right_hand_potion()
+    print("Used right hand potion?: ", potion_use_result)
+    print("Player Health After Potion Use: ", flag_controller.match_state.player_state.current_health, "/", flag_controller.match_state.player_state.max_health)
+
+    if right_flag_card is CardRuntimeState:
+        print("Right Hand Card Resolved After Use?: ", right_flag_card.is_resolved)
+        print("Right Hand Card Exhausted After Use?: ", right_flag_card.is_exhausted)
+        print("Right Hand Card Destroyed After Use?: ", right_flag_card.is_destroyed)
+
+    print("\nController Final Outcome: ", combat_controller.get_current_outcome())
+
+
+func _print_card_list(cards: Array) -> void:
+    if cards.is_empty():
+        print("- [none]")
+        return
+
+    for card in cards:
+        if card is CardRuntimeState:
+            print("- %s | family: %s | value: %s | zone: %s" % [
+                card.card_id,
+                card.get_family(),
+                str(card.current_value),
+                card.zone
+            ])
+        elif card is Dictionary:
+            var card_id := str(card.get("id", "UNKNOWN"))
+            var family := str(card.get("family", "UNKNOWN"))
+            var base_value = card.get("base_value", null)
+
+            var value_text := "null"
+            if base_value != null:
+                value_text = str(base_value)
+
+            print("- %s | family: %s | value: %s" % [card_id, family, value_text])
+        else:
+            print("- [unknown card type]")

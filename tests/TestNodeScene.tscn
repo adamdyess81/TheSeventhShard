@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://cwd2f6q7ata3f"]
+
+[ext_resource type="Script" uid="uid://bjw6kjlmyxxkh" path="res://tests/TestDataLoad.gd" id="1_4fy7n"]
+
+[node name="TestNodeScene" type="Node" unique_id=2005063139]
+
+[node name="Control" type="Control" parent="." unique_id=1426384820]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 57.500015
+offset_top = 100.000015
+offset_right = 97.500015
+offset_bottom = 140.00002
+script = ExtResource("1_4fy7n")

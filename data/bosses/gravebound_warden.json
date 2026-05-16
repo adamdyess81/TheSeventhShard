@@ -1,0 +1,16 @@
+{
+  "id": "gravebound_warden",
+  "name": "Gravebound Warden",
+  "branch_id": "ossara",
+  "guardian_id": "velmora",
+  "boss_type": "baseline",
+  "theme_tags": ["ossara", "undead", "baseline", "prototype"],
+  "base_health": 12,
+  "has_special_rules": false,
+  "special_rule_ids": [],
+  "global_rule_ids": [],
+  "board_cap_modifier": 0,
+  "unresolved_card_cap_modifier": 0,
+  "art_ref": null,
+  "notes": "First baseline no-special boss for the Ossara single-match test."
+}

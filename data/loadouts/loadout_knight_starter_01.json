@@ -1,0 +1,19 @@
+{
+  "loadout_id": "loadout_knight_starter_01",
+  "profile_id": "player_main",
+  "name": "Knight Starter",
+  "class_id": "knight",
+  "deck_card_entries": [
+	{ "card_id": "small_health_potion", "quantity": 5 },
+	{ "card_id": "large_health_potion", "quantity": 2 },
+	{ "card_id": "small_shield", "quantity": 4 },
+	{ "card_id": "short_sword", "quantity": 4 }
+  ],
+  "rune_ids": [],
+  "relic_ids": [],
+  "tags": ["starter", "prototype"],
+  "is_favorite": true,
+  "created_at": null,
+  "updated_at": null,
+  "notes": "First baseline loadout for Ossara prototype testing."
+}

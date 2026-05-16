@@ -1,0 +1,16 @@
+{
+  "id": "ossara_baseline_monster_deck",
+  "name": "Ossara Baseline Monster Deck",
+  "branch_id": "ossara",
+  "theme_tags": ["ossara", "undead", "baseline", "prototype"],
+  "entries": [
+	{ "card_id": "risen_bones", "quantity": 15, "role": "weak_basic", "include_in_shuffle": true },
+	{ "card_id": "grave_thrall", "quantity": 7, "role": "standard_pressure", "include_in_shuffle": true },
+	{ "card_id": "crypt_hound", "quantity": 6, "role": "aggressive_medium", "include_in_shuffle": true },
+	{ "card_id": "sepulcher_guard", "quantity": 2, "role": "elite", "include_in_shuffle": true },
+	{ "card_id": "gold_10", "quantity": 5, "role": "reward", "include_in_shuffle": true },
+	{ "card_id": "small_chest", "quantity": 1, "role": "reward", "include_in_shuffle": true }
+  ],
+  "boss_included_in_deck": false,
+  "notes": "First baseline monster/reward deck for the Ossara single-match test. The boss is a separate persistent combat entity and is not shuffled into the deck."
+}

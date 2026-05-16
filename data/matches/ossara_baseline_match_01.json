@@ -1,0 +1,21 @@
+{
+  "id": "ossara_baseline_match_01",
+  "name": "Ossara Baseline Match",
+  "branch_id": "ossara",
+  "theme_tags": ["ossara", "undead", "baseline", "prototype"],
+  "player_starting_health_override": null,
+  "boss_id": "gravebound_warden",
+  "boss_starting_health_override": 12,
+  "player_deck_id": "starter_knight_deck",
+  "monster_deck_id": "ossara_baseline_monster_deck",
+  "starting_board_cap": 4,
+  "unresolved_card_cap": 1,
+  "starting_backpack_slots": 1,
+  "starting_hand_slots": 2,
+  "allow_survival_outcome": true,
+  "allow_deposit_gold": true,
+  "reward_profile_id": "baseline_match_rewards",
+  "global_rules": [],
+  "special_rules": [],
+  "notes": "First playable combat baseline match."
+}

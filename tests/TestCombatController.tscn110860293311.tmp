@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cyecl87lx38q1"]
+
+[ext_resource type="Script" uid="uid://cmfco5m5xyvds" path="res://tests/TestCombatController.gd" id="1_j8eog"]
+
+[node name="TestCombatController" type="Node" unique_id=447046523]
+
+[node name="Control" type="Control" parent="." unique_id=1032928467]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_j8eog")
