@@ -10,8 +10,8 @@
 [node name="CombatScene" type="Control" unique_id=72309142]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 1280.0
-offset_bottom = 720.0
+offset_right = 1920.0
+offset_bottom = 1080.0
 script = ExtResource("1_q5cen")
 
 [node name="RootLayout" type="VBoxContainer" parent="." unique_id=247386464]
@@ -28,6 +28,8 @@ grow_vertical = 2
 
 [node name="TopBar" type="HBoxContainer" parent="RootLayout" unique_id=1510757556]
 layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 18
 
 [node name="PlayerHealthLabel" type="Label" parent="RootLayout/TopBar" unique_id=1065283008]
 layout_mode = 2
@@ -52,6 +54,8 @@ horizontal_alignment = 2
 
 [node name="ButtonBar" type="HBoxContainer" parent="RootLayout" unique_id=678403159]
 layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 12
 
 [node name="TakeFirstMonsterButton" type="Button" parent="RootLayout/ButtonBar" unique_id=988054690]
 layout_mode = 2
@@ -68,114 +72,125 @@ text = "Move First To Backpack"
 [node name="PlayArea" type="VBoxContainer" parent="RootLayout" unique_id=194280336]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 14
+theme_override_constants/separation = 28
 
-[node name="BoardSection" type="VBoxContainer" parent="RootLayout/PlayArea" unique_id=1821397121]
+[node name="BoardCenter" type="CenterContainer" parent="RootLayout/PlayArea" unique_id=127803510]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="BoardTitle" type="Label" parent="RootLayout/PlayArea/BoardSection" unique_id=401729791]
+[node name="BoardSection" type="VBoxContainer" parent="RootLayout/PlayArea/BoardCenter" unique_id=1821397121]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BoardTitle" type="Label" parent="RootLayout/PlayArea/BoardCenter/BoardSection" unique_id=401729791]
 layout_mode = 2
 text = "Active Board Cards"
+horizontal_alignment = 1
 
-[node name="BoardCardList" type="GridContainer" parent="RootLayout/PlayArea/BoardSection" unique_id=1796195183]
+[node name="BoardCardList" type="GridContainer" parent="RootLayout/PlayArea/BoardCenter/BoardSection" unique_id=1796195183]
 layout_mode = 2
-size_flags_vertical = 3
 columns = 4
-theme_override_constants/h_separation = 12
-theme_override_constants/v_separation = 12
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
 
-[node name="DropZoneRow" type="HBoxContainer" parent="RootLayout/PlayArea" unique_id=1061202853]
+[node name="LoadoutCenter" type="CenterContainer" parent="RootLayout/PlayArea" unique_id=51322928]
+layout_mode = 2
+
+[node name="LoadoutGroup" type="VBoxContainer" parent="RootLayout/PlayArea/LoadoutCenter" unique_id=1910022334]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DropZoneRow" type="HBoxContainer" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup" unique_id=1061202853]
 layout_mode = 2
 alignment = 1
-theme_override_constants/separation = 18
+theme_override_constants/separation = 28
 
-[node name="LeftHandDropZone" type="PanelContainer" parent="RootLayout/PlayArea/DropZoneRow" unique_id=462332348]
+[node name="LeftHandDropZone" type="PanelContainer" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow" unique_id=462332348]
 layout_mode = 2
-custom_minimum_size = Vector2(98, 132)
+custom_minimum_size = Vector2(132, 180)
 script = ExtResource("2_a5s3s")
 drop_target = "left_hand"
-combat_scene_path = NodePath("../../../..")
+combat_scene_path = NodePath("../../../../../../")
 
-[node name="PlacementTexture" type="TextureRect" parent="RootLayout/PlayArea/DropZoneRow/LeftHandDropZone" unique_id=1195069394]
+[node name="PlacementTexture" type="TextureRect" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone" unique_id=1195069394]
 layout_mode = 2
-custom_minimum_size = Vector2(98, 132)
+custom_minimum_size = Vector2(132, 180)
 mouse_filter = 2
 texture = ExtResource("4_8wbxd")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="PlayerAvatarDropZone" type="PanelContainer" parent="RootLayout/PlayArea/DropZoneRow" unique_id=1411459182]
+[node name="PlayerAvatarDropZone" type="PanelContainer" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow" unique_id=1411459182]
 layout_mode = 2
-custom_minimum_size = Vector2(120, 176)
+custom_minimum_size = Vector2(168, 248)
 script = ExtResource("2_a5s3s")
 drop_target = "player_avatar"
-combat_scene_path = NodePath("../../../..")
+combat_scene_path = NodePath("../../../../../../")
 allowed_families = PackedStringArray("monster")
 
-[node name="AvatarTexture" type="TextureRect" parent="RootLayout/PlayArea/DropZoneRow/PlayerAvatarDropZone" unique_id=1326504604]
+[node name="AvatarTexture" type="TextureRect" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone" unique_id=1326504604]
 layout_mode = 2
-custom_minimum_size = Vector2(120, 176)
+custom_minimum_size = Vector2(168, 248)
 mouse_filter = 2
 texture = ExtResource("3_3of7o")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="RightHandDropZone" type="PanelContainer" parent="RootLayout/PlayArea/DropZoneRow" unique_id=1720654289]
+[node name="RightHandDropZone" type="PanelContainer" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow" unique_id=1720654289]
 layout_mode = 2
-custom_minimum_size = Vector2(98, 132)
+custom_minimum_size = Vector2(132, 180)
 script = ExtResource("2_a5s3s")
 drop_target = "right_hand"
-combat_scene_path = NodePath("../../../..")
+combat_scene_path = NodePath("../../../../../../")
 
-[node name="PlacementTexture" type="TextureRect" parent="RootLayout/PlayArea/DropZoneRow/RightHandDropZone" unique_id=962472168]
+[node name="PlacementTexture" type="TextureRect" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone" unique_id=962472168]
 layout_mode = 2
-custom_minimum_size = Vector2(98, 132)
+custom_minimum_size = Vector2(132, 180)
 mouse_filter = 2
 texture = ExtResource("5_6ggyu")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="BackpackDropZone" type="PanelContainer" parent="RootLayout/PlayArea/DropZoneRow" unique_id=1831735766]
+[node name="BackpackDropZone" type="PanelContainer" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow" unique_id=1831735766]
 layout_mode = 2
-custom_minimum_size = Vector2(98, 132)
+custom_minimum_size = Vector2(132, 180)
 script = ExtResource("2_a5s3s")
 drop_target = "backpack"
-combat_scene_path = NodePath("../../../..")
+combat_scene_path = NodePath("../../../../../../")
 
-[node name="PlacementTexture" type="TextureRect" parent="RootLayout/PlayArea/DropZoneRow/BackpackDropZone" unique_id=1243900246]
+[node name="PlacementTexture" type="TextureRect" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone" unique_id=1243900246]
 layout_mode = 2
-custom_minimum_size = Vector2(98, 132)
+custom_minimum_size = Vector2(132, 180)
 mouse_filter = 2
 texture = ExtResource("6_7f78p")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="LabelRow" type="HBoxContainer" parent="RootLayout/PlayArea" unique_id=967501462]
+[node name="LabelRow" type="HBoxContainer" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup" unique_id=967501462]
 layout_mode = 2
 alignment = 1
-theme_override_constants/separation = 18
+theme_override_constants/separation = 28
 
-[node name="LeftHandLabel" type="Label" parent="RootLayout/PlayArea/LabelRow" unique_id=410085116]
+[node name="LeftHandLabel" type="Label" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow" unique_id=410085116]
 layout_mode = 2
-custom_minimum_size = Vector2(98, 0)
+custom_minimum_size = Vector2(132, 0)
 text = "Left Hand: [empty]"
 horizontal_alignment = 1
 
-[node name="PlayerLabel" type="Label" parent="RootLayout/PlayArea/LabelRow" unique_id=436620657]
+[node name="PlayerLabel" type="Label" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow" unique_id=436620657]
 layout_mode = 2
-custom_minimum_size = Vector2(120, 0)
+custom_minimum_size = Vector2(168, 0)
 text = "Player"
 horizontal_alignment = 1
 
-[node name="RightHandLabel" type="Label" parent="RootLayout/PlayArea/LabelRow" unique_id=1986592454]
+[node name="RightHandLabel" type="Label" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow" unique_id=1986592454]
 layout_mode = 2
-custom_minimum_size = Vector2(98, 0)
+custom_minimum_size = Vector2(132, 0)
 text = "Right Hand: [empty]"
 horizontal_alignment = 1
 
-[node name="BackpackLabel" type="Label" parent="RootLayout/PlayArea/LabelRow" unique_id=1126222258]
+[node name="BackpackLabel" type="Label" parent="RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow" unique_id=1126222258]
 layout_mode = 2
-custom_minimum_size = Vector2(98, 0)
+custom_minimum_size = Vector2(132, 0)
 text = "Backpack: [empty]"
 horizontal_alignment = 1

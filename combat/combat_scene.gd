@@ -12,11 +12,11 @@ const CARD_VIEW_SCENE = preload("res://cards/card_view.tscn")
 @onready var gold_label = $RootLayout/TopBar/GoldLabel
 @onready var status_label = $RootLayout/TopBar/StatusLabel
 
-@onready var board_card_list = $RootLayout/PlayArea/BoardSection/BoardCardList
+@onready var board_card_list = $RootLayout/PlayArea/BoardCenter/BoardSection/BoardCardList
 
-@onready var left_hand_label = $RootLayout/PlayArea/LabelRow/LeftHandLabel
-@onready var right_hand_label = $RootLayout/PlayArea/LabelRow/RightHandLabel
-@onready var backpack_label = $RootLayout/PlayArea/LabelRow/BackpackLabel
+@onready var left_hand_label = $RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/LeftHandLabel
+@onready var right_hand_label = $RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/RightHandLabel
+@onready var backpack_label = $RootLayout/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/BackpackLabel
 @onready var take_first_monster_button = $RootLayout/ButtonBar/TakeFirstMonsterButton
 @onready var move_first_to_left_hand_button = $RootLayout/ButtonBar/MoveFirstToLeftHandButton
 @onready var move_first_to_backpack_button = $RootLayout/ButtonBar/MoveFirstToBackpackButton
