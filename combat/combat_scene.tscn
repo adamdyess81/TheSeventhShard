@@ -67,7 +67,6 @@ layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "player_avatar"
 combat_scene_path = NodePath("../..")
-allowed_families = PackedStringArray("monster")
 
 [node name="Label" type="Label" parent="RootLayout/PlayerAvatarDropZone" unique_id=1326504604]
 layout_mode = 2
