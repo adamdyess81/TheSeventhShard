@@ -53,6 +53,9 @@ func move_player_card_to_left_hand(match_state: MatchCombatState, board_index: i
     if match_state.player_state.left_hand_exhausted:
         return false
 
+    if match_state.player_state.left_hand_card != null:
+        return false
+
     var family := _get_card_family(card)
 
     if family == "coin":
@@ -97,6 +100,9 @@ func move_player_card_to_right_hand(match_state: MatchCombatState, board_index: 
         return false
 
     if match_state.player_state.right_hand_exhausted:
+        return false
+
+    if match_state.player_state.right_hand_card != null:
         return false
 
     var family := _get_card_family(card)

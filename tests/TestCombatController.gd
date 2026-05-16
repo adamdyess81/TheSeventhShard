@@ -253,6 +253,61 @@ func _ready() -> void:
         print("Right Hand Card Exhausted After Use?: ", right_flag_card.is_exhausted)
         print("Right Hand Card Destroyed After Use?: ", right_flag_card.is_destroyed)
 
+    print("\n=== OCCUPIED HAND BLOCK TEST ===")
+
+    var occupied_board_state := BoardState.new()
+    occupied_board_state.setup(4)
+
+    var occupied_player_state := PlayerCombatState.new()
+    occupied_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+
+    var occupied_boss_state := BossCombatState.new()
+    occupied_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
+
+    var occupied_shared_deck := SharedDeckState.new()
+    occupied_shared_deck.setup([])
+
+    occupied_board_state.get_active_cards().append(loader.get_card("small_health_potion").duplicate(true))
+    occupied_board_state.get_active_cards().append(loader.get_card("gold_10").duplicate(true))
+
+    var occupied_match_state := MatchCombatState.new()
+    occupied_match_state.setup(
+        occupied_player_state,
+        occupied_boss_state,
+        occupied_board_state,
+        occupied_shared_deck,
+        1
+    )
+
+    occupied_match_state.player_state.set_left_hand_card(loader.get_card("short_sword").duplicate(true))
+    occupied_match_state.player_state.set_right_hand_card(loader.get_card("small_shield").duplicate(true))
+    occupied_match_state.player_state.take_damage(5)
+
+    var occupied_resolution := ResolutionController.new()
+    var occupied_outcome := OutcomeController.new()
+
+    var occupied_controller := CombatController.new()
+    occupied_controller.setup(
+        occupied_match_state,
+        occupied_resolution,
+        occupied_outcome
+    )
+
+    var health_before_block_test := occupied_controller.match_state.player_state.current_health
+    var left_hand_before_block_test = occupied_controller.match_state.player_state.left_hand_card
+    var right_hand_before_block_test = occupied_controller.match_state.player_state.right_hand_card
+
+    var blocked_potion_result := occupied_controller.move_player_card_to_left_hand(0)
+    var blocked_coin_result := occupied_controller.move_player_card_to_right_hand(1)
+
+    print("Blocked potion into occupied left hand?: ", blocked_potion_result)
+    print("Blocked coin into occupied right hand?: ", blocked_coin_result)
+    print("Player Health After Block Test: ", occupied_controller.match_state.player_state.current_health, "/", occupied_controller.match_state.player_state.max_health)
+    print("Left Hand Unchanged?: ", left_hand_before_block_test == occupied_controller.match_state.player_state.left_hand_card)
+    print("Right Hand Unchanged?: ", right_hand_before_block_test == occupied_controller.match_state.player_state.right_hand_card)
+    print("Health Unchanged?: ", health_before_block_test == occupied_controller.match_state.player_state.current_health)
+    print("Board Count After Block Test: ", occupied_controller.match_state.board_state.active_count())
+
     print("\nController Final Outcome: ", combat_controller.get_current_outcome())
 
 
