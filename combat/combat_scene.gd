@@ -8,6 +8,13 @@ const CARD_VIEW_SCENE = preload("res://cards/card_view.tscn")
 const LEFT_HAND_PLACEHOLDER = preload("res://art/ui/LeftHand Placement Card.png")
 const RIGHT_HAND_PLACEHOLDER = preload("res://art/ui/RightHand Placement Card.png")
 const BACKPACK_PLACEHOLDER = preload("res://art/ui/Backpack Placement Card.png")
+const HUD_TEXT = Color("f1e7d6")
+const HUD_MUTED = Color("c4b59a")
+const SUCCESS_TEXT = Color("d5c074")
+const ERROR_TEXT = Color("d38a80")
+const PANEL_FILL = Color("130f0d")
+const PANEL_BORDER = Color("6a5542")
+const DISCARD_BORDER = Color("9d6b55")
 const CARD_ART_TEXTURES := {
 	"crypt_hound": preload("res://art/cards/Crypt Hound.png"),
 	"grave_thrall": preload("res://art/cards/Grave Thrall.png"),
@@ -28,13 +35,20 @@ const CARD_ART_TEXTURES := {
 @onready var status_label = $RootLayout/StageCenter/Stage/TopBar/StatusLabel
 
 @onready var board_card_list = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/BoardCardList
+@onready var board_title = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardTitle
 
 @onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/PlacementTexture
 @onready var player_avatar_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/AvatarTexture
 @onready var right_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/PlacementTexture
 @onready var backpack_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/PlacementTexture
+@onready var left_hand_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone
+@onready var player_avatar_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone
+@onready var right_hand_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone
+@onready var backpack_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone
+@onready var discard_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone
 
 @onready var left_hand_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/LeftHandLabel
+@onready var player_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/PlayerLabel
 @onready var right_hand_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/RightHandLabel
 @onready var backpack_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/BackpackLabel
 @onready var take_first_monster_button = $RootLayout/StageCenter/Stage/ButtonBar/TakeFirstMonsterButton
@@ -49,6 +63,7 @@ var combat_controller: CombatController
 
 func _ready() -> void:
     _build_test_match_state()
+    _apply_visual_theme()
 
     take_first_monster_button.pressed.connect(_on_take_first_monster_pressed)
     move_first_to_left_hand_button.pressed.connect(_on_move_first_to_left_hand_pressed)
@@ -98,6 +113,10 @@ func _build_test_match_state() -> void:
 
 func set_status(message: String) -> void:
  status_label.text = message
+ if "could not" in message.to_lower() or "only " in message.to_lower() or "no " in message.to_lower():
+  status_label.add_theme_color_override("font_color", ERROR_TEXT)
+ else:
+  status_label.add_theme_color_override("font_color", SUCCESS_TEXT)
  print("[STATUS] ", message)
 
 
@@ -164,12 +183,12 @@ func _refresh_equipment_labels() -> void:
     if match_state.player_state.right_hand_exhausted:
         right_hand_status = "exhausted"
 
-    left_hand_label.text = "Left Hand: %s (%s)" % [
+    left_hand_label.text = "Left Hand: %s [%s]" % [
         _get_single_card_label(match_state.player_state.left_hand_card),
         left_hand_status
     ]
 
-    right_hand_label.text = "Right Hand: %s (%s)" % [
+    right_hand_label.text = "Right Hand: %s [%s]" % [
         _get_single_card_label(match_state.player_state.right_hand_card),
         right_hand_status
     ]
@@ -178,7 +197,7 @@ func _refresh_equipment_labels() -> void:
         var backpack_names: Array = []
 
         for card in match_state.player_state.backpack_cards:
-            backpack_names.append(_get_card_name(card))
+            backpack_names.append(_humanize_card_name(_get_card_name(card)))
 
         backpack_label.text = "Backpack: %s" % ", ".join(backpack_names)
     else:
@@ -190,10 +209,7 @@ func _get_single_card_label(card) -> String:
     if card == null:
         return "[empty]"
 
-    if card is CardRuntimeState:
-        return "%s | zone: %s" % [card.card_id, card.zone]
-
-    return _get_card_name(card)
+    return _humanize_card_name(_get_card_name(card))
 
 
 func _get_card_name(card) -> String:
@@ -204,6 +220,21 @@ func _get_card_name(card) -> String:
         return str(card.get("id", "unknown_card"))
 
     return "unknown_card"
+
+
+func _humanize_card_name(card_id: String) -> String:
+    var cleaned := card_id.strip_edges().replace("_", " ")
+    if cleaned == "":
+        return "Unknown Card"
+
+    var words := cleaned.split(" ", false)
+    for i in range(words.size()):
+        var word := String(words[i])
+        if word == "":
+            continue
+        words[i] = word.substr(0, 1).to_upper() + word.substr(1)
+
+    return " ".join(words)
 
 
 func _get_card_texture_or_placeholder(card, placeholder):
@@ -258,6 +289,64 @@ func _get_card_display_text(card) -> String:
         ]
 
     return "unknown card"
+
+
+func _apply_visual_theme() -> void:
+    player_health_label.add_theme_color_override("font_color", HUD_TEXT)
+    boss_health_label.add_theme_color_override("font_color", HUD_TEXT)
+    round_label.add_theme_color_override("font_color", HUD_TEXT)
+    gold_label.add_theme_color_override("font_color", SUCCESS_TEXT)
+    board_title.add_theme_color_override("font_color", HUD_MUTED)
+    board_title.add_theme_font_size_override("font_size", 15)
+    player_label.add_theme_color_override("font_color", HUD_MUTED)
+
+    _style_zone(left_hand_drop_zone, PANEL_BORDER)
+    _style_zone(player_avatar_drop_zone, Color("8d7867"))
+    _style_zone(right_hand_drop_zone, PANEL_BORDER)
+    _style_zone(backpack_drop_zone, Color("6e7e66"))
+    _style_zone(discard_drop_zone, DISCARD_BORDER)
+
+    _style_loadout_label(left_hand_label)
+    _style_loadout_label(player_label)
+    _style_loadout_label(right_hand_label)
+    _style_loadout_label(backpack_label)
+
+    _style_debug_button(take_first_monster_button)
+    _style_debug_button(move_first_to_left_hand_button)
+    _style_debug_button(move_first_to_backpack_button)
+
+    take_first_monster_button.text = "Debug: First Monster"
+    move_first_to_left_hand_button.text = "Debug: Left Hand"
+    move_first_to_backpack_button.text = "Debug: Backpack"
+
+    status_label.add_theme_font_size_override("font_size", 15)
+
+
+func _style_zone(panel: PanelContainer, border_color: Color) -> void:
+    var style := StyleBoxFlat.new()
+    style.bg_color = PANEL_FILL
+    style.border_color = border_color
+    style.border_width_left = 2
+    style.border_width_top = 2
+    style.border_width_right = 2
+    style.border_width_bottom = 2
+    style.corner_radius_top_left = 18
+    style.corner_radius_top_right = 18
+    style.corner_radius_bottom_right = 18
+    style.corner_radius_bottom_left = 18
+    style.shadow_color = Color(0, 0, 0, 0.28)
+    style.shadow_size = 5
+    panel.add_theme_stylebox_override("panel", style)
+
+
+func _style_loadout_label(label: Label) -> void:
+    label.add_theme_color_override("font_color", HUD_MUTED)
+    label.add_theme_font_size_override("font_size", 13)
+
+
+func _style_debug_button(button: Button) -> void:
+    button.modulate = Color(0.9, 0.86, 0.79, 0.84)
+    button.add_theme_font_size_override("font_size", 12)
 
 func _on_take_first_monster_pressed() -> void:
  var board_cards = match_state.board_state.get_active_cards()

@@ -236,6 +236,7 @@ func _ready() -> void:
 
     var potion_move_result := flag_controller.move_player_card_to_right_hand(0)
     print("Moved second card to right hand?: ", potion_move_result)
+    print("Player Health Before Potion Use: ", flag_controller.match_state.player_state.current_health, "/", flag_controller.match_state.player_state.max_health)
 
     var right_flag_card = flag_controller.match_state.player_state.right_hand_card
     if right_flag_card is CardRuntimeState:
@@ -307,6 +308,54 @@ func _ready() -> void:
     print("Right Hand Unchanged?: ", right_hand_before_block_test == occupied_controller.match_state.player_state.right_hand_card)
     print("Health Unchanged?: ", health_before_block_test == occupied_controller.match_state.player_state.current_health)
     print("Board Count After Block Test: ", occupied_controller.match_state.board_state.active_count())
+
+    print("\n=== BACKPACK POTION STASH TEST ===")
+
+    var stash_board_state := BoardState.new()
+    stash_board_state.setup(4)
+
+    var stash_player_state := PlayerCombatState.new()
+    stash_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+    stash_player_state.take_damage(4)
+
+    var stash_boss_state := BossCombatState.new()
+    stash_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
+
+    var stash_shared_deck := SharedDeckState.new()
+    stash_shared_deck.setup([])
+    stash_board_state.get_active_cards().append(loader.get_card("small_health_potion").duplicate(true))
+
+    var stash_match_state := MatchCombatState.new()
+    stash_match_state.setup(
+        stash_player_state,
+        stash_boss_state,
+        stash_board_state,
+        stash_shared_deck,
+        1
+    )
+
+    var stash_resolution := ResolutionController.new()
+    var stash_outcome := OutcomeController.new()
+
+    var stash_controller := CombatController.new()
+    stash_controller.setup(
+        stash_match_state,
+        stash_resolution,
+        stash_outcome
+    )
+
+    var stash_move_result := stash_controller.move_player_card_to_backpack(0)
+    print("Moved potion to backpack?: ", stash_move_result)
+    print("Player Health After Backpack Stash: ", stash_controller.match_state.player_state.current_health, "/", stash_controller.match_state.player_state.max_health)
+    print("Backpack Count After Stash: ", stash_controller.match_state.player_state.backpack_cards.size())
+
+    if stash_controller.match_state.player_state.backpack_cards.size() > 0:
+        var stashed_card = stash_controller.match_state.player_state.backpack_cards[0]
+        if stashed_card is CardRuntimeState:
+            print("Stashed Card ID: ", stashed_card.card_id)
+            print("Stashed Card Zone: ", stashed_card.zone)
+            print("Stashed Card Resolved?: ", stashed_card.is_resolved)
+            print("Stashed Card Destroyed?: ", stashed_card.is_destroyed)
 
     print("\nController Final Outcome: ", combat_controller.get_current_outcome())
 

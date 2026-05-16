@@ -56,33 +56,9 @@ func move_player_card_to_left_hand(match_state: MatchCombatState, board_index: i
     if match_state.player_state.left_hand_card != null:
         return false
 
-    var family := _get_card_family(card)
-
-    if family == "coin":
-        var gold_amount := _get_card_runtime_value(card)
-        match_state.player_state.add_temporary_gold(gold_amount)
-        _mark_card_resolved(card)
-        _mark_card_exhausted(card)
-        _mark_card_destroyed(card)
-        match_state.player_state.exhaust_left_hand()
-        match_state.board_state.remove_card_at(board_index)
-        return true
-
-
-    if family == "potion":
-        var heal_amount := _get_card_runtime_value(card)
-        match_state.player_state.heal(heal_amount)
-        _mark_card_resolved(card)
-        _mark_card_exhausted(card)
-        _mark_card_destroyed(card)
-        match_state.player_state.exhaust_left_hand()
-        match_state.board_state.remove_card_at(board_index)
-        return true
-
     if not match_state.player_state.set_left_hand_card(card):
         return false
 
-    _mark_card_resolved(card)
     match_state.board_state.remove_card_at(board_index)
     return true
 
@@ -105,33 +81,9 @@ func move_player_card_to_right_hand(match_state: MatchCombatState, board_index: 
     if match_state.player_state.right_hand_card != null:
         return false
 
-    var family := _get_card_family(card)
-
-    if family == "coin":
-        var gold_amount := _get_card_runtime_value(card)
-        match_state.player_state.add_temporary_gold(gold_amount)
-        _mark_card_resolved(card)
-        _mark_card_exhausted(card)
-        _mark_card_destroyed(card)
-        match_state.player_state.exhaust_right_hand()
-        match_state.board_state.remove_card_at(board_index)
-        return true
-
-
-    if family == "potion":
-        var heal_amount := _get_card_runtime_value(card)
-        match_state.player_state.heal(heal_amount)
-        _mark_card_resolved(card)
-        _mark_card_exhausted(card)
-        _mark_card_destroyed(card)
-        match_state.player_state.exhaust_right_hand()
-        match_state.board_state.remove_card_at(board_index)
-        return true
-
     if not match_state.player_state.set_right_hand_card(card):
         return false
 
-    _mark_card_resolved(card)
     match_state.board_state.remove_card_at(board_index)
     return true
 
@@ -152,7 +104,6 @@ func move_player_card_to_backpack(match_state: MatchCombatState, board_index: in
     if not match_state.player_state.add_to_backpack(card):
         return false
 
-    _mark_card_resolved(card)
     match_state.board_state.remove_card_at(board_index)
     return true
 
