@@ -39,6 +39,7 @@ func setup(card, index: int) -> void:
 func _get_drag_data(_at_position):
  var preview = duplicate()
  set_drag_preview(preview)
+ modulate.a = 0.35
 
  var data = {
   "source": "board",
@@ -79,3 +80,9 @@ func _get_card_family() -> String:
   return String(card_data.get("family", ""))
 
  return ""
+
+
+func _notification(what: int) -> void:
+ if what == NOTIFICATION_DRAG_END and is_instance_valid(self):
+  if not get_viewport().gui_is_drag_successful():
+   modulate.a = 1.0

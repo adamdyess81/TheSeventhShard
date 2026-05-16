@@ -5,6 +5,21 @@ const BOSS_STARTING_HEALTH := 12
 const ACTIVE_BOARD_CAP := 4
 const STARTING_BACKPACK_CAPACITY := 1
 const CARD_VIEW_SCENE = preload("res://cards/card_view.tscn")
+const LEFT_HAND_PLACEHOLDER = preload("res://art/ui/LeftHand Placement Card.png")
+const RIGHT_HAND_PLACEHOLDER = preload("res://art/ui/RightHand Placement Card.png")
+const BACKPACK_PLACEHOLDER = preload("res://art/ui/Backpack Placement Card.png")
+const CARD_ART_TEXTURES := {
+	"crypt_hound": preload("res://art/cards/Crypt Hound.png"),
+	"grave_thrall": preload("res://art/cards/Grave Thrall.png"),
+	"large_health_potion": preload("res://art/cards/Large Healing Potion.png"),
+	"gold_10": preload("res://art/cards/Coins.png"),
+	"risen_bones": preload("res://art/cards/Risen Bones.png"),
+	"sepulcher_guard": preload("res://art/cards/Sepulcher Guard.png"),
+	"short_sword": preload("res://art/cards/Short Sword.png"),
+	"small_chest": preload("res://art/cards/Small Chest.png"),
+	"small_health_potion": preload("res://art/cards/Small Healing Potion.png"),
+	"small_shield": preload("res://art/cards/Small Shield.png")
+}
 
 @onready var player_health_label = $RootLayout/StageCenter/Stage/TopBar/PlayerHealthLabel
 @onready var boss_health_label = $RootLayout/StageCenter/Stage/TopBar/BossHealthLabel
@@ -13,6 +28,11 @@ const CARD_VIEW_SCENE = preload("res://cards/card_view.tscn")
 @onready var status_label = $RootLayout/StageCenter/Stage/TopBar/StatusLabel
 
 @onready var board_card_list = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardCardList
+
+@onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/PlacementTexture
+@onready var player_avatar_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/AvatarTexture
+@onready var right_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/PlacementTexture
+@onready var backpack_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/PlacementTexture
 
 @onready var left_hand_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/LeftHandLabel
 @onready var right_hand_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/RightHandLabel
@@ -96,6 +116,7 @@ func _refresh_ui() -> void:
     gold_label.text = "Gold: %d" % match_state.player_state.temporary_gold
 
     _refresh_board_cards()
+    _refresh_drop_zone_textures()
     _refresh_equipment_labels()
 
 
@@ -110,6 +131,26 @@ func _refresh_board_cards() -> void:
   var card_view = CARD_VIEW_SCENE.instantiate()
   board_card_list.add_child(card_view)
   card_view.setup(card, i)
+
+
+func _refresh_drop_zone_textures() -> void:
+ left_hand_texture.texture = _get_card_texture_or_placeholder(
+  match_state.player_state.left_hand_card,
+  LEFT_HAND_PLACEHOLDER
+ )
+ right_hand_texture.texture = _get_card_texture_or_placeholder(
+  match_state.player_state.right_hand_card,
+  RIGHT_HAND_PLACEHOLDER
+ )
+
+ var backpack_card = null
+ if match_state.player_state.backpack_cards.size() > 0:
+  backpack_card = match_state.player_state.backpack_cards[0]
+
+ backpack_texture.texture = _get_card_texture_or_placeholder(
+  backpack_card,
+  BACKPACK_PLACEHOLDER
+ )
 
 
 
@@ -165,6 +206,41 @@ func _get_card_name(card) -> String:
     return "unknown_card"
 
 
+func _get_card_texture_or_placeholder(card, placeholder):
+ var texture = _get_card_texture(card)
+ if texture != null:
+  return texture
+ return placeholder
+
+
+func _get_card_texture(card):
+ if card == null:
+  return null
+
+ var card_id = _get_card_name(card)
+ return CARD_ART_TEXTURES.get(card_id, null)
+
+
+func _get_board_card_view(board_index: int):
+ if board_index < 0 or board_index >= board_card_list.get_child_count():
+  return null
+
+ return board_card_list.get_child(board_index)
+
+
+func _animate_board_card_resolution(board_index: int) -> void:
+ var card_view = _get_board_card_view(board_index)
+ if card_view == null:
+  return
+
+ card_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+ var tween = create_tween()
+ tween.tween_property(card_view, "modulate:a", 0.0, 0.18)
+ tween.parallel().tween_property(card_view, "scale", Vector2(0.88, 0.88), 0.18)
+ await tween.finished
+
+
 func _get_card_display_text(card) -> String:
     if card is CardRuntimeState:
         return "%s | %s | value: %d | zone: %s" % [
@@ -189,8 +265,12 @@ func _on_take_first_monster_pressed() -> void:
  for i in range(board_cards.size()):
   var card = board_cards[i]
   if _get_card_family(card) == "monster":
-   combat_controller.resolve_enemy_to_player(i)
-   set_status("First monster resolved against player.")
+   var success := combat_controller.resolve_enemy_to_player(i)
+   if success:
+    await _animate_board_card_resolution(i)
+    set_status("First monster resolved against player.")
+   else:
+    set_status("Monster could not resolve against player.")
    _refresh_ui()
    return
 
@@ -203,8 +283,12 @@ func _on_move_first_to_left_hand_pressed() -> void:
  for i in range(board_cards.size()):
   var card = board_cards[i]
   if _is_player_usable_card(card):
-   combat_controller.move_player_card_to_left_hand(i)
-   set_status("Moved first usable card to left hand.")
+   var success := combat_controller.move_player_card_to_left_hand(i)
+   if success:
+    await _animate_board_card_resolution(i)
+    set_status("Moved first usable card to left hand.")
+   else:
+    set_status("Could not move card to left hand.")
    _refresh_ui()
    return
 
@@ -218,8 +302,12 @@ func _on_move_first_to_backpack_pressed() -> void:
  for i in range(board_cards.size()):
   var card = board_cards[i]
   if _is_player_usable_card(card):
-   combat_controller.move_player_card_to_backpack(i)
-   set_status("Moved first usable card to backpack.")
+   var success := combat_controller.move_player_card_to_backpack(i)
+   if success:
+    await _animate_board_card_resolution(i)
+    set_status("Moved first usable card to backpack.")
+   else:
+    set_status("Could not move card to backpack.")
    _refresh_ui()
    return
 
@@ -246,12 +334,16 @@ func handle_drop_to_left_hand(board_index: int) -> void:
  var before_left_hand = match_state.player_state.left_hand_card
  print("before move, left hand: ", before_left_hand)
 
- combat_controller.move_player_card_to_left_hand(board_index)
+ var success := combat_controller.move_player_card_to_left_hand(board_index)
 
  var after_left_hand = match_state.player_state.left_hand_card
  print("after move, left hand: ", after_left_hand)
 
- set_status("Dropped card into left hand.")
+ if success:
+  await _animate_board_card_resolution(board_index)
+  set_status("Dropped card into left hand.")
+ else:
+  set_status("Could not drop card into left hand.")
  _refresh_ui()
 
 func handle_drop_to_right_hand(board_index: int) -> void:
@@ -260,12 +352,16 @@ func handle_drop_to_right_hand(board_index: int) -> void:
  var before_right_hand = match_state.player_state.right_hand_card
  print("before move, right hand: ", before_right_hand)
 
- combat_controller.move_player_card_to_right_hand(board_index)
+ var success := combat_controller.move_player_card_to_right_hand(board_index)
 
  var after_right_hand = match_state.player_state.right_hand_card
  print("after move, right hand: ", after_right_hand)
 
- set_status("Dropped card into right hand.")
+ if success:
+  await _animate_board_card_resolution(board_index)
+  set_status("Dropped card into right hand.")
+ else:
+  set_status("Could not drop card into right hand.")
  _refresh_ui()
 
 
@@ -275,12 +371,16 @@ func handle_drop_to_backpack(board_index: int) -> void:
  var before_backpack = match_state.player_state.backpack_cards.size()
  print("before move, backpack size: ", before_backpack)
 
- combat_controller.move_player_card_to_backpack(board_index)
+ var success := combat_controller.move_player_card_to_backpack(board_index)
 
  var after_backpack = match_state.player_state.backpack_cards.size()
  print("after move, backpack size: ", after_backpack)
 
- set_status("Dropped card into backpack.")
+ if success:
+  await _animate_board_card_resolution(board_index)
+  set_status("Dropped card into backpack.")
+ else:
+  set_status("Could not drop card into backpack.")
  _refresh_ui()
 
 
@@ -296,6 +396,7 @@ func handle_drop_to_player_avatar(board_index: int) -> void:
  print("after resolve, player health: ", after_health)
 
  if success:
+  await _animate_board_card_resolution(board_index)
   set_status("Dropped monster onto player.")
  else:
   set_status("Only monsters can be dropped onto the player.")
