@@ -2,6 +2,10 @@
 
 [ext_resource type="Script" uid="uid://ddy7p7fwnmhhr" path="res://combat/combat_scene.gd" id="1_q5cen"]
 [ext_resource type="Script" uid="uid://cw08f63aan686" path="res://cards/DropZone.gd" id="2_a5s3s"]
+[ext_resource type="Texture2D" uid="uid://iwqrol5bl0g7" path="res://art/ui/Knight.png" id="3_3of7o"]
+[ext_resource type="Texture2D" uid="uid://btauel4mp3amf" path="res://art/ui/LeftHand Placement Card.png" id="4_8wbxd"]
+[ext_resource type="Texture2D" uid="uid://deuf62lc3xk7n" path="res://art/ui/RightHand Placement Card.png" id="5_6ggyu"]
+[ext_resource type="Texture2D" uid="uid://cy8xyafcik6rj" path="res://art/ui/Backpack Placement Card.png" id="6_7f78p"]
 
 [node name="CombatScene" type="Control" unique_id=72309142]
 layout_mode = 3
@@ -67,10 +71,14 @@ layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "player_avatar"
 combat_scene_path = NodePath("../..")
+allowed_families = PackedStringArray("monster")
 
-[node name="Label" type="Label" parent="RootLayout/PlayerAvatarDropZone" unique_id=1326504604]
+[node name="AvatarTexture" type="TextureRect" parent="RootLayout/PlayerAvatarDropZone" unique_id=1326504604]
 layout_mode = 2
-text = "Drop Monster On Player To Take Damage"
+mouse_filter = 2
+texture = ExtResource("3_3of7o")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="EquipmentSection" type="VBoxContainer" parent="RootLayout" unique_id=586308777]
 layout_mode = 2
@@ -81,9 +89,12 @@ script = ExtResource("2_a5s3s")
 drop_target = "left_hand"
 combat_scene_path = NodePath("../../..")
 
-[node name="Label" type="Label" parent="RootLayout/EquipmentSection/LeftHandDropZone" unique_id=1195069394]
+[node name="PlacementTexture" type="TextureRect" parent="RootLayout/EquipmentSection/LeftHandDropZone" unique_id=1195069394]
 layout_mode = 2
-text = "Drop To Left Hand"
+mouse_filter = 2
+texture = ExtResource("4_8wbxd")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="RightHandDropZone" type="PanelContainer" parent="RootLayout/EquipmentSection" unique_id=1720654289]
 layout_mode = 2
@@ -91,9 +102,12 @@ script = ExtResource("2_a5s3s")
 drop_target = "right_hand"
 combat_scene_path = NodePath("../../..")
 
-[node name="Label" type="Label" parent="RootLayout/EquipmentSection/RightHandDropZone" unique_id=962472168]
+[node name="PlacementTexture" type="TextureRect" parent="RootLayout/EquipmentSection/RightHandDropZone" unique_id=962472168]
 layout_mode = 2
-text = "Drop To Right Hand"
+mouse_filter = 2
+texture = ExtResource("5_6ggyu")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="BackpackDropZone" type="PanelContainer" parent="RootLayout/EquipmentSection" unique_id=1831735766]
 layout_mode = 2
@@ -101,9 +115,12 @@ script = ExtResource("2_a5s3s")
 drop_target = "backpack"
 combat_scene_path = NodePath("../../..")
 
-[node name="Label" type="Label" parent="RootLayout/EquipmentSection/BackpackDropZone" unique_id=1243900246]
+[node name="PlacementTexture" type="TextureRect" parent="RootLayout/EquipmentSection/BackpackDropZone" unique_id=1243900246]
 layout_mode = 2
-text = "Drop To Backpack"
+mouse_filter = 2
+texture = ExtResource("6_7f78p")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="LeftHandLabel" type="Label" parent="RootLayout/EquipmentSection" unique_id=410085116]
 layout_mode = 2
