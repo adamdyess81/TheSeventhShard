@@ -56,5 +56,8 @@ func _drop_data(_at_position, data) -> void:
  elif normalized_target == "player_avatar":
   print("calling handle_drop_to_player_avatar with index ", board_index)
   combat_scene.handle_drop_to_player_avatar(board_index)
+ elif normalized_target == "discard":
+  print("calling handle_drop_to_discard with index ", board_index)
+  combat_scene.handle_drop_to_discard(board_index)
  else:
   print("unhandled drop_target: '", normalized_target, "'")

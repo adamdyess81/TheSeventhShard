@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://btauel4mp3amf" path="res://art/ui/LeftHand Placement Card.png" id="4_8wbxd"]
 [ext_resource type="Texture2D" uid="uid://deuf62lc3xk7n" path="res://art/ui/RightHand Placement Card.png" id="5_6ggyu"]
 [ext_resource type="Texture2D" uid="uid://cy8xyafcik6rj" path="res://art/ui/Backpack Placement Card.png" id="6_7f78p"]
+[ext_resource type="Texture2D" uid="uid://d3gpdmwg1yprj" path="res://art/ui/Trash Placement Card.png" id="7_w6j6n"]
 
 [node name="CombatScene" type="Control" unique_id=72309142]
 layout_mode = 3
@@ -98,7 +99,37 @@ layout_mode = 2
 text = "Active Board Cards"
 horizontal_alignment = 1
 
-[node name="BoardCardList" type="GridContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection" unique_id=1796195183]
+[node name="BoardRow" type="HBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection" unique_id=1970864815]
+layout_mode = 2
+theme_override_constants/separation = 28
+alignment = 1
+
+[node name="DiscardColumn" type="VBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow" unique_id=1099231953]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DiscardDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow/DiscardColumn" unique_id=1482994978]
+custom_minimum_size = Vector2(132, 180)
+layout_mode = 2
+script = ExtResource("2_a5s3s")
+drop_target = "discard"
+combat_scene_path = NodePath("../../../../../../../../../")
+allowed_families = PackedStringArray("weapon", "shield", "potion", "spell", "artifact", "coin", "chest")
+
+[node name="DiscardTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow/DiscardColumn/DiscardDropZone" unique_id=1071775794]
+custom_minimum_size = Vector2(132, 180)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("7_w6j6n")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DiscardLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow/DiscardColumn" unique_id=1989450688]
+layout_mode = 2
+text = "Discard"
+horizontal_alignment = 1
+
+[node name="BoardCardList" type="GridContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow" unique_id=1796195183]
 layout_mode = 2
 theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 20

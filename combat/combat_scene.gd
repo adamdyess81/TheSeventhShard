@@ -27,7 +27,7 @@ const CARD_ART_TEXTURES := {
 @onready var gold_label = $RootLayout/StageCenter/Stage/TopBar/GoldLabel
 @onready var status_label = $RootLayout/StageCenter/Stage/TopBar/StatusLabel
 
-@onready var board_card_list = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardCardList
+@onready var board_card_list = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow/BoardCardList
 
 @onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/PlacementTexture
 @onready var player_avatar_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/AvatarTexture
@@ -400,5 +400,19 @@ func handle_drop_to_player_avatar(board_index: int) -> void:
   set_status("Dropped monster onto player.")
  else:
   set_status("Only monsters can be dropped onto the player.")
+
+ _refresh_ui()
+
+
+func handle_drop_to_discard(board_index: int) -> void:
+ print("handle_drop_to_discard called with index: ", board_index)
+
+ var success := combat_controller.trash_player_card_from_board(board_index)
+
+ if success:
+  await _animate_board_card_resolution(board_index)
+  set_status("Discarded card without benefit.")
+ else:
+  set_status("Only item cards can be discarded.")
 
  _refresh_ui()
