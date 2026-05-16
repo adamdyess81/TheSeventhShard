@@ -27,7 +27,7 @@ const CARD_ART_TEXTURES := {
 @onready var gold_label = $RootLayout/StageCenter/Stage/TopBar/GoldLabel
 @onready var status_label = $RootLayout/StageCenter/Stage/TopBar/StatusLabel
 
-@onready var board_card_list = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow/BoardCardList
+@onready var board_card_list = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/BoardCardList
 
 @onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/PlacementTexture
 @onready var player_avatar_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/AvatarTexture

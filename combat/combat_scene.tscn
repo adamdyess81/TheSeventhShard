@@ -99,37 +99,40 @@ layout_mode = 2
 text = "Active Board Cards"
 horizontal_alignment = 1
 
-[node name="BoardRow" type="HBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection" unique_id=1970864815]
+[node name="BoardLane" type="HBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection" unique_id=496576509]
 layout_mode = 2
 theme_override_constants/separation = 28
 alignment = 1
 
-[node name="DiscardColumn" type="VBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow" unique_id=1099231953]
+[node name="DiscardCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane" unique_id=287941338]
+layout_mode = 2
+
+[node name="DiscardColumn" type="VBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter" unique_id=1099231953]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="DiscardDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow/DiscardColumn" unique_id=1482994978]
-custom_minimum_size = Vector2(132, 180)
+[node name="DiscardDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn" unique_id=1482994978]
+custom_minimum_size = Vector2(184, 252)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "discard"
-combat_scene_path = NodePath("../../../../../../../../../")
+combat_scene_path = NodePath("../../../../../../../../../../")
 allowed_families = PackedStringArray("weapon", "shield", "potion", "spell", "artifact", "coin", "chest")
 
-[node name="DiscardTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow/DiscardColumn/DiscardDropZone" unique_id=1071775794]
-custom_minimum_size = Vector2(132, 180)
+[node name="DiscardTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone" unique_id=1071775794]
+custom_minimum_size = Vector2(176, 190)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("7_w6j6n")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="DiscardLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow/DiscardColumn" unique_id=1989450688]
+[node name="DiscardLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn" unique_id=1989450688]
 layout_mode = 2
 text = "Discard"
 horizontal_alignment = 1
 
-[node name="BoardCardList" type="GridContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardRow" unique_id=1796195183]
+[node name="BoardCardList" type="GridContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane" unique_id=1796195183]
 layout_mode = 2
 theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 20
