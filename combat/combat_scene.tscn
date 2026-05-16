@@ -19,10 +19,10 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 24.0
-offset_top = 24.0
-offset_right = -24.0
-offset_bottom = -24.0
+offset_left = 12.0
+offset_top = 12.0
+offset_right = -12.0
+offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -68,7 +68,7 @@ text = "Move First To Backpack"
 [node name="PlayArea" type="HBoxContainer" parent="RootLayout" unique_id=194280336]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 24
+theme_override_constants/separation = 14
 
 [node name="BoardSection" type="VBoxContainer" parent="RootLayout/PlayArea" unique_id=1821397121]
 layout_mode = 2
@@ -86,7 +86,7 @@ size_flags_vertical = 3
 
 [node name="PlayerAvatarDropZone" type="PanelContainer" parent="RootLayout/PlayArea" unique_id=1411459182]
 layout_mode = 2
-custom_minimum_size = Vector2(150, 220)
+custom_minimum_size = Vector2(120, 176)
 script = ExtResource("2_a5s3s")
 drop_target = "player_avatar"
 combat_scene_path = NodePath("../../..")
@@ -94,7 +94,7 @@ allowed_families = PackedStringArray("monster")
 
 [node name="AvatarTexture" type="TextureRect" parent="RootLayout/PlayArea/PlayerAvatarDropZone" unique_id=1326504604]
 layout_mode = 2
-custom_minimum_size = Vector2(150, 220)
+custom_minimum_size = Vector2(120, 176)
 mouse_filter = 2
 texture = ExtResource("3_3of7o")
 expand_mode = 1
@@ -102,18 +102,18 @@ stretch_mode = 5
 
 [node name="EquipmentSection" type="VBoxContainer" parent="RootLayout/PlayArea" unique_id=586308777]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="LeftHandDropZone" type="PanelContainer" parent="RootLayout/PlayArea/EquipmentSection" unique_id=462332348]
 layout_mode = 2
-custom_minimum_size = Vector2(130, 175)
+custom_minimum_size = Vector2(98, 132)
 script = ExtResource("2_a5s3s")
 drop_target = "left_hand"
 combat_scene_path = NodePath("../../../..")
 
 [node name="PlacementTexture" type="TextureRect" parent="RootLayout/PlayArea/EquipmentSection/LeftHandDropZone" unique_id=1195069394]
 layout_mode = 2
-custom_minimum_size = Vector2(130, 175)
+custom_minimum_size = Vector2(98, 132)
 mouse_filter = 2
 texture = ExtResource("4_8wbxd")
 expand_mode = 1
@@ -121,14 +121,14 @@ stretch_mode = 5
 
 [node name="RightHandDropZone" type="PanelContainer" parent="RootLayout/PlayArea/EquipmentSection" unique_id=1720654289]
 layout_mode = 2
-custom_minimum_size = Vector2(130, 175)
+custom_minimum_size = Vector2(98, 132)
 script = ExtResource("2_a5s3s")
 drop_target = "right_hand"
 combat_scene_path = NodePath("../../../..")
 
 [node name="PlacementTexture" type="TextureRect" parent="RootLayout/PlayArea/EquipmentSection/RightHandDropZone" unique_id=962472168]
 layout_mode = 2
-custom_minimum_size = Vector2(130, 175)
+custom_minimum_size = Vector2(98, 132)
 mouse_filter = 2
 texture = ExtResource("5_6ggyu")
 expand_mode = 1
@@ -136,14 +136,14 @@ stretch_mode = 5
 
 [node name="BackpackDropZone" type="PanelContainer" parent="RootLayout/PlayArea/EquipmentSection" unique_id=1831735766]
 layout_mode = 2
-custom_minimum_size = Vector2(130, 175)
+custom_minimum_size = Vector2(98, 132)
 script = ExtResource("2_a5s3s")
 drop_target = "backpack"
 combat_scene_path = NodePath("../../../..")
 
 [node name="PlacementTexture" type="TextureRect" parent="RootLayout/PlayArea/EquipmentSection/BackpackDropZone" unique_id=1243900246]
 layout_mode = 2
-custom_minimum_size = Vector2(130, 175)
+custom_minimum_size = Vector2(98, 132)
 mouse_filter = 2
 texture = ExtResource("6_7f78p")
 expand_mode = 1
