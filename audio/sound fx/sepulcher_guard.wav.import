@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://1omib73xxeu3"
+path="res://.godot/imported/sepulcher_guard.wav-0c9d166cfe3e180124d26d91bf205780.sample"
+
+[deps]
+
+source_file="res://audio/sound fx/sepulcher_guard.wav"
+dest_files=["res://.godot/imported/sepulcher_guard.wav-0c9d166cfe3e180124d26d91bf205780.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
