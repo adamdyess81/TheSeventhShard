@@ -17,6 +17,7 @@ const BACKPACK_DROP_SFX = preload("res://audio/sound fx/backpack_drop.wav")
 const CRYPT_HOUND_SFX = preload("res://audio/sound fx/crypt_hound.wav")
 const DEAL_CARDS_SFX = preload("res://audio/sound fx/deal_cards.wav")
 const DISCARD_SFX = preload("res://audio/sound fx/discard.wav")
+const DRINK_POTION_SFX = preload("res://audio/sound fx/drink_potion.wav")
 const DROP_CARD_SFX = preload("res://audio/sound fx/drop_card.wav")
 const GAIN_COINS_SFX = preload("res://audio/sound fx/gain_coins.wav")
 const GRAVE_THRALL_SFX = preload("res://audio/sound fx/grave_thrall.wav")
@@ -29,6 +30,7 @@ const PLAYER_HURT_SFX := [
 	preload("res://audio/sound fx/player_hurt_005_male.wav")
 ]
 const RISEN_BONES_SFX = preload("res://audio/sound fx/risen_bones.wav")
+const SEPULCHER_GUARD_SFX = preload("res://audio/sound fx/sepulcher_guard.wav")
 const SHIELD_DEFEND_SFX = preload("res://audio/sound fx/shield_defend.wav")
 const SWORD_SWING_SFX = preload("res://audio/sound fx/sword_swing.wav")
 const TREASURE_CHEST_SFX = preload("res://audio/sound fx/treasure_chest.wav")
@@ -271,6 +273,8 @@ func _play_monster_attack_sfx(card) -> void:
             _play_sfx(GRAVE_THRALL_SFX)
         "risen_bones":
             _play_sfx(RISEN_BONES_SFX)
+        "sepulcher_guard":
+            _play_sfx(SEPULCHER_GUARD_SFX)
 
 
 func _play_loot_drop_sfx(card, target_slot: String) -> void:
@@ -630,9 +634,9 @@ func _animate_new_board_cards(slot_indices: Array[int]) -> void:
 
  var source_rect: Rect2 = deck_card_texture.get_global_rect()
  var scene_origin := global_position
- var tweens: Array = []
 
- for board_index in slot_indices:
+ for slot_offset in range(slot_indices.size()):
+  var board_index = slot_indices[slot_offset]
   var card_view = _get_board_card_view(board_index)
   if card_view == null or not is_instance_valid(card_view):
    continue
@@ -666,7 +670,9 @@ func _animate_new_board_cards(slot_indices: Array[int]) -> void:
      card_view.set_content_visible(true)
     card_view.modulate.a = 1.0
   )
-  tweens.append(tween)
+
+  if slot_offset < slot_indices.size() - 1:
+   await get_tree().create_timer(0.14).timeout
 
 
 func _update_slot_visual(texture_rect: TextureRect, name_label: Label, type_label: Label, value_label: Label, card, placeholder, previous_card_id: String) -> String:
@@ -941,6 +947,7 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
             match_state.player_state.exhaust_left_hand()
             return true
         if family == "potion":
+            _play_sfx(DRINK_POTION_SFX)
             match_state.player_state.heal(_get_card_runtime_value(card))
             _mark_runtime_card_resolved(card)
             _mark_runtime_card_exhausted(card)
@@ -964,6 +971,7 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
             match_state.player_state.exhaust_right_hand()
             return true
         if family == "potion":
+            _play_sfx(DRINK_POTION_SFX)
             match_state.player_state.heal(_get_card_runtime_value(card))
             _mark_runtime_card_resolved(card)
             _mark_runtime_card_exhausted(card)
@@ -1641,7 +1649,7 @@ func handle_drop_to_discard(board_index: int) -> void:
 
 func _get_card_unique_key(card) -> String:
  if card is CardRuntimeState:
-  return card.card_id
+  return card.instance_id
 
  if card is Dictionary:
   return str(card.get("instance_id", card.get("id", "")))
