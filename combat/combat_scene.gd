@@ -252,10 +252,7 @@ func _play_sfx(stream: AudioStream, volume_db: float = 0.0) -> void:
     player.stream = stream
     player.volume_db = volume_db
     add_child(player)
-    player.finished.connect(func():
-        if is_instance_valid(player):
-            player.queue_free()
-    )
+    player.finished.connect(Callable(player, "queue_free"))
     player.play()
 
 
@@ -312,10 +309,7 @@ func _show_damage_slash_at_rect(target_rect: Rect2, texture: Texture2D) -> void:
     tween.set_parallel(true)
     tween.tween_property(slash, "modulate:a", 0.0, 0.28)
     tween.tween_property(slash, "scale", Vector2(1.08, 1.08), 0.28)
-    tween.finished.connect(func():
-        if is_instance_valid(slash):
-            slash.queue_free()
-    )
+    tween.finished.connect(Callable(slash, "queue_free"))
 
 
 func _show_player_damage_slash() -> void:
