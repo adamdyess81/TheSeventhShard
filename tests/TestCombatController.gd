@@ -233,26 +233,15 @@ func _ready() -> void:
         print("Left Hand Card Destroyed?: ", left_flag_card.is_destroyed)
 
     flag_controller.match_state.player_state.take_damage(5)
+    print("Player Health Before Potion Hand Drop: ", flag_controller.match_state.player_state.current_health, "/", flag_controller.match_state.player_state.max_health)
 
     var potion_move_result := flag_controller.move_player_card_to_right_hand(0)
     print("Moved second card to right hand?: ", potion_move_result)
-    print("Player Health Before Potion Use: ", flag_controller.match_state.player_state.current_health, "/", flag_controller.match_state.player_state.max_health)
+    print("Player Health After Potion Hand Drop: ", flag_controller.match_state.player_state.current_health, "/", flag_controller.match_state.player_state.max_health)
 
     var right_flag_card = flag_controller.match_state.player_state.right_hand_card
-    if right_flag_card is CardRuntimeState:
-        print("Right Hand Card ID Before Use: ", right_flag_card.card_id)
-        print("Right Hand Card Resolved Before Use?: ", right_flag_card.is_resolved)
-        print("Right Hand Card Exhausted Before Use?: ", right_flag_card.is_exhausted)
-        print("Right Hand Card Destroyed Before Use?: ", right_flag_card.is_destroyed)
-
-    var potion_use_result := flag_controller.use_right_hand_potion()
-    print("Used right hand potion?: ", potion_use_result)
-    print("Player Health After Potion Use: ", flag_controller.match_state.player_state.current_health, "/", flag_controller.match_state.player_state.max_health)
-
-    if right_flag_card is CardRuntimeState:
-        print("Right Hand Card Resolved After Use?: ", right_flag_card.is_resolved)
-        print("Right Hand Card Exhausted After Use?: ", right_flag_card.is_exhausted)
-        print("Right Hand Card Destroyed After Use?: ", right_flag_card.is_destroyed)
+    print("Right Hand Card After Potion Hand Drop: ", right_flag_card)
+    print("Right Hand Exhausted After Potion Hand Drop?: ", flag_controller.match_state.player_state.right_hand_exhausted)
 
     print("\n=== OCCUPIED HAND BLOCK TEST ===")
 

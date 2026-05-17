@@ -60,6 +60,9 @@ var resolution_controller: ResolutionController
 var outcome_controller: OutcomeController
 var combat_controller: CombatController
 var restart_pending := false
+var left_hand_visual_card_id := ""
+var right_hand_visual_card_id := ""
+var backpack_visual_card_id := ""
 
 
 func _ready() -> void:
@@ -76,6 +79,10 @@ func _ready() -> void:
 
 
 func _build_test_match_state() -> void:
+    left_hand_visual_card_id = ""
+    right_hand_visual_card_id = ""
+    backpack_visual_card_id = ""
+
     var loader = GameDataLoader.new()
     loader.build_card_registry()
 
@@ -155,22 +162,28 @@ func _refresh_board_cards() -> void:
 
 
 func _refresh_drop_zone_textures() -> void:
- left_hand_texture.texture = _get_card_texture_or_placeholder(
+ left_hand_visual_card_id = _update_slot_texture(
+  left_hand_texture,
   match_state.player_state.left_hand_card,
-  LEFT_HAND_PLACEHOLDER
+  LEFT_HAND_PLACEHOLDER,
+  left_hand_visual_card_id
  )
- right_hand_texture.texture = _get_card_texture_or_placeholder(
+ right_hand_visual_card_id = _update_slot_texture(
+  right_hand_texture,
   match_state.player_state.right_hand_card,
-  RIGHT_HAND_PLACEHOLDER
+  RIGHT_HAND_PLACEHOLDER,
+  right_hand_visual_card_id
  )
 
  var backpack_card = null
  if match_state.player_state.backpack_cards.size() > 0:
   backpack_card = match_state.player_state.backpack_cards[0]
 
- backpack_texture.texture = _get_card_texture_or_placeholder(
+ backpack_visual_card_id = _update_slot_texture(
+  backpack_texture,
   backpack_card,
-  BACKPACK_PLACEHOLDER
+  BACKPACK_PLACEHOLDER,
+  backpack_visual_card_id
  )
 
 
@@ -272,6 +285,34 @@ func _animate_board_card_resolution(board_index: int) -> void:
  tween.tween_property(card_view, "modulate:a", 0.0, 0.18)
  tween.parallel().tween_property(card_view, "scale", Vector2(0.88, 0.88), 0.18)
  await tween.finished
+
+
+func _animate_slot_resolution(texture_rect: TextureRect, placeholder) -> void:
+ if texture_rect.texture == null:
+  texture_rect.texture = placeholder
+  texture_rect.modulate.a = 1.0
+  return
+
+ var tween = create_tween()
+ tween.tween_property(texture_rect, "modulate:a", 0.0, 0.18)
+ tween.tween_callback(func():
+  texture_rect.texture = placeholder
+  texture_rect.modulate.a = 1.0
+ )
+
+
+func _update_slot_texture(texture_rect: TextureRect, card, placeholder, previous_card_id: String) -> String:
+ var next_card_id := ""
+ if card != null:
+  next_card_id = _get_card_name(card)
+
+ if previous_card_id != "" and next_card_id == "":
+  _animate_slot_resolution(texture_rect, placeholder)
+  return ""
+
+ texture_rect.modulate.a = 1.0
+ texture_rect.texture = _get_card_texture_or_placeholder(card, placeholder)
+ return next_card_id
 
 
 func _get_card_display_text(card) -> String:
