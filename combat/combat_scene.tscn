@@ -6,9 +6,9 @@
 [ext_resource type="Texture2D" uid="uid://btauel4mp3amf" path="res://art/ui/LeftHand Placement Card.png" id="4_8wbxd"]
 [ext_resource type="Texture2D" uid="uid://deuf62lc3xk7n" path="res://art/ui/RightHand Placement Card.png" id="5_6ggyu"]
 [ext_resource type="Texture2D" uid="uid://cy8xyafcik6rj" path="res://art/ui/Backpack Placement Card.png" id="6_7f78p"]
-[ext_resource type="Texture2D" uid="uid://d3gpdmwg1yprj" path="res://art/ui/Trash Placement Card.png" id="7_w6j6n"]
-[ext_resource type="Texture2D" uid="uid://dbb1qd0v8em2x" path="res://art/backgrounds/Ossara-Titled-Arena.png" id="8_bg"]
-[ext_resource type="Texture2D" path="res://art/ui/CardBack.png" id="9_deck"]
+[ext_resource type="Texture2D" uid="uid://mk8ed4edrh6v" path="res://art/ui/Trash Placement Card.png" id="7_w6j6n"]
+[ext_resource type="Texture2D" uid="uid://bdkuuu4t8rdv5" path="res://art/backgrounds/Ossara-Titled-Arena.png" id="8_bg"]
+[ext_resource type="Texture2D" uid="uid://crfty4ni1hpdn" path="res://art/ui/CardBack.png" id="9_deck"]
 
 [node name="CombatScene" type="Control" unique_id=72309142]
 layout_mode = 3
@@ -37,11 +37,12 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 32.0
-offset_top = 32.0
+offset_top = 8.0
 offset_right = -32.0
-offset_bottom = -32.0
+offset_bottom = 50.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/separation = 4
 
 [node name="StageCenter" type="CenterContainer" parent="RootLayout" unique_id=1335955818]
 layout_mode = 2
@@ -87,15 +88,10 @@ custom_minimum_size = Vector2(400, 294)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "boss"
-combat_scene_path = NodePath("../../../../../")
+combat_scene_path = NodePath("../../../../..")
 
 [node name="BossCanvas" type="Control" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone" unique_id=204300003]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 mouse_filter = 2
 
 [node name="BossArt" type="TextureRect" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas" unique_id=204300004]
@@ -111,29 +107,30 @@ stretch_mode = 5
 
 [node name="TitleLabel" type="Label" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas" unique_id=204300005]
 layout_mode = 1
-anchors_preset = 10
+anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -132.0
-offset_top = 14.0
+offset_top = 30.0
 offset_right = 132.0
-offset_bottom = 44.0
-mouse_filter = 2
+offset_bottom = 60.0
+grow_horizontal = 2
 horizontal_alignment = 1
-autowrap_mode = 0
 
 [node name="LifeBar" type="PanelContainer" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas" unique_id=204300006]
-custom_minimum_size = Vector2(134, 32)
+custom_minimum_size = Vector2(134, 30)
 layout_mode = 1
-anchors_preset = 12
+anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -67.0
-offset_top = -46.0
+offset_top = -84.0
 offset_right = 67.0
-offset_bottom = -14.0
+offset_bottom = -52.0
+grow_horizontal = 2
+grow_vertical = 0
 mouse_filter = 2
 
 [node name="LifeLabel" type="Label" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas/LifeBar" unique_id=204300007]
@@ -155,6 +152,7 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="BoardTitle" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection" unique_id=401729791]
+layout_direction = 2
 layout_mode = 2
 text = "Active Board Cards"
 horizontal_alignment = 1
@@ -176,8 +174,7 @@ custom_minimum_size = Vector2(220, 300)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "discard"
-combat_scene_path = NodePath("../../../../../../../../../../")
-allowed_families = PackedStringArray("weapon", "shield", "potion", "spell", "artifact", "coin", "chest")
+combat_scene_path = NodePath("../../../../../../../../../..")
 
 [node name="DiscardTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone" unique_id=1071775794]
 custom_minimum_size = Vector2(220, 300)
@@ -238,15 +235,10 @@ custom_minimum_size = Vector2(220, 300)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "left_hand"
-combat_scene_path = NodePath("../../../../../../../../")
+combat_scene_path = NodePath("../../../../../../../..")
 
 [node name="CardCanvas" type="Control" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone" unique_id=1195069300]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 mouse_filter = 2
 
 [node name="PlacementTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas" unique_id=1195069394]
@@ -264,13 +256,10 @@ stretch_mode = 5
 [node name="ValueLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas" unique_id=1195069395]
 custom_minimum_size = Vector2(42, 42)
 layout_mode = 1
-anchors_preset = 0
-offset_left = 14.0
-offset_top = 8.0
-offset_right = 56.0
-offset_bottom = 50.0
-mouse_filter = 2
-text = ""
+offset_left = 13.0
+offset_top = 30.0
+offset_right = 55.0
+offset_bottom = 72.0
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -280,6 +269,7 @@ layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 14.0
 offset_top = -76.0
 offset_right = -18.0
@@ -291,15 +281,11 @@ theme_override_constants/separation = 2
 
 [node name="NameLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/BottomText" unique_id=1195069397]
 layout_mode = 2
-mouse_filter = 2
-text = ""
 horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="TypeLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/BottomText" unique_id=1195069398]
 layout_mode = 2
-mouse_filter = 2
-text = ""
 horizontal_alignment = 1
 
 [node name="PlayerAvatarDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow" unique_id=1411459182]
@@ -307,16 +293,10 @@ custom_minimum_size = Vector2(248, 340)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "player_avatar"
-combat_scene_path = NodePath("../../../../../../../../")
-allowed_families = PackedStringArray("monster")
+combat_scene_path = NodePath("../../../../../../../..")
 
 [node name="PlayerCanvas" type="Control" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone" unique_id=1411459185]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 mouse_filter = 2
 
 [node name="AvatarTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas" unique_id=1326504604]
@@ -335,15 +315,17 @@ stretch_mode = 5
 [node name="PlayerLifeBar" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas" unique_id=1411459183]
 custom_minimum_size = Vector2(134, 32)
 layout_mode = 1
-anchors_preset = 12
+anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -67.0
-offset_top = -46.0
+offset_top = -70.0
 offset_right = 67.0
-offset_bottom = -14.0
+offset_bottom = -38.0
+grow_horizontal = 2
+grow_vertical = 0
 mouse_filter = 2
 
 [node name="PlayerLifeLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas/PlayerLifeBar" unique_id=1411459184]
@@ -356,15 +338,10 @@ custom_minimum_size = Vector2(220, 300)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "right_hand"
-combat_scene_path = NodePath("../../../../../../../../")
+combat_scene_path = NodePath("../../../../../../../..")
 
 [node name="CardCanvas" type="Control" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone" unique_id=962472100]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 mouse_filter = 2
 
 [node name="PlacementTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas" unique_id=962472168]
@@ -382,13 +359,10 @@ stretch_mode = 5
 [node name="ValueLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas" unique_id=962472169]
 custom_minimum_size = Vector2(42, 42)
 layout_mode = 1
-anchors_preset = 0
-offset_left = 14.0
-offset_top = 8.0
-offset_right = 56.0
-offset_bottom = 50.0
-mouse_filter = 2
-text = ""
+offset_left = 13.0
+offset_top = 30.0
+offset_right = 55.0
+offset_bottom = 72.0
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -398,6 +372,7 @@ layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 14.0
 offset_top = -76.0
 offset_right = -18.0
@@ -409,15 +384,11 @@ theme_override_constants/separation = 2
 
 [node name="NameLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas/BottomText" unique_id=962472171]
 layout_mode = 2
-mouse_filter = 2
-text = ""
 horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="TypeLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas/BottomText" unique_id=962472172]
 layout_mode = 2
-mouse_filter = 2
-text = ""
 horizontal_alignment = 1
 
 [node name="BackpackDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow" unique_id=1831735766]
@@ -425,15 +396,10 @@ custom_minimum_size = Vector2(220, 300)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "backpack"
-combat_scene_path = NodePath("../../../../../../../../")
+combat_scene_path = NodePath("../../../../../../../..")
 
 [node name="CardCanvas" type="Control" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone" unique_id=1243900200]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 mouse_filter = 2
 
 [node name="PlacementTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas" unique_id=1243900246]
@@ -451,13 +417,10 @@ stretch_mode = 5
 [node name="ValueLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas" unique_id=1243900247]
 custom_minimum_size = Vector2(42, 42)
 layout_mode = 1
-anchors_preset = 0
-offset_left = 14.0
-offset_top = 8.0
-offset_right = 56.0
-offset_bottom = 50.0
-mouse_filter = 2
-text = ""
+offset_left = 13.0
+offset_top = 30.0
+offset_right = 55.0
+offset_bottom = 72.0
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -467,6 +430,7 @@ layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
+anchor_bottom = 1.0
 offset_left = 14.0
 offset_top = -76.0
 offset_right = -18.0
@@ -478,15 +442,11 @@ theme_override_constants/separation = 2
 
 [node name="NameLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas/BottomText" unique_id=1243900249]
 layout_mode = 2
-mouse_filter = 2
-text = ""
 horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="TypeLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas/BottomText" unique_id=1243900250]
 layout_mode = 2
-mouse_filter = 2
-text = ""
 horizontal_alignment = 1
 
 [node name="LabelRow" type="HBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup" unique_id=967501462]
