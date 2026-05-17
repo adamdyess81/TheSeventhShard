@@ -9,6 +9,7 @@ const LEFT_HAND_PLACEHOLDER = preload("res://art/ui/LeftHand Placement Card.png"
 const RIGHT_HAND_PLACEHOLDER = preload("res://art/ui/RightHand Placement Card.png")
 const BACKPACK_PLACEHOLDER = preload("res://art/ui/Backpack Placement Card.png")
 const BACKGROUND_TEXTURE = preload("res://art/backgrounds/Ossara-Titled-Arena-blured.png")
+const CARD_BACK_TEXTURE = preload("res://art/ui/CardBack.png")
 const EMPTY_BOARD_SLOT_SIZE = Vector2(220, 300)
 const HUD_TEXT = Color("f1e7d6")
 const HUD_MUTED = Color("c4b59a")
@@ -38,6 +39,8 @@ const CARD_ART_TEXTURES := {
 
 @onready var board_card_list = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/BoardCardList
 @onready var board_title = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardTitle
+@onready var deck_card_texture = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter/DeckColumn/DeckCard
+@onready var deck_count_label = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter/DeckColumn/DeckCountLabel
 @onready var button_bar = $RootLayout/StageCenter/Stage/ButtonBar
 @onready var background_texture = $Background
 
@@ -76,6 +79,8 @@ var restart_pending := false
 var left_hand_visual_card_id := ""
 var right_hand_visual_card_id := ""
 var backpack_visual_card_id := ""
+var last_board_card_ids: Array[String] = []
+var board_visuals_initialized := false
 
 
 func _ready() -> void:
@@ -96,6 +101,8 @@ func _build_test_match_state() -> void:
     left_hand_visual_card_id = ""
     right_hand_visual_card_id = ""
     backpack_visual_card_id = ""
+    last_board_card_ids.clear()
+    board_visuals_initialized = false
 
     var loader = GameDataLoader.new()
     loader.build_card_registry()
@@ -134,6 +141,8 @@ func _build_test_match_state() -> void:
     )
     if background_texture != null:
         background_texture.texture = BACKGROUND_TEXTURE
+    if deck_card_texture != null:
+        deck_card_texture.texture = CARD_BACK_TEXTURE
 
 func set_status(message: String) -> void:
  status_label.text = message
@@ -157,6 +166,7 @@ func _refresh_ui() -> void:
 
     round_label.text = "Round: %d" % match_state.round_number
     gold_label.text = "Gold: %d" % match_state.player_state.temporary_gold
+    deck_count_label.text = "Deck: %d" % match_state.shared_deck_state.remaining_count()
 
     _refresh_board_cards()
     _refresh_drop_zone_textures()
@@ -170,18 +180,34 @@ func _refresh_board_cards() -> void:
   child.queue_free()
 
  var active_cards = match_state.board_state.get_active_cards()
+ var next_board_card_ids: Array[String] = []
+ var changed_slots: Array[int] = []
 
  for i in range(active_cards.size()):
   var card = active_cards[i]
   if card == null:
+   next_board_card_ids.append("")
    var spacer = Control.new()
    spacer.custom_minimum_size = EMPTY_BOARD_SLOT_SIZE
    spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
    board_card_list.add_child(spacer)
    continue
+  var card_key := _get_card_unique_key(card)
+  next_board_card_ids.append(card_key)
+  if board_visuals_initialized:
+   var previous_key := ""
+   if i < last_board_card_ids.size():
+    previous_key = last_board_card_ids[i]
+   if previous_key != card_key:
+    changed_slots.append(i)
   var card_view = CARD_VIEW_SCENE.instantiate()
   board_card_list.add_child(card_view)
   card_view.setup(card, i)
+
+ last_board_card_ids = next_board_card_ids
+ if board_visuals_initialized and changed_slots.size() > 0:
+  call_deferred("_animate_new_board_cards", changed_slots)
+ board_visuals_initialized = true
 
 
 func _refresh_drop_zone_textures() -> void:
@@ -335,6 +361,50 @@ func _animate_slot_resolution(texture_rect: TextureRect, name_label: Label, type
  )
 
 
+func _animate_new_board_cards(slot_indices: Array[int]) -> void:
+ await get_tree().process_frame
+ await get_tree().process_frame
+
+ if deck_card_texture == null or not is_instance_valid(deck_card_texture):
+  return
+
+ var source_rect := deck_card_texture.get_global_rect()
+ var scene_origin := global_position
+ var tweens: Array = []
+
+ for board_index in slot_indices:
+  var card_view = _get_board_card_view(board_index)
+  if card_view == null or not is_instance_valid(card_view):
+   continue
+
+  if card_view is Control:
+   card_view.modulate.a = 0.0
+
+  var temp_card := TextureRect.new()
+  temp_card.texture = CARD_BACK_TEXTURE
+  temp_card.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+  temp_card.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+  temp_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+  temp_card.z_index = 100
+  temp_card.position = source_rect.position - scene_origin
+  temp_card.size = source_rect.size
+  add_child(temp_card)
+
+  var target_rect := card_view.get_global_rect()
+  var tween = create_tween()
+  tween.set_parallel(true)
+  tween.tween_property(temp_card, "position", target_rect.position - scene_origin, 0.22)
+  tween.tween_property(temp_card, "size", target_rect.size, 0.22)
+  tween.tween_property(card_view, "modulate:a", 1.0, 0.16)
+  tween.finished.connect(func():
+   if is_instance_valid(temp_card):
+    temp_card.queue_free()
+   if is_instance_valid(card_view):
+    card_view.modulate.a = 1.0
+  )
+  tweens.append(tween)
+
+
 func _update_slot_visual(texture_rect: TextureRect, name_label: Label, type_label: Label, value_label: Label, card, placeholder, previous_card_id: String) -> String:
  var next_card_id := ""
  if card != null:
@@ -442,6 +512,23 @@ func can_use_slot_weapon_on_monster(slot_name: String) -> bool:
     return false
 
 
+func can_resolve_monster_into_shield(slot_name: String) -> bool:
+    if restart_pending:
+        return false
+
+    var card = get_slot_card(slot_name)
+    if card == null or _get_card_family(card) != "shield":
+        return false
+
+    if slot_name == "left_hand":
+        return not match_state.player_state.left_hand_exhausted
+
+    if slot_name == "right_hand":
+        return not match_state.player_state.right_hand_exhausted
+
+    return false
+
+
 func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
     if restart_pending:
         return false
@@ -451,10 +538,14 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
 
     if source == "board":
         if target_slot == "left_hand":
+            if family == "monster":
+                return can_resolve_monster_into_shield("left_hand")
             if match_state.player_state.left_hand_card != null or match_state.player_state.left_hand_exhausted:
                 return false
             return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
         elif target_slot == "right_hand":
+            if family == "monster":
+                return can_resolve_monster_into_shield("right_hand")
             if match_state.player_state.right_hand_card != null or match_state.player_state.right_hand_exhausted:
                 return false
             return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
@@ -629,6 +720,41 @@ func _move_hand_to_backpack(is_left_hand: bool) -> bool:
     return true
 
 
+func _handle_monster_to_shield(board_index: int, is_left_hand: bool) -> void:
+    var shield_before = get_slot_card("left_hand" if is_left_hand else "right_hand")
+    var shield_before_value := _get_card_runtime_value(shield_before)
+    var monster_before = null
+    var active_cards = match_state.board_state.get_active_cards()
+    if board_index >= 0 and board_index < active_cards.size():
+        monster_before = active_cards[board_index]
+    var monster_value := _get_card_runtime_value(monster_before)
+    var health_before := match_state.player_state.current_health
+
+    var success := false
+    if is_left_hand:
+        success = combat_controller.resolve_monster_into_left_hand_shield(board_index)
+    else:
+        success = combat_controller.resolve_monster_into_right_hand_shield(board_index)
+
+    if not success:
+        set_status("Could not resolve monster into shield.")
+        _refresh_ui()
+        return
+
+    await _animate_board_card_resolution(board_index)
+
+    var shield_after = get_slot_card("left_hand" if is_left_hand else "right_hand")
+    var damage_taken := health_before - match_state.player_state.current_health
+    if shield_after != null:
+        set_status("Shield blocked %d and remains at %d." % [monster_value, _get_card_runtime_value(shield_after)])
+    elif damage_taken > 0:
+        set_status("Shield broke. Player took %d damage." % damage_taken)
+    else:
+        set_status("Shield broke after blocking %d." % shield_before_value)
+
+    _refresh_ui()
+
+
 func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
     if restart_pending:
         return
@@ -671,6 +797,8 @@ func _apply_visual_theme() -> void:
     gold_label.add_theme_color_override("font_color", SUCCESS_TEXT)
     board_title.add_theme_color_override("font_color", HUD_MUTED)
     board_title.add_theme_font_size_override("font_size", 15)
+    deck_count_label.add_theme_color_override("font_color", HUD_MUTED)
+    deck_count_label.add_theme_font_size_override("font_size", 14)
     player_label.add_theme_color_override("font_color", HUD_MUTED)
 
     button_bar.visible = false
@@ -888,6 +1016,13 @@ func handle_drop_to_left_hand(board_index: int) -> void:
 
  print("handle_drop_to_left_hand called with index: ", board_index)
 
+ var active_cards = match_state.board_state.get_active_cards()
+ if board_index >= 0 and board_index < active_cards.size():
+  var board_card = active_cards[board_index]
+  if _get_card_family(board_card) == "monster" and can_resolve_monster_into_shield("left_hand"):
+   await _handle_monster_to_shield(board_index, true)
+   return
+
  var before_left_hand = match_state.player_state.left_hand_card
  print("before move, left hand: ", before_left_hand)
 
@@ -908,6 +1043,13 @@ func handle_drop_to_right_hand(board_index: int) -> void:
   return
 
  print("handle_drop_to_right_hand called with index: ", board_index)
+
+ var active_cards = match_state.board_state.get_active_cards()
+ if board_index >= 0 and board_index < active_cards.size():
+  var board_card = active_cards[board_index]
+  if _get_card_family(board_card) == "monster" and can_resolve_monster_into_shield("right_hand"):
+   await _handle_monster_to_shield(board_index, false)
+   return
 
  var before_right_hand = match_state.player_state.right_hand_card
  print("before move, right hand: ", before_right_hand)
@@ -985,3 +1127,13 @@ func handle_drop_to_discard(board_index: int) -> void:
   set_status("Only item cards can be discarded.")
 
  _refresh_ui()
+
+
+func _get_card_unique_key(card) -> String:
+ if card is CardRuntimeState:
+  return card.card_id
+
+ if card is Dictionary:
+  return str(card.get("instance_id", card.get("id", "")))
+
+ return ""

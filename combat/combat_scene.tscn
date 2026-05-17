@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://cy8xyafcik6rj" path="res://art/ui/Backpack Placement Card.png" id="6_7f78p"]
 [ext_resource type="Texture2D" uid="uid://d3gpdmwg1yprj" path="res://art/ui/Trash Placement Card.png" id="7_w6j6n"]
 [ext_resource type="Texture2D" uid="uid://dbb1qd0v8em2x" path="res://art/backgrounds/Ossara-Titled-Arena.png" id="8_bg"]
+[ext_resource type="Texture2D" path="res://art/ui/CardBack.png" id="9_deck"]
 
 [node name="CombatScene" type="Control" unique_id=72309142]
 layout_mode = 3
@@ -152,6 +153,27 @@ layout_mode = 2
 theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 20
 columns = 4
+
+[node name="DeckCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane" unique_id=2094419701]
+custom_minimum_size = Vector2(220, 300)
+layout_mode = 2
+
+[node name="DeckColumn" type="VBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter" unique_id=776479155]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DeckCard" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter/DeckColumn" unique_id=1368101348]
+custom_minimum_size = Vector2(184, 252)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("9_deck")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DeckCountLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter/DeckColumn" unique_id=1922554213]
+layout_mode = 2
+text = "Deck: 0"
+horizontal_alignment = 1
 
 [node name="LoadoutCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage/PlayArea" unique_id=51322928]
 layout_mode = 2
