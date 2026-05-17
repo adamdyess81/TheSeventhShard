@@ -11,6 +11,7 @@ const BACKPACK_PLACEHOLDER = preload("res://art/ui/Backpack Placement Card.png")
 const BACKGROUND_TEXTURE = preload("res://art/backgrounds/Ossara-Titled-Arena-blured.png")
 const CARD_BACK_TEXTURE = preload("res://art/ui/CardBack.png")
 const BOSS_CARD_TEXTURE = preload("res://art/cards/Gravebound Warden.png")
+const DAMAGE_SLASH_TEXTURE = preload("res://art/ui/DamageSlash50.png")
 const EMPTY_BOARD_SLOT_SIZE = Vector2(220, 300)
 const HUD_TEXT = Color("f1e7d6")
 const HUD_MUTED = Color("c4b59a")
@@ -53,6 +54,8 @@ const CARD_ART_TEXTURES := {
 @onready var discard_texture = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone/DiscardTexture
 @onready var background_texture = $Background
 @onready var battle_music_player = $BattleMusic
+@onready var victory_stinger_player = $VictoryStinger
+@onready var defeat_stinger_player = $DefeatStinger
 @onready var fade_overlay = $FadeOverlay
 @onready var end_modal_overlay = $EndModalOverlay
 @onready var end_modal = $EndModalOverlay/EndModalCenter/EndModal
@@ -121,11 +124,32 @@ func _start_battle_music() -> void:
     if battle_music_player == null or battle_music_player.stream == null:
         return
 
+    if victory_stinger_player != null and victory_stinger_player.playing:
+        victory_stinger_player.stop()
+    if defeat_stinger_player != null and defeat_stinger_player.playing:
+        defeat_stinger_player.stop()
+
     if battle_music_player.stream is AudioStreamOggVorbis:
         battle_music_player.stream.loop = true
 
     if not battle_music_player.playing:
         battle_music_player.play()
+
+
+func _play_outcome_music(is_victory: bool) -> void:
+    if battle_music_player != null and battle_music_player.playing:
+        battle_music_player.stop()
+
+    if is_victory:
+        if defeat_stinger_player != null and defeat_stinger_player.playing:
+            defeat_stinger_player.stop()
+        if victory_stinger_player != null:
+            victory_stinger_player.play()
+    else:
+        if victory_stinger_player != null and victory_stinger_player.playing:
+            victory_stinger_player.stop()
+        if defeat_stinger_player != null:
+            defeat_stinger_player.play()
 
 
 func _play_battle_intro() -> void:
@@ -171,6 +195,54 @@ func _play_damage_screen_shake() -> void:
     for offset in offsets:
         tween.tween_property(root_layout, "position", root_layout_base_position + offset, 0.04)
         tween.parallel().tween_property(background_texture, "position", background_base_position + (offset * 0.45), 0.04)
+
+
+func _show_damage_slash_at_rect(target_rect: Rect2) -> void:
+    if DAMAGE_SLASH_TEXTURE == null:
+        return
+
+    var slash := TextureRect.new()
+    slash.texture = DAMAGE_SLASH_TEXTURE
+    slash.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+    slash.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+    slash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    slash.z_index = 150
+
+    var slash_size := Vector2(
+        max(target_rect.size.x * 0.72, 96.0),
+        max(target_rect.size.y * 0.36, 56.0)
+    )
+    slash.size = slash_size
+    slash.position = target_rect.position - global_position + ((target_rect.size - slash_size) * 0.5)
+    add_child(slash)
+
+    var tween := create_tween()
+    tween.set_parallel(true)
+    tween.tween_property(slash, "modulate:a", 0.0, 0.28)
+    tween.tween_property(slash, "scale", Vector2(1.08, 1.08), 0.28)
+    tween.finished.connect(func():
+        if is_instance_valid(slash):
+            slash.queue_free()
+    )
+
+
+func _show_player_damage_slash() -> void:
+    if player_avatar_drop_zone == null:
+        return
+    _show_damage_slash_at_rect(player_avatar_drop_zone.get_global_rect())
+
+
+func _show_boss_damage_slash() -> void:
+    if boss_drop_zone == null:
+        return
+    _show_damage_slash_at_rect(boss_drop_zone.get_global_rect())
+
+
+func _show_board_card_damage_slash(board_index: int) -> void:
+    var card_view = _get_board_card_view(board_index)
+    if card_view == null or not is_instance_valid(card_view):
+        return
+    _show_damage_slash_at_rect(card_view.get_global_rect())
 
 
 func _deal_opening_board() -> void:
@@ -899,6 +971,7 @@ func _handle_monster_to_shield(board_index: int, is_left_hand: bool) -> void:
     if shield_after != null:
         set_status("Shield blocked %d and remains at %d." % [monster_value, _get_card_runtime_value(shield_after)])
     elif damage_taken > 0:
+        _show_player_damage_slash()
         _play_damage_screen_shake()
         set_status("Shield broke. Player took %d damage." % damage_taken)
     else:
@@ -930,6 +1003,7 @@ func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
 
     var after_count := match_state.board_state.active_count()
     if after_count < before_count:
+        _show_board_card_damage_slash(board_index)
         await _animate_board_card_resolution(board_index)
         set_status("Weapon resolved the monster.")
     else:
@@ -937,6 +1011,7 @@ func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
         var remaining_value := -1
         if board_index >= 0 and board_index < after_cards.size():
             remaining_value = _get_card_runtime_value(after_cards[board_index])
+        _show_board_card_damage_slash(board_index)
         set_status("Weapon hit. Monster reduced from %d to %d." % [before_value, remaining_value])
 
     _refresh_ui()
@@ -960,8 +1035,10 @@ func handle_weapon_drop_on_boss(source_hand: String) -> void:
 
     var after_health := match_state.boss_state.current_health
     if after_health <= 0:
+        _show_boss_damage_slash()
         set_status("Gravebound Warden defeated.")
     else:
+        _show_boss_damage_slash()
         set_status("Weapon hit the boss. %d to %d." % [before_health, after_health])
 
     _refresh_ui()
@@ -1175,11 +1252,13 @@ func _show_battle_end_modal(outcome: String) -> void:
     if outcome == "victory":
         set_status("Boss defeated.")
         end_modal_title.text = "Victory"
+        _play_outcome_music(true)
         if gold_delta < 0:
             gold_text = "Gold Lost: %d" % abs(gold_delta)
     else:
         set_status("You died.")
         end_modal_title.text = "Defeat"
+        _play_outcome_music(false)
         gold_text = "Gold Lost: %d" % max(gold_delta, 0)
 
     end_modal_stats.text = "Rounds: %d\n%s" % [
@@ -1404,6 +1483,7 @@ func handle_drop_to_player_avatar(board_index: int) -> void:
  if success:
   await _animate_board_card_resolution(board_index)
   if after_health < before_health:
+   _show_player_damage_slash()
    _play_damage_screen_shake()
   set_status("Dropped monster onto player.")
  else:

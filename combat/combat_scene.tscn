@@ -10,6 +10,9 @@
 [ext_resource type="Texture2D" uid="uid://bdkuuu4t8rdv5" path="res://art/backgrounds/Ossara-Titled-Arena.png" id="8_bg"]
 [ext_resource type="Texture2D" uid="uid://crfty4ni1hpdn" path="res://art/ui/CardBack.png" id="9_deck"]
 [ext_resource type="AudioStream" path="res://audio/music/Battle Track-001.ogg" id="10_battle_music"]
+[ext_resource type="AudioStream" path="res://audio/music/Battle Triumph.ogg" id="11_victory_music"]
+[ext_resource type="AudioStream" path="res://audio/music/Defeat.ogg" id="12_defeat_music"]
+[ext_resource type="Texture2D" path="res://art/ui/DamageSlash50.png" id="13_damage_slash"]
 
 [node name="CombatScene" type="Control" unique_id=72309142]
 layout_mode = 3
@@ -45,6 +48,12 @@ stretch_mode = 6
 [node name="BattleMusic" type="AudioStreamPlayer" parent="." unique_id=314159265]
 stream = ExtResource("10_battle_music")
 autoplay = true
+
+[node name="VictoryStinger" type="AudioStreamPlayer" parent="." unique_id=314159266]
+stream = ExtResource("11_victory_music")
+
+[node name="DefeatStinger" type="AudioStreamPlayer" parent="." unique_id=314159267]
+stream = ExtResource("12_defeat_music")
 
 [node name="FadeOverlay" type="ColorRect" parent="." unique_id=271828182]
 layout_mode = 1
