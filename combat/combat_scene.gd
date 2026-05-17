@@ -592,6 +592,9 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
             return match_state.player_state.left_hand_card == null and not match_state.player_state.left_hand_exhausted
         return match_state.player_state.right_hand_card == null and not match_state.player_state.right_hand_exhausted
 
+    if source == "backpack" and target_slot == "discard":
+        return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
+
     if source in ["left_hand", "right_hand"] and target_slot == "boss":
         return family == "weapon" and can_use_slot_weapon_on_monster(source)
 
@@ -599,6 +602,9 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
         if family == "":
             return false
         return match_state.player_state.backpack_cards.size() < match_state.player_state.backpack_capacity
+
+    if source in ["left_hand", "right_hand"] and target_slot == "discard":
+        return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
 
     return false
 
@@ -612,10 +618,16 @@ func handle_slot_to_slot_drop(source_slot: String, target_slot: String) -> void:
         moved = _move_backpack_to_hand(true)
     elif source_slot == "backpack" and target_slot == "right_hand":
         moved = _move_backpack_to_hand(false)
+    elif source_slot == "backpack" and target_slot == "discard":
+        moved = _discard_backpack_card()
     elif source_slot == "left_hand" and target_slot == "backpack":
         moved = _move_hand_to_backpack(true)
     elif source_slot == "right_hand" and target_slot == "backpack":
         moved = _move_hand_to_backpack(false)
+    elif source_slot == "left_hand" and target_slot == "discard":
+        moved = _discard_hand_card(true)
+    elif source_slot == "right_hand" and target_slot == "discard":
+        moved = _discard_hand_card(false)
 
     if moved:
         set_status("Moved card from %s to %s." % [source_slot.replace("_", " "), target_slot.replace("_", " ")])
@@ -623,6 +635,37 @@ func handle_slot_to_slot_drop(source_slot: String, target_slot: String) -> void:
         set_status("Could not move card from %s to %s." % [source_slot.replace("_", " "), target_slot.replace("_", " ")])
 
     _refresh_ui()
+
+
+func _discard_backpack_card() -> bool:
+    if match_state.player_state.backpack_cards.is_empty():
+        return false
+
+    var card = match_state.player_state.remove_backpack_card_at(0)
+    if card == null:
+        return false
+
+    _mark_runtime_card_resolved(card)
+    _mark_runtime_card_destroyed(card)
+    return true
+
+
+func _discard_hand_card(is_left_hand: bool) -> bool:
+    var card = match_state.player_state.left_hand_card if is_left_hand else match_state.player_state.right_hand_card
+    if card == null:
+        return false
+
+    if is_left_hand:
+        match_state.player_state.clear_left_hand_card()
+        match_state.player_state.exhaust_left_hand()
+    else:
+        match_state.player_state.clear_right_hand_card()
+        match_state.player_state.exhaust_right_hand()
+
+    _mark_runtime_card_resolved(card)
+    _mark_runtime_card_exhausted(card)
+    _mark_runtime_card_destroyed(card)
+    return true
 
 
 func _move_backpack_to_hand(is_left_hand: bool) -> bool:
