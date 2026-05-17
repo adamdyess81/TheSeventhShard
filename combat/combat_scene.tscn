@@ -88,7 +88,7 @@ alignment = 1
 layout_mode = 2
 
 [node name="BossDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/BossCenter" unique_id=204300002]
-custom_minimum_size = Vector2(220, 300)
+custom_minimum_size = Vector2(280, 390)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "boss"
@@ -119,26 +119,26 @@ layout_mode = 1
 anchors_preset = 10
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -84.0
-offset_top = 16.0
-offset_right = 84.0
-offset_bottom = 46.0
+offset_left = -112.0
+offset_top = 18.0
+offset_right = 112.0
+offset_bottom = 56.0
 mouse_filter = 2
 horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="LifeBar" type="PanelContainer" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas" unique_id=204300006]
-custom_minimum_size = Vector2(132, 34)
+custom_minimum_size = Vector2(156, 36)
 layout_mode = 1
 anchors_preset = 12
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -66.0
-offset_top = -52.0
-offset_right = 66.0
-offset_bottom = -18.0
+offset_left = -78.0
+offset_top = -56.0
+offset_right = 78.0
+offset_bottom = -20.0
 mouse_filter = 2
 
 [node name="LifeLabel" type="Label" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas/LifeBar" unique_id=204300007]
@@ -225,7 +225,7 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="DeckCard" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter/DeckColumn" unique_id=1368101348]
-custom_minimum_size = Vector2(184, 252)
+custom_minimum_size = Vector2(220, 300)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("9_deck")

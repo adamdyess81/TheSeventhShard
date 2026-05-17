@@ -21,6 +21,7 @@ func _can_drop_data(_at_position, data) -> bool:
 
  var normalized_target = String(drop_target).strip_edges()
  can_drop = combat_scene.can_drop_on_slot(normalized_target, data)
+ combat_scene.preview_drop_zone_state(normalized_target, can_drop)
  print("_can_drop_data called on ", name, " with data: ", data, " result: ", can_drop)
  return can_drop
 
@@ -56,6 +57,7 @@ func _drop_data(_at_position, data) -> void:
   return
 
  var normalized_target = String(drop_target).strip_edges()
+ combat_scene.clear_all_drop_zone_previews()
  print("drop_target value is: '", normalized_target, "'")
 
  if data.get("source", "") == "board":
@@ -94,5 +96,7 @@ func _drop_data(_at_position, data) -> void:
 
 func _notification(what: int) -> void:
  if what == NOTIFICATION_DRAG_END and is_instance_valid(self):
+  if combat_scene != null:
+   combat_scene.clear_all_drop_zone_previews()
   if not get_viewport().gui_is_drag_successful():
    modulate.a = 1.0

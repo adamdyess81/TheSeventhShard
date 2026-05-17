@@ -16,6 +16,8 @@ const HUD_TEXT = Color("f1e7d6")
 const HUD_MUTED = Color("c4b59a")
 const SUCCESS_TEXT = Color("d5c074")
 const ERROR_TEXT = Color("d38a80")
+const VALID_DROP_TINT = Color(0.45, 0.72, 1.0, 0.58)
+const INVALID_DROP_TINT = Color(1.0, 0.36, 0.36, 0.58)
 const PANEL_FILL = Color("130f0d")
 const PANEL_BORDER = Color("6a5542")
 const DISCARD_BORDER = Color("9d6b55")
@@ -48,6 +50,7 @@ const CARD_ART_TEXTURES := {
 @onready var board_title = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardTitle
 @onready var deck_card_texture = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter/DeckColumn/DeckCard
 @onready var deck_count_label = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter/DeckColumn/DeckCountLabel
+@onready var discard_texture = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone/DiscardTexture
 @onready var button_bar = $RootLayout/StageCenter/Stage/ButtonBar
 @onready var background_texture = $Background
 
@@ -847,11 +850,11 @@ func _apply_visual_theme() -> void:
     player_label.add_theme_color_override("font_color", HUD_MUTED)
 
     button_bar.visible = false
-    _style_zone(left_hand_drop_zone, PANEL_BORDER)
-    _style_zone(boss_drop_zone, Color("8a6651"))
-    _style_zone(player_avatar_drop_zone, Color("8d7867"))
-    _style_zone(right_hand_drop_zone, PANEL_BORDER)
-    _style_zone(backpack_drop_zone, Color("6e7e66"))
+    _style_zone(left_hand_drop_zone, PANEL_BORDER, Color(0, 0, 0, 0))
+    _style_zone(boss_drop_zone, Color("8a6651"), Color(0, 0, 0, 0))
+    _style_zone(player_avatar_drop_zone, Color("8d7867"), Color(0, 0, 0, 0))
+    _style_zone(right_hand_drop_zone, PANEL_BORDER, Color(0, 0, 0, 0))
+    _style_zone(backpack_drop_zone, Color("6e7e66"), Color(0, 0, 0, 0))
     _style_zone(discard_drop_zone, DISCARD_BORDER)
 
     _style_loadout_label(left_hand_label)
@@ -862,7 +865,7 @@ func _apply_visual_theme() -> void:
     _style_slot_text(right_hand_name_label, right_hand_type_label, right_hand_value_label)
     _style_slot_text(backpack_name_label, backpack_type_label, backpack_value_label)
     boss_title_label.add_theme_color_override("font_color", Color("f7ead7"))
-    boss_title_label.add_theme_font_size_override("font_size", 18)
+    boss_title_label.add_theme_font_size_override("font_size", 20)
     var boss_life_style := StyleBoxFlat.new()
     boss_life_style.bg_color = Color("5e2726")
     boss_life_style.border_color = Color("d7b17a")
@@ -889,9 +892,9 @@ func _apply_visual_theme() -> void:
     status_label.add_theme_font_size_override("font_size", 15)
 
 
-func _style_zone(panel: PanelContainer, border_color: Color) -> void:
+func _style_zone(panel: PanelContainer, border_color: Color, fill_color: Color = PANEL_FILL) -> void:
     var style := StyleBoxFlat.new()
-    style.bg_color = PANEL_FILL
+    style.bg_color = fill_color
     style.border_color = border_color
     style.border_width_left = 2
     style.border_width_top = 2
@@ -910,23 +913,29 @@ func _refresh_slot_state_visuals() -> void:
     _reset_slot_visual_state(left_hand_drop_zone, left_hand_texture, PANEL_BORDER)
     _reset_slot_visual_state(right_hand_drop_zone, right_hand_texture, PANEL_BORDER)
     _reset_slot_visual_state(backpack_drop_zone, backpack_texture, Color("6e7e66"))
+    _style_zone(player_avatar_drop_zone, Color("8d7867"), Color(0, 0, 0, 0))
+    _style_zone(boss_drop_zone, Color("8a6651"), Color(0, 0, 0, 0))
+    _style_zone(discard_drop_zone, DISCARD_BORDER)
+    player_avatar_texture.modulate = Color(1, 1, 1, 1)
+    boss_art_texture.modulate = Color(1, 1, 1, 1)
+    discard_texture.modulate = Color(1, 1, 1, 1)
 
     if match_state.player_state.left_hand_exhausted:
-        _apply_exhausted_slot_visual(left_hand_drop_zone)
+        _apply_exhausted_slot_visual(left_hand_drop_zone, left_hand_texture)
 
     if match_state.player_state.right_hand_exhausted:
-        _apply_exhausted_slot_visual(right_hand_drop_zone)
+        _apply_exhausted_slot_visual(right_hand_drop_zone, right_hand_texture)
 
 
 func _reset_slot_visual_state(panel: PanelContainer, texture_rect: TextureRect, border_color: Color) -> void:
-    _style_zone(panel, border_color)
+    _style_zone(panel, border_color, Color(0, 0, 0, 0))
     panel.modulate = Color(1, 1, 1, 1)
     texture_rect.modulate = Color(1, 1, 1, 1)
 
 
-func _apply_exhausted_slot_visual(panel: PanelContainer) -> void:
+func _apply_exhausted_slot_visual(panel: PanelContainer, texture_rect: TextureRect) -> void:
     var style := StyleBoxFlat.new()
-    style.bg_color = Color("2b1414")
+    style.bg_color = Color(0, 0, 0, 0)
     style.border_color = Color("d15b5b")
     style.border_width_left = 3
     style.border_width_top = 3
@@ -939,6 +948,28 @@ func _apply_exhausted_slot_visual(panel: PanelContainer) -> void:
     style.shadow_color = Color(0, 0, 0, 0.28)
     style.shadow_size = 5
     panel.add_theme_stylebox_override("panel", style)
+    texture_rect.modulate = Color(0.62, 0.3, 0.3, 1.0)
+
+
+func preview_drop_zone_state(target_slot: String, is_valid: bool) -> void:
+    var tint := VALID_DROP_TINT if is_valid else INVALID_DROP_TINT
+    match target_slot:
+        "left_hand":
+            left_hand_texture.modulate = tint
+        "right_hand":
+            right_hand_texture.modulate = tint
+        "backpack":
+            backpack_texture.modulate = tint
+        "player_avatar":
+            player_avatar_texture.modulate = tint
+        "boss":
+            boss_art_texture.modulate = tint
+        "discard":
+            discard_texture.modulate = tint
+
+
+func clear_all_drop_zone_previews() -> void:
+    _refresh_slot_state_visuals()
 
 
 func _style_loadout_label(label: Label) -> void:
