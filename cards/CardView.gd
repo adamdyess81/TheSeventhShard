@@ -106,7 +106,7 @@ func _apply_visual_theme() -> void:
  add_theme_stylebox_override("panel", panel_style)
 
  name_label.add_theme_color_override("font_color", Color("f7ead7"))
- name_label.add_theme_font_size_override("font_size", 18)
+ name_label.add_theme_font_size_override("font_size", 17)
 
  family_label.add_theme_color_override("font_color", Color("ddd0bb"))
  family_label.add_theme_font_size_override("font_size", 12)
