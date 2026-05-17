@@ -3,43 +3,81 @@
 [ext_resource type="Script" uid="uid://cn7khforim32f" path="res://cards/CardView.gd" id="1_cuaw8"]
 
 [node name="CardView" type="PanelContainer" unique_id=1506696375]
-custom_minimum_size = Vector2(184, 252)
+custom_minimum_size = Vector2(220, 300)
 script = ExtResource("1_cuaw8")
 
-[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1670681243]
-layout_mode = 2
-theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 4
-theme_override_constants/margin_bottom = 4
+[node name="CardCanvas" type="Control" parent="." unique_id=1570681243]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=70068369]
-layout_mode = 2
-theme_override_constants/separation = 2
-
-[node name="ArtRect" type="TextureRect" parent="MarginContainer/VBoxContainer" unique_id=615004321]
+[node name="ArtRect" type="TextureRect" parent="CardCanvas" unique_id=615004321]
 unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(176, 190)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=824783742]
+[node name="ValueLabel" type="Label" parent="CardCanvas" unique_id=288223113]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 1
+anchors_preset = 10
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -62.0
+offset_top = 8.0
+offset_right = -20.0
+offset_bottom = 50.0
+grow_horizontal = 0
+mouse_filter = 2
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BottomFade" type="ColorRect" parent="CardCanvas" unique_id=132811004]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -88.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.52)
+
+[node name="BottomText" type="VBoxContainer" parent="CardCanvas" unique_id=70068369]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = -72.0
+offset_right = -14.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 2
+
+[node name="NameLabel" type="Label" parent="CardCanvas/BottomText" unique_id=824783742]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Name"
-horizontal_alignment = 1
+horizontal_alignment = 0
 autowrap_mode = 2
 
-[node name="FamilyLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=39695140]
+[node name="FamilyLabel" type="Label" parent="CardCanvas/BottomText" unique_id=39695140]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Family"
-horizontal_alignment = 1
-
-[node name="ValueLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=288223113]
-unique_name_in_owner = true
-layout_mode = 2
-text = "Value"
-horizontal_alignment = 1
+horizontal_alignment = 0

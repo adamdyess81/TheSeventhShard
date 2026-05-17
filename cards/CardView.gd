@@ -31,11 +31,11 @@ func setup(card, index: int) -> void:
  if card_data is CardRuntimeState:
   name_label.text = _humanize_token(card_data.card_id)
   family_label.text = _humanize_token(str(card_data.get_family()))
-  value_label.text = "Value %d" % card_data.current_value
+  value_label.text = str(card_data.current_value)
  else:
   name_label.text = "Unknown"
   family_label.text = "Unknown"
-  value_label.text = "Value ?"
+  value_label.text = "?"
 
  tooltip_text = "%s\n%s\n%s" % [
   name_label.text,
@@ -96,48 +96,23 @@ func _notification(what: int) -> void:
 
 
 func _apply_visual_theme() -> void:
- var family := _get_card_family()
- var accent := _get_family_color(family)
-
  var panel_style := StyleBoxFlat.new()
- panel_style.bg_color = Color("171311")
- panel_style.border_color = accent
- panel_style.border_width_left = 2
- panel_style.border_width_top = 2
- panel_style.border_width_right = 2
- panel_style.border_width_bottom = 2
- panel_style.corner_radius_top_left = 14
- panel_style.corner_radius_top_right = 14
- panel_style.corner_radius_bottom_right = 14
- panel_style.corner_radius_bottom_left = 14
- panel_style.shadow_color = Color(0, 0, 0, 0.35)
- panel_style.shadow_size = 6
+ panel_style.bg_color = Color(0, 0, 0, 0)
+ panel_style.border_width_left = 0
+ panel_style.border_width_top = 0
+ panel_style.border_width_right = 0
+ panel_style.border_width_bottom = 0
+ panel_style.shadow_size = 0
  add_theme_stylebox_override("panel", panel_style)
 
- name_label.add_theme_color_override("font_color", Color("f5ead7"))
- name_label.add_theme_font_size_override("font_size", 17)
+ name_label.add_theme_color_override("font_color", Color("f7ead7"))
+ name_label.add_theme_font_size_override("font_size", 18)
 
- family_label.add_theme_color_override("font_color", accent)
+ family_label.add_theme_color_override("font_color", Color("ddd0bb"))
  family_label.add_theme_font_size_override("font_size", 12)
 
- value_label.add_theme_color_override("font_color", Color("d7c7b1"))
- value_label.add_theme_font_size_override("font_size", 12)
-
-
-func _get_family_color(family: String) -> Color:
- match family:
-  "monster":
-   return Color("c86b63")
-  "weapon":
-   return Color("d3b06a")
-  "shield":
-   return Color("8fb6c9")
-  "potion":
-   return Color("9dc27f")
-  "coin", "chest":
-   return Color("d6b55f")
-  _:
-   return Color("927f66")
+ value_label.add_theme_color_override("font_color", Color("2e241c"))
+ value_label.add_theme_font_size_override("font_size", 18)
 
 
 func _humanize_token(value: String) -> String:
