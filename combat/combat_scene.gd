@@ -99,6 +99,8 @@ var backpack_visual_card_id := ""
 var last_board_card_ids: Array[String] = []
 var board_visuals_initialized := false
 var escape_was_pressed := false
+var root_layout_base_position := Vector2.ZERO
+var background_base_position := Vector2.ZERO
 
 
 func _ready() -> void:
@@ -106,6 +108,8 @@ func _ready() -> void:
     _build_test_match_state()
     _apply_visual_theme()
     _start_battle_music()
+    root_layout_base_position = root_layout.position
+    background_base_position = background_texture.position
     retry_button.pressed.connect(_on_retry_battle_pressed)
     quit_button.pressed.connect(_on_quit_battle_pressed)
     set_status("Ready.")
@@ -143,6 +147,30 @@ func _play_battle_intro() -> void:
     await fade_tween.finished
     if fade_overlay != null:
         fade_overlay.visible = false
+
+
+func _play_damage_screen_shake() -> void:
+    if root_layout == null or background_texture == null:
+        return
+
+    root_layout.position = root_layout_base_position
+    background_texture.position = background_base_position
+
+    var offsets := [
+        Vector2(-14, 0),
+        Vector2(12, -6),
+        Vector2(-10, 8),
+        Vector2(7, -4),
+        Vector2(0, 0)
+    ]
+
+    var tween := create_tween()
+    tween.set_trans(Tween.TRANS_SINE)
+    tween.set_ease(Tween.EASE_OUT)
+
+    for offset in offsets:
+        tween.tween_property(root_layout, "position", root_layout_base_position + offset, 0.04)
+        tween.parallel().tween_property(background_texture, "position", background_base_position + (offset * 0.45), 0.04)
 
 
 func _deal_opening_board() -> void:
@@ -871,6 +899,7 @@ func _handle_monster_to_shield(board_index: int, is_left_hand: bool) -> void:
     if shield_after != null:
         set_status("Shield blocked %d and remains at %d." % [monster_value, _get_card_runtime_value(shield_after)])
     elif damage_taken > 0:
+        _play_damage_screen_shake()
         set_status("Shield broke. Player took %d damage." % damage_taken)
     else:
         set_status("Shield broke after blocking %d." % shield_before_value)
@@ -1374,6 +1403,8 @@ func handle_drop_to_player_avatar(board_index: int) -> void:
 
  if success:
   await _animate_board_card_resolution(board_index)
+  if after_health < before_health:
+   _play_damage_screen_shake()
   set_status("Dropped monster onto player.")
  else:
   set_status("Only monsters can be dropped onto the player.")
