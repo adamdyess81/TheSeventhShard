@@ -49,6 +49,17 @@ func is_empty() -> bool:
     return _cards.is_empty()
 
 
+func get_card_positions(card_id: String) -> Array[int]:
+    var positions: Array[int] = []
+
+    for i in range(_cards.size()):
+        var card = _cards[i]
+        if card is CardRuntimeState and card.card_id == card_id:
+            positions.append(i + 1)
+
+    return positions
+
+
 func advance_round_specials() -> void:
     for i in range(1, _cards.size()):
         var card = _cards[i]

@@ -63,6 +63,7 @@ const CARD_ART_TEXTURES := {
 @onready var round_label = $RootLayout/StageCenter/Stage/TopBar/RoundLabel
 @onready var gold_label = $RootLayout/StageCenter/Stage/TopBar/GoldLabel
 @onready var status_label = $RootLayout/StageCenter/Stage/TopBar/StatusLabel
+@onready var crypt_hound_debug_label = $RootLayout/StageCenter/Stage/CryptHoundDebugLabel
 @onready var boss_drop_zone = $RootLayout/StageCenter/Stage/BossCenter/BossDropZone
 @onready var boss_art_texture = $RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas/BossArt
 @onready var boss_title_label = $RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas/TitleLabel
@@ -413,6 +414,7 @@ func _refresh_ui() -> void:
     round_label.text = "Round: %d" % match_state.round_number
     gold_label.text = "Gold: %d" % match_state.player_state.temporary_gold
     deck_count_label.text = "Deck: %d" % match_state.shared_deck_state.remaining_count()
+    crypt_hound_debug_label.text = "Crypt Hounds: %s" % match_state.shared_deck_state.get_card_positions("crypt_hound")
     player_life_label.text = "%d/%d" % [
         match_state.player_state.current_health,
         match_state.player_state.max_health
@@ -1162,6 +1164,8 @@ func _apply_visual_theme() -> void:
     boss_health_label.add_theme_color_override("font_color", HUD_TEXT)
     round_label.add_theme_color_override("font_color", HUD_TEXT)
     gold_label.add_theme_color_override("font_color", SUCCESS_TEXT)
+    crypt_hound_debug_label.add_theme_color_override("font_color", HUD_MUTED)
+    crypt_hound_debug_label.add_theme_font_size_override("font_size", 14)
     board_title.add_theme_color_override("font_color", HUD_MUTED)
     board_title.add_theme_font_size_override("font_size", 15)
     deck_count_label.add_theme_color_override("font_color", HUD_MUTED)
