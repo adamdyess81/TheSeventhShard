@@ -88,7 +88,7 @@ alignment = 1
 layout_mode = 2
 
 [node name="BossDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/BossCenter" unique_id=204300002]
-custom_minimum_size = Vector2(300, 220)
+custom_minimum_size = Vector2(360, 264)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "boss"
@@ -326,7 +326,16 @@ drop_target = "player_avatar"
 combat_scene_path = NodePath("../../../../../../../../")
 allowed_families = PackedStringArray("monster")
 
-[node name="AvatarTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone" unique_id=1326504604]
+[node name="PlayerCanvas" type="Control" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone" unique_id=1411459185]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="AvatarTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas" unique_id=1326504604]
 custom_minimum_size = Vector2(248, 340)
 layout_mode = 1
 anchors_preset = 15
@@ -339,7 +348,7 @@ texture = ExtResource("3_3of7o")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="PlayerLifeBar" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone" unique_id=1411459183]
+[node name="PlayerLifeBar" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas" unique_id=1411459183]
 custom_minimum_size = Vector2(134, 32)
 layout_mode = 1
 anchors_preset = 12
@@ -353,7 +362,7 @@ offset_right = 67.0
 offset_bottom = -14.0
 mouse_filter = 2
 
-[node name="PlayerLifeLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerLifeBar" unique_id=1411459184]
+[node name="PlayerLifeLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas/PlayerLifeBar" unique_id=1411459184]
 layout_mode = 2
 horizontal_alignment = 1
 vertical_alignment = 1
