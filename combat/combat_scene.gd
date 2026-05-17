@@ -9,6 +9,7 @@ const LEFT_HAND_PLACEHOLDER = preload("res://art/ui/LeftHand Placement Card.png"
 const RIGHT_HAND_PLACEHOLDER = preload("res://art/ui/RightHand Placement Card.png")
 const BACKPACK_PLACEHOLDER = preload("res://art/ui/Backpack Placement Card.png")
 const BACKGROUND_TEXTURE = preload("res://art/backgrounds/Ossara-Titled-Arena-blured.png")
+const EMPTY_BOARD_SLOT_SIZE = Vector2(220, 300)
 const HUD_TEXT = Color("f1e7d6")
 const HUD_MUTED = Color("c4b59a")
 const SUCCESS_TEXT = Color("d5c074")
@@ -172,6 +173,12 @@ func _refresh_board_cards() -> void:
 
  for i in range(active_cards.size()):
   var card = active_cards[i]
+  if card == null:
+   var spacer = Control.new()
+   spacer.custom_minimum_size = EMPTY_BOARD_SLOT_SIZE
+   spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+   board_card_list.add_child(spacer)
+   continue
   var card_view = CARD_VIEW_SCENE.instantiate()
   board_card_list.add_child(card_view)
   card_view.setup(card, i)
@@ -507,6 +514,52 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
     if card == null:
         return false
 
+    var family := _get_card_family(card)
+    if is_left_hand:
+        if match_state.player_state.left_hand_exhausted or match_state.player_state.left_hand_card != null:
+            match_state.player_state.backpack_cards.insert(0, card)
+            if card is CardRuntimeState:
+                card.set_zone("backpack")
+            elif card is Dictionary:
+                card["zone"] = "backpack"
+            return false
+        if family == "coin":
+            match_state.player_state.add_temporary_gold(_get_card_runtime_value(card))
+            _mark_runtime_card_resolved(card)
+            _mark_runtime_card_exhausted(card)
+            _mark_runtime_card_destroyed(card)
+            match_state.player_state.exhaust_left_hand()
+            return true
+        if family == "potion":
+            match_state.player_state.heal(_get_card_runtime_value(card))
+            _mark_runtime_card_resolved(card)
+            _mark_runtime_card_exhausted(card)
+            _mark_runtime_card_destroyed(card)
+            match_state.player_state.exhaust_left_hand()
+            return true
+    else:
+        if match_state.player_state.right_hand_exhausted or match_state.player_state.right_hand_card != null:
+            match_state.player_state.backpack_cards.insert(0, card)
+            if card is CardRuntimeState:
+                card.set_zone("backpack")
+            elif card is Dictionary:
+                card["zone"] = "backpack"
+            return false
+        if family == "coin":
+            match_state.player_state.add_temporary_gold(_get_card_runtime_value(card))
+            _mark_runtime_card_resolved(card)
+            _mark_runtime_card_exhausted(card)
+            _mark_runtime_card_destroyed(card)
+            match_state.player_state.exhaust_right_hand()
+            return true
+        if family == "potion":
+            match_state.player_state.heal(_get_card_runtime_value(card))
+            _mark_runtime_card_resolved(card)
+            _mark_runtime_card_exhausted(card)
+            _mark_runtime_card_destroyed(card)
+            match_state.player_state.exhaust_right_hand()
+            return true
+
     var success := false
     if is_left_hand:
         success = match_state.player_state.set_left_hand_card(card)
@@ -522,6 +575,27 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
         return false
 
     return true
+
+
+func _mark_runtime_card_resolved(card) -> void:
+    if card is CardRuntimeState:
+        card.mark_resolved()
+    elif card is Dictionary:
+        card["is_resolved"] = true
+
+
+func _mark_runtime_card_exhausted(card) -> void:
+    if card is CardRuntimeState:
+        card.mark_exhausted()
+    elif card is Dictionary:
+        card["is_exhausted"] = true
+
+
+func _mark_runtime_card_destroyed(card) -> void:
+    if card is CardRuntimeState:
+        card.mark_destroyed()
+    elif card is Dictionary:
+        card["is_destroyed"] = true
 
 
 func _move_hand_to_backpack(is_left_hand: bool) -> bool:

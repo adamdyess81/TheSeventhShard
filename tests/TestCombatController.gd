@@ -447,6 +447,23 @@ func _ready() -> void:
             print("Returned Backpack Card ID: ", returned_backpack_card.card_id)
             print("Returned Backpack Card Zone: ", returned_backpack_card.zone)
 
+    print("\n=== BOARD GAP TEST ===")
+
+    var gap_board_state := BoardState.new()
+    gap_board_state.setup(4)
+    gap_board_state.get_active_cards()[0] = loader.get_card("crypt_hound").duplicate(true)
+    gap_board_state.get_active_cards()[1] = loader.get_card("grave_thrall").duplicate(true)
+    gap_board_state.get_active_cards()[2] = loader.get_card("risen_bones").duplicate(true)
+    gap_board_state.get_active_cards()[3] = loader.get_card("sepulcher_guard").duplicate(true)
+
+    var removed_gap_card = gap_board_state.remove_card_at(1)
+    print("Removed Gap Card Exists?: ", removed_gap_card != null)
+    print("Board Count After Gap Remove: ", gap_board_state.active_count())
+    print("Board Slot 0 Empty?: ", gap_board_state.get_active_cards()[0] == null)
+    print("Board Slot 1 Empty?: ", gap_board_state.get_active_cards()[1] == null)
+    print("Board Slot 2 Empty?: ", gap_board_state.get_active_cards()[2] == null)
+    print("Board Slot 3 Empty?: ", gap_board_state.get_active_cards()[3] == null)
+
     print("\nController Final Outcome: ", combat_controller.get_current_outcome())
 
 
