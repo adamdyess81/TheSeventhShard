@@ -16,6 +16,7 @@ const CARD_ART_PATHS := {
 var card_data
 var board_index: int = -1
 
+@onready var card_canvas: Control = %CardCanvas
 @onready var art_rect: TextureRect = %ArtRect
 @onready var name_label: Label = %NameLabel
 @onready var family_label: Label = %FamilyLabel
@@ -121,6 +122,11 @@ func _notification(what: int) -> void:
  if what == NOTIFICATION_DRAG_END and is_instance_valid(self):
   if not get_viewport().gui_is_drag_successful():
    modulate.a = 1.0
+
+
+func set_content_visible(is_visible: bool) -> void:
+ if card_canvas != null:
+  card_canvas.visible = is_visible
 
 
 func _apply_visual_theme() -> void:

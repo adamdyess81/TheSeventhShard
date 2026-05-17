@@ -222,7 +222,8 @@ func _refresh_board_cards() -> void:
   board_card_list.add_child(card_view)
   card_view.setup(card, i)
   if board_visuals_initialized and i in changed_slots:
-   card_view.visible = false
+   if card_view.has_method("set_content_visible"):
+    card_view.set_content_visible(false)
    card_view.modulate.a = 0.0
 
  last_board_card_ids = next_board_card_ids
@@ -399,7 +400,8 @@ func _animate_new_board_cards(slot_indices: Array[int]) -> void:
    continue
 
   if card_view is Control:
-   card_view.visible = false
+   if card_view.has_method("set_content_visible"):
+    card_view.set_content_visible(false)
    card_view.modulate.a = 0.0
 
   var temp_card := TextureRect.new()
@@ -415,13 +417,14 @@ func _animate_new_board_cards(slot_indices: Array[int]) -> void:
   var target_rect: Rect2 = card_view.get_global_rect()
   var tween = create_tween()
   tween.set_parallel(true)
-  tween.tween_property(temp_card, "position", target_rect.position - scene_origin, 0.62)
-  tween.tween_property(temp_card, "size", target_rect.size, 0.62)
+  tween.tween_property(temp_card, "position", target_rect.position - scene_origin, 0.9)
+  tween.tween_property(temp_card, "size", target_rect.size, 0.9)
   tween.finished.connect(func():
    if is_instance_valid(temp_card):
     temp_card.queue_free()
    if is_instance_valid(card_view):
-    card_view.visible = true
+    if card_view.has_method("set_content_visible"):
+     card_view.set_content_visible(true)
     card_view.modulate.a = 1.0
   )
   tweens.append(tween)
