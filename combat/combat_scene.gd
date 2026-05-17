@@ -368,7 +368,7 @@ func _animate_new_board_cards(slot_indices: Array[int]) -> void:
  if deck_card_texture == null or not is_instance_valid(deck_card_texture):
   return
 
- var source_rect := deck_card_texture.get_global_rect()
+ var source_rect: Rect2 = deck_card_texture.get_global_rect()
  var scene_origin := global_position
  var tweens: Array = []
 
@@ -390,7 +390,7 @@ func _animate_new_board_cards(slot_indices: Array[int]) -> void:
   temp_card.size = source_rect.size
   add_child(temp_card)
 
-  var target_rect := card_view.get_global_rect()
+  var target_rect: Rect2 = card_view.get_global_rect()
   var tween = create_tween()
   tween.set_parallel(true)
   tween.tween_property(temp_card, "position", target_rect.position - scene_origin, 0.22)
