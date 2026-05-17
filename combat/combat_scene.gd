@@ -52,6 +52,7 @@ const CARD_ART_TEXTURES := {
 @onready var deck_count_label = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter/DeckColumn/DeckCountLabel
 @onready var discard_texture = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone/DiscardTexture
 @onready var background_texture = $Background
+@onready var battle_music_player = $BattleMusic
 
 @onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/PlacementTexture
 @onready var player_avatar_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas/AvatarTexture
@@ -95,9 +96,21 @@ func _ready() -> void:
     add_to_group("combat_scene")
     _build_test_match_state()
     _apply_visual_theme()
+    _start_battle_music()
     set_status("Ready.")
 
     _refresh_ui()
+
+
+func _start_battle_music() -> void:
+    if battle_music_player == null or battle_music_player.stream == null:
+        return
+
+    if battle_music_player.stream is AudioStreamOggVorbis:
+        battle_music_player.stream.loop = true
+
+    if not battle_music_player.playing:
+        battle_music_player.play()
 
 
 

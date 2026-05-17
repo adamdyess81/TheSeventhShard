@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://mk8ed4edrh6v" path="res://art/ui/Trash Placement Card.png" id="7_w6j6n"]
 [ext_resource type="Texture2D" uid="uid://bdkuuu4t8rdv5" path="res://art/backgrounds/Ossara-Titled-Arena.png" id="8_bg"]
 [ext_resource type="Texture2D" uid="uid://crfty4ni1hpdn" path="res://art/ui/CardBack.png" id="9_deck"]
+[ext_resource type="AudioStream" path="res://audio/music/Battle Track-001.ogg" id="10_battle_music"]
 
 [node name="CombatScene" type="Control" unique_id=72309142]
 layout_mode = 3
@@ -30,6 +31,10 @@ mouse_filter = 2
 texture = ExtResource("8_bg")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="BattleMusic" type="AudioStreamPlayer" parent="." unique_id=314159265]
+stream = ExtResource("10_battle_music")
+autoplay = true
 
 [node name="RootLayout" type="VBoxContainer" parent="." unique_id=247386464]
 layout_mode = 1
