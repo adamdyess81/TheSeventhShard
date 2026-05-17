@@ -11,7 +11,27 @@ const BACKPACK_PLACEHOLDER = preload("res://art/ui/Backpack Placement Card.png")
 const BACKGROUND_TEXTURE = preload("res://art/backgrounds/Ossara-Titled-Arena-blured.png")
 const CARD_BACK_TEXTURE = preload("res://art/ui/CardBack.png")
 const BOSS_CARD_TEXTURE = preload("res://art/cards/Gravebound Warden.png")
-const DAMAGE_SLASH_TEXTURE = preload("res://art/ui/DamageSlash50.png")
+const PLAYER_DAMAGE_SLASH_TEXTURE = preload("res://art/ui/DamageSlash50.png")
+const SWORD_DAMAGE_SLASH_TEXTURE = preload("res://art/ui/SwordDamageSlash.png")
+const BACKPACK_DROP_SFX = preload("res://audio/sound fx/backpack_drop.wav")
+const CRYPT_HOUND_SFX = preload("res://audio/sound fx/crypt_hound.wav")
+const DEAL_CARDS_SFX = preload("res://audio/sound fx/deal_cards.wav")
+const DISCARD_SFX = preload("res://audio/sound fx/discard.wav")
+const DROP_CARD_SFX = preload("res://audio/sound fx/drop_card.wav")
+const GAIN_COINS_SFX = preload("res://audio/sound fx/gain_coins.wav")
+const GRAVE_THRALL_SFX = preload("res://audio/sound fx/grave_thrall.wav")
+const GRAVEBOUND_WARDEN_HURT_SFX = preload("res://audio/sound fx/gravebound_warden_hurt.wav")
+const PLAYER_HURT_SFX := [
+	preload("res://audio/sound fx/player_hurt_001_male.wav"),
+	preload("res://audio/sound fx/player_hurt_002_male.wav"),
+	preload("res://audio/sound fx/player_hurt_003_male.wav"),
+	preload("res://audio/sound fx/player_hurt_004_male.wav"),
+	preload("res://audio/sound fx/player_hurt_005_male.wav")
+]
+const RISEN_BONES_SFX = preload("res://audio/sound fx/risen_bones.wav")
+const SHIELD_DEFEND_SFX = preload("res://audio/sound fx/shield_defend.wav")
+const SWORD_SWING_SFX = preload("res://audio/sound fx/sword_swing.wav")
+const TREASURE_CHEST_SFX = preload("res://audio/sound fx/treasure_chest.wav")
 const EMPTY_BOARD_SLOT_SIZE = Vector2(220, 300)
 const HUD_TEXT = Color("f1e7d6")
 const HUD_MUTED = Color("c4b59a")
@@ -107,6 +127,7 @@ var background_base_position := Vector2.ZERO
 
 
 func _ready() -> void:
+    randomize()
     add_to_group("combat_scene")
     _build_test_match_state()
     _apply_visual_theme()
@@ -223,12 +244,57 @@ func _play_damage_screen_shake() -> void:
         tween.parallel().tween_property(background_texture, "position", background_base_position + (offset * 0.45), 0.04)
 
 
-func _show_damage_slash_at_rect(target_rect: Rect2) -> void:
-    if DAMAGE_SLASH_TEXTURE == null:
+func _play_sfx(stream: AudioStream, volume_db: float = 0.0) -> void:
+    if stream == null:
+        return
+
+    var player := AudioStreamPlayer.new()
+    player.stream = stream
+    player.volume_db = volume_db
+    add_child(player)
+    player.finished.connect(func():
+        if is_instance_valid(player):
+            player.queue_free()
+    )
+    player.play()
+
+
+func _play_random_player_hurt_sfx() -> void:
+    if PLAYER_HURT_SFX.is_empty():
+        return
+    var sound: AudioStream = PLAYER_HURT_SFX[randi() % PLAYER_HURT_SFX.size()]
+    _play_sfx(sound)
+
+
+func _play_monster_attack_sfx(card) -> void:
+    match _get_card_name(card):
+        "crypt_hound":
+            _play_sfx(CRYPT_HOUND_SFX)
+        "grave_thrall":
+            _play_sfx(GRAVE_THRALL_SFX)
+        "risen_bones":
+            _play_sfx(RISEN_BONES_SFX)
+
+
+func _play_loot_drop_sfx(card, target_slot: String) -> void:
+    if card == null:
+        return
+
+    _play_sfx(DROP_CARD_SFX)
+
+    if target_slot == "backpack":
+        _play_sfx(BACKPACK_DROP_SFX)
+
+    if _get_card_family(card) == "chest" and target_slot in ["left_hand", "right_hand", "backpack"]:
+        _play_sfx(TREASURE_CHEST_SFX)
+
+
+func _show_damage_slash_at_rect(target_rect: Rect2, texture: Texture2D) -> void:
+    if texture == null:
         return
 
     var slash := TextureRect.new()
-    slash.texture = DAMAGE_SLASH_TEXTURE
+    slash.texture = texture
     slash.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
     slash.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
     slash.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -255,20 +321,20 @@ func _show_damage_slash_at_rect(target_rect: Rect2) -> void:
 func _show_player_damage_slash() -> void:
     if player_avatar_drop_zone == null:
         return
-    _show_damage_slash_at_rect(player_avatar_drop_zone.get_global_rect())
+    _show_damage_slash_at_rect(player_avatar_drop_zone.get_global_rect(), PLAYER_DAMAGE_SLASH_TEXTURE)
 
 
 func _show_boss_damage_slash() -> void:
     if boss_drop_zone == null:
         return
-    _show_damage_slash_at_rect(boss_drop_zone.get_global_rect())
+    _show_damage_slash_at_rect(boss_drop_zone.get_global_rect(), SWORD_DAMAGE_SLASH_TEXTURE)
 
 
 func _show_board_card_damage_slash(board_index: int) -> void:
     var card_view = _get_board_card_view(board_index)
     if card_view == null or not is_instance_valid(card_view):
         return
-    _show_damage_slash_at_rect(card_view.get_global_rect())
+    _show_damage_slash_at_rect(card_view.get_global_rect(), SWORD_DAMAGE_SLASH_TEXTURE)
 
 
 func _deal_opening_board() -> void:
@@ -591,6 +657,7 @@ func _animate_new_board_cards(slot_indices: Array[int]) -> void:
   temp_card.position = source_rect.position - scene_origin
   temp_card.size = source_rect.size
   add_child(temp_card)
+  _play_sfx(DEAL_CARDS_SFX, -3.0)
 
   var target_rect: Rect2 = card_view.get_global_rect()
   var tween = create_tween()
@@ -792,6 +859,8 @@ func handle_slot_to_slot_drop(source_slot: String, target_slot: String) -> void:
         return
 
     var moved := false
+    var moved_card = get_slot_card(source_slot)
+
     if source_slot == "backpack" and target_slot == "left_hand":
         moved = _move_backpack_to_hand(true)
     elif source_slot == "backpack" and target_slot == "right_hand":
@@ -808,6 +877,12 @@ func handle_slot_to_slot_drop(source_slot: String, target_slot: String) -> void:
         moved = _discard_hand_card(false)
 
     if moved:
+        if target_slot == "discard":
+            _play_sfx(DISCARD_SFX)
+        elif target_slot == "backpack":
+            _play_loot_drop_sfx(moved_card, "backpack")
+        elif target_slot in ["left_hand", "right_hand"]:
+            _play_loot_drop_sfx(moved_card, target_slot)
         set_status("Moved card from %s to %s." % [source_slot.replace("_", " "), target_slot.replace("_", " ")])
     else:
         set_status("Could not move card from %s to %s." % [source_slot.replace("_", " "), target_slot.replace("_", " ")])
@@ -865,6 +940,7 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
             return false
         if family == "coin":
             match_state.player_state.add_temporary_gold(_get_card_runtime_value(card))
+            _play_sfx(GAIN_COINS_SFX)
             _mark_runtime_card_resolved(card)
             _mark_runtime_card_exhausted(card)
             _mark_runtime_card_destroyed(card)
@@ -887,6 +963,7 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
             return false
         if family == "coin":
             match_state.player_state.add_temporary_gold(_get_card_runtime_value(card))
+            _play_sfx(GAIN_COINS_SFX)
             _mark_runtime_card_resolved(card)
             _mark_runtime_card_exhausted(card)
             _mark_runtime_card_destroyed(card)
@@ -994,11 +1071,14 @@ func _handle_monster_to_shield(board_index: int, is_left_hand: bool) -> void:
 
     var shield_after = get_slot_card("left_hand" if is_left_hand else "right_hand")
     var damage_taken := health_before - match_state.player_state.current_health
+    _play_sfx(DROP_CARD_SFX)
+    _play_sfx(SHIELD_DEFEND_SFX)
     if shield_after != null:
         set_status("Shield blocked %d and remains at %d." % [monster_value, _get_card_runtime_value(shield_after)])
     elif damage_taken > 0:
         _show_player_damage_slash()
         _play_damage_screen_shake()
+        _play_random_player_hurt_sfx()
         set_status("Shield broke. Player took %d damage." % damage_taken)
     else:
         set_status("Shield broke after blocking %d." % shield_before_value)
@@ -1028,6 +1108,8 @@ func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
         return
 
     var after_count := match_state.board_state.active_count()
+    _play_sfx(DROP_CARD_SFX)
+    _play_sfx(SWORD_SWING_SFX)
     if after_count < before_count:
         _show_board_card_damage_slash(board_index)
         await _animate_board_card_resolution(board_index)
@@ -1060,6 +1142,9 @@ func handle_weapon_drop_on_boss(source_hand: String) -> void:
         return
 
     var after_health := match_state.boss_state.current_health
+    _play_sfx(DROP_CARD_SFX)
+    _play_sfx(SWORD_SWING_SFX)
+    _play_sfx(GRAVEBOUND_WARDEN_HURT_SFX)
     if after_health <= 0:
         _show_boss_damage_slash()
         set_status("Gravebound Warden defeated.")
@@ -1421,8 +1506,9 @@ func handle_drop_to_left_hand(board_index: int) -> void:
  print("handle_drop_to_left_hand called with index: ", board_index)
 
  var active_cards = match_state.board_state.get_active_cards()
+ var board_card = null
  if board_index >= 0 and board_index < active_cards.size():
-  var board_card = active_cards[board_index]
+  board_card = active_cards[board_index]
   if _get_card_family(board_card) == "monster" and can_resolve_monster_into_shield("left_hand"):
    await _handle_monster_to_shield(board_index, true)
    return
@@ -1436,6 +1522,9 @@ func handle_drop_to_left_hand(board_index: int) -> void:
  print("after move, left hand: ", after_left_hand)
 
  if success:
+  _play_loot_drop_sfx(board_card, "left_hand")
+  if board_card != null and _get_card_family(board_card) == "coin":
+   _play_sfx(GAIN_COINS_SFX)
   await _animate_board_card_resolution(board_index)
   set_status("Dropped card into left hand.")
  else:
@@ -1449,8 +1538,9 @@ func handle_drop_to_right_hand(board_index: int) -> void:
  print("handle_drop_to_right_hand called with index: ", board_index)
 
  var active_cards = match_state.board_state.get_active_cards()
+ var board_card = null
  if board_index >= 0 and board_index < active_cards.size():
-  var board_card = active_cards[board_index]
+  board_card = active_cards[board_index]
   if _get_card_family(board_card) == "monster" and can_resolve_monster_into_shield("right_hand"):
    await _handle_monster_to_shield(board_index, false)
    return
@@ -1464,6 +1554,9 @@ func handle_drop_to_right_hand(board_index: int) -> void:
  print("after move, right hand: ", after_right_hand)
 
  if success:
+  _play_loot_drop_sfx(board_card, "right_hand")
+  if board_card != null and _get_card_family(board_card) == "coin":
+   _play_sfx(GAIN_COINS_SFX)
   await _animate_board_card_resolution(board_index)
   set_status("Dropped card into right hand.")
  else:
@@ -1477,6 +1570,11 @@ func handle_drop_to_backpack(board_index: int) -> void:
 
  print("handle_drop_to_backpack called with index: ", board_index)
 
+ var active_cards = match_state.board_state.get_active_cards()
+ var board_card = null
+ if board_index >= 0 and board_index < active_cards.size():
+  board_card = active_cards[board_index]
+
  var before_backpack = match_state.player_state.backpack_cards.size()
  print("before move, backpack size: ", before_backpack)
 
@@ -1486,6 +1584,7 @@ func handle_drop_to_backpack(board_index: int) -> void:
  print("after move, backpack size: ", after_backpack)
 
  if success:
+  _play_loot_drop_sfx(board_card, "backpack")
   await _animate_board_card_resolution(board_index)
   set_status("Dropped card into backpack.")
  else:
@@ -1499,6 +1598,11 @@ func handle_drop_to_player_avatar(board_index: int) -> void:
 
  print("handle_drop_to_player_avatar called with index: ", board_index)
 
+ var active_cards = match_state.board_state.get_active_cards()
+ var board_card = null
+ if board_index >= 0 and board_index < active_cards.size():
+  board_card = active_cards[board_index]
+
  var before_health = match_state.player_state.current_health
  print("before resolve, player health: ", before_health)
 
@@ -1508,10 +1612,13 @@ func handle_drop_to_player_avatar(board_index: int) -> void:
  print("after resolve, player health: ", after_health)
 
  if success:
+  _play_sfx(DROP_CARD_SFX)
+  _play_monster_attack_sfx(board_card)
   await _animate_board_card_resolution(board_index)
   if after_health < before_health:
    _show_player_damage_slash()
    _play_damage_screen_shake()
+   _play_random_player_hurt_sfx()
   set_status("Dropped monster onto player.")
  else:
   set_status("Only monsters can be dropped onto the player.")
@@ -1528,6 +1635,8 @@ func handle_drop_to_discard(board_index: int) -> void:
  var success := combat_controller.trash_player_card_from_board(board_index)
 
  if success:
+  _play_sfx(DROP_CARD_SFX)
+  _play_sfx(DISCARD_SFX)
   await _animate_board_card_resolution(board_index)
   set_status("Discarded card without benefit.")
  else:
