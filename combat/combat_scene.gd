@@ -53,6 +53,7 @@ const CARD_ART_TEXTURES := {
 @onready var discard_texture = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone/DiscardTexture
 @onready var background_texture = $Background
 @onready var battle_music_player = $BattleMusic
+@onready var fade_overlay = $FadeOverlay
 
 @onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/PlacementTexture
 @onready var player_avatar_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas/AvatarTexture
@@ -98,8 +99,8 @@ func _ready() -> void:
     _apply_visual_theme()
     _start_battle_music()
     set_status("Ready.")
-
     _refresh_ui()
+    call_deferred("_play_battle_intro")
 
 
 func _start_battle_music() -> void:
@@ -111,6 +112,33 @@ func _start_battle_music() -> void:
 
     if not battle_music_player.playing:
         battle_music_player.play()
+
+
+func _play_battle_intro() -> void:
+    if fade_overlay != null:
+        fade_overlay.visible = true
+        fade_overlay.modulate.a = 1.0
+
+    await get_tree().process_frame
+
+    var fade_tween = create_tween()
+    if fade_overlay != null:
+        fade_tween.tween_property(fade_overlay, "modulate:a", 0.0, 1.0)
+
+    await get_tree().create_timer(0.2).timeout
+    _deal_opening_board()
+
+    await fade_tween.finished
+    if fade_overlay != null:
+        fade_overlay.visible = false
+
+
+func _deal_opening_board() -> void:
+    if match_state == null or match_state.board_state == null or match_state.shared_deck_state == null:
+        return
+
+    match_state.board_state.refill_from_deck(match_state.shared_deck_state)
+    _refresh_ui()
 
 
 
@@ -137,7 +165,6 @@ func _build_test_match_state() -> void:
 
     var board_state := BoardState.new()
     board_state.setup(ACTIVE_BOARD_CAP)
-    board_state.refill_from_deck(shared_deck)
 
     var player_state := PlayerCombatState.new()
     player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
@@ -1081,6 +1108,7 @@ func _run_combat_reset(outcome: String) -> void:
     restart_pending = false
     set_status("Fresh restart.")
     _refresh_ui()
+    await _play_battle_intro()
 
 func _on_take_first_monster_pressed() -> void:
  if restart_pending:
