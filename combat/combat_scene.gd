@@ -453,7 +453,9 @@ func _build_crypt_hound_debug_text() -> String:
             lines.append("Crypt Hound: Board position %d" % (i + 1))
             board_count += 1
 
-    var resolved_count := max(CRYPT_HOUND_TOTAL - deck_positions.size() - board_count, 0)
+    var resolved_count = CRYPT_HOUND_TOTAL - deck_positions.size() - board_count
+    if resolved_count < 0:
+        resolved_count = 0
     for i in range(resolved_count):
         lines.append("Crypt Hound: Resolved")
 
