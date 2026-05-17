@@ -222,6 +222,7 @@ func _refresh_board_cards() -> void:
   board_card_list.add_child(card_view)
   card_view.setup(card, i)
   if board_visuals_initialized and i in changed_slots:
+   card_view.visible = false
    card_view.modulate.a = 0.0
 
  last_board_card_ids = next_board_card_ids
@@ -398,6 +399,7 @@ func _animate_new_board_cards(slot_indices: Array[int]) -> void:
    continue
 
   if card_view is Control:
+   card_view.visible = true
    card_view.modulate.a = 0.0
 
   var temp_card := TextureRect.new()
