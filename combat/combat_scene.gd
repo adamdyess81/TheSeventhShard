@@ -1527,6 +1527,8 @@ func handle_drop_to_left_hand(board_index: int) -> void:
   _play_loot_drop_sfx(board_card, "left_hand")
   if board_card != null and _get_card_family(board_card) == "coin":
    _play_sfx(GAIN_COINS_SFX)
+  elif board_card != null and _get_card_family(board_card) == "potion":
+   _play_sfx(DRINK_POTION_SFX)
   await _animate_board_card_resolution(board_index)
   set_status("Dropped card into left hand.")
  else:
@@ -1559,6 +1561,8 @@ func handle_drop_to_right_hand(board_index: int) -> void:
   _play_loot_drop_sfx(board_card, "right_hand")
   if board_card != null and _get_card_family(board_card) == "coin":
    _play_sfx(GAIN_COINS_SFX)
+  elif board_card != null and _get_card_family(board_card) == "potion":
+   _play_sfx(DRINK_POTION_SFX)
   await _animate_board_card_resolution(board_index)
   set_status("Dropped card into right hand.")
  else:
