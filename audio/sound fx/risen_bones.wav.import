@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://ccwc1yg5sowap"
+path="res://.godot/imported/risen_bones.wav-1aa43665a264f8a8cfbbc96459a179bb.sample"
+
+[deps]
+
+source_file="res://audio/sound fx/risen_bones.wav"
+dest_files=["res://.godot/imported/risen_bones.wav-1aa43665a264f8a8cfbbc96459a179bb.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

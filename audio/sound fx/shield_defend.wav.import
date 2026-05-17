@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c3hfs2ldvo1o3"
+path="res://.godot/imported/shield_defend.wav-8e7933e0ac64b7c919a53fdb80c266a3.sample"
+
+[deps]
+
+source_file="res://audio/sound fx/shield_defend.wav"
+dest_files=["res://.godot/imported/shield_defend.wav-8e7933e0ac64b7c919a53fdb80c266a3.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
