@@ -37,7 +37,7 @@ func _get_drag_data(_at_position):
  if not combat_scene.can_drag_slot_card(drop_target):
   return null
 
- var preview = duplicate()
+ var preview = _build_slot_drag_preview()
  set_drag_preview(preview)
  modulate.a = 0.35
 
@@ -48,6 +48,28 @@ func _get_drag_data(_at_position):
 
  print("slot drag data: ", data)
  return data
+
+
+func _build_slot_drag_preview() -> Control:
+ var preview_root := Control.new()
+ preview_root.custom_minimum_size = size
+ preview_root.size = size
+
+ var card_canvas = get_node_or_null("CardCanvas")
+ if card_canvas != null:
+  var canvas_preview = card_canvas.duplicate()
+  canvas_preview.position = Vector2.ZERO
+  canvas_preview.size = size
+  if canvas_preview is Control:
+   canvas_preview.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+  preview_root.add_child(canvas_preview)
+ else:
+  var fallback = duplicate()
+  if fallback is Control:
+   fallback.position = Vector2.ZERO
+  preview_root.add_child(fallback)
+
+ return preview_root
 
 
 func _drop_data(_at_position, data) -> void:
