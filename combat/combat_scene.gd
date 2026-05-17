@@ -63,6 +63,8 @@ const CARD_ART_TEXTURES := {
 @onready var right_hand_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone
 @onready var backpack_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone
 @onready var discard_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone
+@onready var player_life_bar = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerLifeBar
+@onready var player_life_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerLifeBar/PlayerLifeLabel
 @onready var left_hand_value_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/ValueLabel
 @onready var left_hand_name_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/BottomText/NameLabel
 @onready var left_hand_type_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/BottomText/TypeLabel
@@ -177,6 +179,10 @@ func _refresh_ui() -> void:
     round_label.text = "Round: %d" % match_state.round_number
     gold_label.text = "Gold: %d" % match_state.player_state.temporary_gold
     deck_count_label.text = "Deck: %d" % match_state.shared_deck_state.remaining_count()
+    player_life_label.text = "%d/%d" % [
+        match_state.player_state.current_health,
+        match_state.player_state.max_health
+    ]
 
     _refresh_boss_panel()
     _refresh_board_cards()
@@ -880,6 +886,20 @@ func _apply_visual_theme() -> void:
     boss_life_bar.add_theme_stylebox_override("panel", boss_life_style)
     boss_life_label.add_theme_color_override("font_color", Color("ffffff"))
     boss_life_label.add_theme_font_size_override("font_size", 18)
+    var player_life_style := StyleBoxFlat.new()
+    player_life_style.bg_color = Color("5e2726")
+    player_life_style.border_color = Color("d7b17a")
+    player_life_style.border_width_left = 2
+    player_life_style.border_width_top = 2
+    player_life_style.border_width_right = 2
+    player_life_style.border_width_bottom = 2
+    player_life_style.corner_radius_top_left = 10
+    player_life_style.corner_radius_top_right = 10
+    player_life_style.corner_radius_bottom_right = 10
+    player_life_style.corner_radius_bottom_left = 10
+    player_life_bar.add_theme_stylebox_override("panel", player_life_style)
+    player_life_label.add_theme_color_override("font_color", Color("ffffff"))
+    player_life_label.add_theme_font_size_override("font_size", 18)
 
     _style_debug_button(take_first_monster_button)
     _style_debug_button(move_first_to_left_hand_button)

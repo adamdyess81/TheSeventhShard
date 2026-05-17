@@ -189,7 +189,7 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="DiscardDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn" unique_id=1482994978]
-custom_minimum_size = Vector2(184, 252)
+custom_minimum_size = Vector2(220, 300)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "discard"
@@ -197,7 +197,7 @@ combat_scene_path = NodePath("../../../../../../../../../../")
 allowed_families = PackedStringArray("weapon", "shield", "potion", "spell", "artifact", "coin", "chest")
 
 [node name="DiscardTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone" unique_id=1071775794]
-custom_minimum_size = Vector2(176, 190)
+custom_minimum_size = Vector2(220, 300)
 layout_mode = 2
 mouse_filter = 2
 texture = ExtResource("7_w6j6n")
@@ -247,7 +247,7 @@ theme_override_constants/separation = 12
 
 [node name="DropZoneRow" type="HBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup" unique_id=1061202853]
 layout_mode = 2
-theme_override_constants/separation = 28
+theme_override_constants/separation = 18
 alignment = 1
 
 [node name="LeftHandDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow" unique_id=462332348]
@@ -319,7 +319,7 @@ text = ""
 horizontal_alignment = 1
 
 [node name="PlayerAvatarDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow" unique_id=1411459182]
-custom_minimum_size = Vector2(168, 248)
+custom_minimum_size = Vector2(248, 340)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "player_avatar"
@@ -327,12 +327,36 @@ combat_scene_path = NodePath("../../../../../../../../")
 allowed_families = PackedStringArray("monster")
 
 [node name="AvatarTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone" unique_id=1326504604]
-custom_minimum_size = Vector2(168, 248)
-layout_mode = 2
+custom_minimum_size = Vector2(248, 340)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("3_3of7o")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="PlayerLifeBar" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone" unique_id=1411459183]
+custom_minimum_size = Vector2(134, 32)
+layout_mode = 1
+anchors_preset = 12
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -67.0
+offset_top = -46.0
+offset_right = 67.0
+offset_bottom = -14.0
+mouse_filter = 2
+
+[node name="PlayerLifeLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerLifeBar" unique_id=1411459184]
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="RightHandDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow" unique_id=1720654289]
 custom_minimum_size = Vector2(220, 300)
@@ -482,7 +506,7 @@ text = "Left Hand: [empty]"
 horizontal_alignment = 1
 
 [node name="PlayerLabel" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow" unique_id=436620657]
-custom_minimum_size = Vector2(168, 0)
+custom_minimum_size = Vector2(248, 0)
 layout_mode = 2
 text = "Player"
 horizontal_alignment = 1
