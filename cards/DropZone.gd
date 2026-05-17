@@ -86,7 +86,7 @@ func _drop_data(_at_position, data) -> void:
    print("boss only accepts slot-dragged weapons")
   else:
    print("unhandled board drop_target: '", normalized_target, "'")
- elif normalized_target in ["left_hand", "right_hand", "backpack", "boss"]:
+ elif normalized_target in ["left_hand", "right_hand", "backpack", "discard", "boss"]:
   if normalized_target == "boss":
    combat_scene.handle_weapon_drop_on_boss(String(data.get("source", "")).strip_edges())
   else:
