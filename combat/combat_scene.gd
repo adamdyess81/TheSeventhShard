@@ -136,6 +136,32 @@ func _start_battle_music() -> void:
         battle_music_player.play()
 
 
+func _resume_battle_music_from_outcome() -> void:
+    var active_stinger: AudioStreamPlayer = null
+    if defeat_stinger_player != null and defeat_stinger_player.playing:
+        active_stinger = defeat_stinger_player
+    elif victory_stinger_player != null and victory_stinger_player.playing:
+        active_stinger = victory_stinger_player
+
+    if active_stinger != null:
+        active_stinger.volume_db = 0.0
+        var fade_out := create_tween()
+        fade_out.tween_property(active_stinger, "volume_db", -24.0, 0.35)
+        await fade_out.finished
+        active_stinger.stop()
+        active_stinger.volume_db = 0.0
+
+    if battle_music_player == null or battle_music_player.stream == null:
+        return
+
+    battle_music_player.stop()
+    battle_music_player.volume_db = -24.0
+    battle_music_player.play()
+
+    var fade_in := create_tween()
+    fade_in.tween_property(battle_music_player, "volume_db", 0.0, 0.45)
+
+
 func _play_outcome_music(is_victory: bool) -> void:
     if battle_music_player != null and battle_music_player.playing:
         battle_music_player.stop()
@@ -1283,6 +1309,7 @@ func is_modal_open() -> bool:
 
 
 func _restart_battle() -> void:
+    await _resume_battle_music_from_outcome()
     _build_test_match_state()
     restart_pending = false
     set_status("Fresh restart.")
