@@ -54,6 +54,12 @@ const CARD_ART_TEXTURES := {
 @onready var background_texture = $Background
 @onready var battle_music_player = $BattleMusic
 @onready var fade_overlay = $FadeOverlay
+@onready var end_modal_overlay = $EndModalOverlay
+@onready var end_modal = $EndModalOverlay/EndModalCenter/EndModal
+@onready var end_modal_title = $EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalTitle
+@onready var end_modal_stats = $EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalStats
+@onready var retry_button = $EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalButtons/RetryButton
+@onready var quit_button = $EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalButtons/QuitButton
 
 @onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/PlacementTexture
 @onready var player_avatar_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas/AvatarTexture
@@ -98,6 +104,8 @@ func _ready() -> void:
     _build_test_match_state()
     _apply_visual_theme()
     _start_battle_music()
+    retry_button.pressed.connect(_on_retry_battle_pressed)
+    quit_button.pressed.connect(_on_quit_battle_pressed)
     set_status("Ready.")
     _refresh_ui()
     call_deferred("_play_battle_intro")
@@ -115,6 +123,7 @@ func _start_battle_music() -> void:
 
 
 func _play_battle_intro() -> void:
+    _hide_end_modal()
     if fade_overlay != null:
         fade_overlay.visible = true
         fade_overlay.modulate.a = 1.0
@@ -948,6 +957,7 @@ func _apply_visual_theme() -> void:
     _style_loadout_label(player_label)
     _style_loadout_label(right_hand_label)
     _style_loadout_label(backpack_label)
+    _style_end_modal()
     _style_slot_text(left_hand_name_label, left_hand_type_label, left_hand_value_label)
     _style_slot_text(right_hand_name_label, right_hand_type_label, right_hand_value_label)
     _style_slot_text(backpack_name_label, backpack_type_label, backpack_value_label)
@@ -1079,6 +1089,31 @@ func _style_slot_text(name_label: Label, type_label: Label, value_label: Label) 
     value_label.add_theme_font_size_override("font_size", 18)
 
 
+func _style_end_modal() -> void:
+    if end_modal == null:
+        return
+
+    var panel_style := StyleBoxFlat.new()
+    panel_style.bg_color = Color("1b1410")
+    panel_style.border_color = Color("8a6651")
+    panel_style.border_width_left = 2
+    panel_style.border_width_top = 2
+    panel_style.border_width_right = 2
+    panel_style.border_width_bottom = 2
+    panel_style.corner_radius_top_left = 18
+    panel_style.corner_radius_top_right = 18
+    panel_style.corner_radius_bottom_right = 18
+    panel_style.corner_radius_bottom_left = 18
+    end_modal.add_theme_stylebox_override("panel", panel_style)
+
+    end_modal_title.add_theme_color_override("font_color", Color("f7ead7"))
+    end_modal_title.add_theme_font_size_override("font_size", 28)
+    end_modal_stats.add_theme_color_override("font_color", HUD_TEXT)
+    end_modal_stats.add_theme_font_size_override("font_size", 18)
+    retry_button.add_theme_font_size_override("font_size", 16)
+    quit_button.add_theme_font_size_override("font_size", 16)
+
+
 func _queue_restart_if_finished() -> void:
     if restart_pending:
         return
@@ -1091,24 +1126,55 @@ func _queue_restart_if_finished() -> void:
         return
 
     restart_pending = true
-    call_deferred("_begin_combat_reset", outcome)
+    call_deferred("_show_battle_end_modal", outcome)
 
-
-func _begin_combat_reset(outcome: String) -> void:
-    _run_combat_reset(outcome)
-
-
-func _run_combat_reset(outcome: String) -> void:
+func _show_battle_end_modal(outcome: String) -> void:
     if outcome == "victory":
-        set_status("Boss defeated. Restarting combat...")
+        set_status("Boss defeated.")
+        end_modal_title.text = "Victory"
     else:
-        set_status("You died. Restarting...")
-    await get_tree().create_timer(0.9).timeout
+        set_status("You died.")
+        end_modal_title.text = "Defeat"
+
+    var gold_delta := match_state.player_state.temporary_gold
+    var gold_text := "Gold Gained: %d" % gold_delta
+    if gold_delta < 0:
+        gold_text = "Gold Lost: %d" % abs(gold_delta)
+
+    end_modal_stats.text = "Rounds: %d\n%s" % [
+        match_state.round_number,
+        gold_text
+    ]
+    end_modal_overlay.visible = true
+    retry_button.grab_focus()
+
+
+func _hide_end_modal() -> void:
+    if end_modal_overlay != null:
+        end_modal_overlay.visible = false
+
+
+func _restart_battle() -> void:
     _build_test_match_state()
     restart_pending = false
     set_status("Fresh restart.")
     _refresh_ui()
     await _play_battle_intro()
+
+
+func _on_retry_battle_pressed() -> void:
+    _hide_end_modal()
+    _restart_battle()
+
+
+func _on_quit_battle_pressed() -> void:
+    get_tree().quit()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+    if event.is_action_pressed("ui_cancel") and end_modal_overlay != null and end_modal_overlay.visible:
+        get_viewport().set_input_as_handled()
+        _on_quit_battle_pressed()
 
 func _on_take_first_monster_pressed() -> void:
  if restart_pending:

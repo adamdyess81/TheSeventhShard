@@ -47,6 +47,58 @@ z_index = 100
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
+[node name="EndModalOverlay" type="ColorRect" parent="." unique_id=271828183]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = 200
+mouse_filter = 0
+color = Color(0, 0, 0, 0.72)
+
+[node name="EndModalCenter" type="CenterContainer" parent="EndModalOverlay" unique_id=271828184]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="EndModal" type="PanelContainer" parent="EndModalOverlay/EndModalCenter" unique_id=271828185]
+custom_minimum_size = Vector2(420, 260)
+layout_mode = 2
+
+[node name="EndModalContent" type="VBoxContainer" parent="EndModalOverlay/EndModalCenter/EndModal" unique_id=271828186]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="EndModalTitle" type="Label" parent="EndModalOverlay/EndModalCenter/EndModal/EndModalContent" unique_id=271828187]
+layout_mode = 2
+text = "Victory"
+horizontal_alignment = 1
+
+[node name="EndModalStats" type="Label" parent="EndModalOverlay/EndModalCenter/EndModal/EndModalContent" unique_id=271828188]
+layout_mode = 2
+text = "Rounds: 0\nGold: 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EndModalButtons" type="HBoxContainer" parent="EndModalOverlay/EndModalCenter/EndModal/EndModalContent" unique_id=271828189]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="RetryButton" type="Button" parent="EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalButtons" unique_id=271828190]
+layout_mode = 2
+text = "Try again?"
+
+[node name="QuitButton" type="Button" parent="EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalButtons" unique_id=271828191]
+layout_mode = 2
+text = "Quit"
+
 [node name="RootLayout" type="VBoxContainer" parent="." unique_id=247386464]
 layout_mode = 1
 anchors_preset = 15
