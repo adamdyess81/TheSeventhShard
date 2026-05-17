@@ -212,7 +212,7 @@ func _refresh_board_cards() -> void:
    continue
   var card_key := _get_card_unique_key(card)
   next_board_card_ids.append(card_key)
-  if board_visuals_initialized:
+ if board_visuals_initialized:
    var previous_key := ""
    if i < last_board_card_ids.size():
     previous_key = last_board_card_ids[i]
@@ -221,6 +221,8 @@ func _refresh_board_cards() -> void:
   var card_view = CARD_VIEW_SCENE.instantiate()
   board_card_list.add_child(card_view)
   card_view.setup(card, i)
+  if board_visuals_initialized and i in changed_slots:
+   card_view.modulate.a = 0.0
 
  last_board_card_ids = next_board_card_ids
  if board_visuals_initialized and changed_slots.size() > 0:
@@ -411,9 +413,9 @@ func _animate_new_board_cards(slot_indices: Array[int]) -> void:
   var target_rect: Rect2 = card_view.get_global_rect()
   var tween = create_tween()
   tween.set_parallel(true)
-  tween.tween_property(temp_card, "position", target_rect.position - scene_origin, 0.22)
-  tween.tween_property(temp_card, "size", target_rect.size, 0.22)
-  tween.tween_property(card_view, "modulate:a", 1.0, 0.16)
+  tween.tween_property(temp_card, "position", target_rect.position - scene_origin, 0.38)
+  tween.tween_property(temp_card, "size", target_rect.size, 0.38)
+  tween.tween_property(card_view, "modulate:a", 1.0, 0.26)
   tween.finished.connect(func():
    if is_instance_valid(temp_card):
     temp_card.queue_free()
