@@ -849,13 +849,13 @@ func _apply_visual_theme() -> void:
     deck_count_label.add_theme_font_size_override("font_size", 14)
     player_label.add_theme_color_override("font_color", HUD_MUTED)
 
-    button_bar.visible = false
-    _style_zone(left_hand_drop_zone, PANEL_BORDER, Color(0, 0, 0, 0))
-    _style_zone(boss_drop_zone, Color("8a6651"), Color(0, 0, 0, 0))
-    _style_zone(player_avatar_drop_zone, Color("8d7867"), Color(0, 0, 0, 0))
-    _style_zone(right_hand_drop_zone, PANEL_BORDER, Color(0, 0, 0, 0))
-    _style_zone(backpack_drop_zone, Color("6e7e66"), Color(0, 0, 0, 0))
-    _style_zone(discard_drop_zone, DISCARD_BORDER)
+    button_bar.visible = true
+    _style_zone(left_hand_drop_zone, PANEL_BORDER, Color(0, 0, 0, 0), 0)
+    _style_zone(boss_drop_zone, Color("8a6651"), Color(0, 0, 0, 0), 0)
+    _style_zone(player_avatar_drop_zone, Color("8d7867"), Color(0, 0, 0, 0), 0)
+    _style_zone(right_hand_drop_zone, PANEL_BORDER, Color(0, 0, 0, 0), 0)
+    _style_zone(backpack_drop_zone, Color("6e7e66"), Color(0, 0, 0, 0), 0)
+    _style_zone(discard_drop_zone, DISCARD_BORDER, Color(0, 0, 0, 0), 0)
 
     _style_loadout_label(left_hand_label)
     _style_loadout_label(player_label)
@@ -892,20 +892,20 @@ func _apply_visual_theme() -> void:
     status_label.add_theme_font_size_override("font_size", 15)
 
 
-func _style_zone(panel: PanelContainer, border_color: Color, fill_color: Color = PANEL_FILL) -> void:
+func _style_zone(panel: PanelContainer, border_color: Color, fill_color: Color = PANEL_FILL, border_width: int = 2) -> void:
     var style := StyleBoxFlat.new()
     style.bg_color = fill_color
     style.border_color = border_color
-    style.border_width_left = 2
-    style.border_width_top = 2
-    style.border_width_right = 2
-    style.border_width_bottom = 2
+    style.border_width_left = border_width
+    style.border_width_top = border_width
+    style.border_width_right = border_width
+    style.border_width_bottom = border_width
     style.corner_radius_top_left = 18
     style.corner_radius_top_right = 18
     style.corner_radius_bottom_right = 18
     style.corner_radius_bottom_left = 18
-    style.shadow_color = Color(0, 0, 0, 0.28)
-    style.shadow_size = 5
+    style.shadow_color = Color(0, 0, 0, 0)
+    style.shadow_size = 0
     panel.add_theme_stylebox_override("panel", style)
 
 
@@ -913,9 +913,9 @@ func _refresh_slot_state_visuals() -> void:
     _reset_slot_visual_state(left_hand_drop_zone, left_hand_texture, PANEL_BORDER)
     _reset_slot_visual_state(right_hand_drop_zone, right_hand_texture, PANEL_BORDER)
     _reset_slot_visual_state(backpack_drop_zone, backpack_texture, Color("6e7e66"))
-    _style_zone(player_avatar_drop_zone, Color("8d7867"), Color(0, 0, 0, 0))
-    _style_zone(boss_drop_zone, Color("8a6651"), Color(0, 0, 0, 0))
-    _style_zone(discard_drop_zone, DISCARD_BORDER)
+    _style_zone(player_avatar_drop_zone, Color("8d7867"), Color(0, 0, 0, 0), 0)
+    _style_zone(boss_drop_zone, Color("8a6651"), Color(0, 0, 0, 0), 0)
+    _style_zone(discard_drop_zone, DISCARD_BORDER, Color(0, 0, 0, 0), 0)
     player_avatar_texture.modulate = Color(1, 1, 1, 1)
     boss_art_texture.modulate = Color(1, 1, 1, 1)
     discard_texture.modulate = Color(1, 1, 1, 1)
@@ -928,7 +928,7 @@ func _refresh_slot_state_visuals() -> void:
 
 
 func _reset_slot_visual_state(panel: PanelContainer, texture_rect: TextureRect, border_color: Color) -> void:
-    _style_zone(panel, border_color, Color(0, 0, 0, 0))
+    _style_zone(panel, border_color, Color(0, 0, 0, 0), 0)
     panel.modulate = Color(1, 1, 1, 1)
     texture_rect.modulate = Color(1, 1, 1, 1)
 
@@ -937,16 +937,16 @@ func _apply_exhausted_slot_visual(panel: PanelContainer, texture_rect: TextureRe
     var style := StyleBoxFlat.new()
     style.bg_color = Color(0, 0, 0, 0)
     style.border_color = Color("d15b5b")
-    style.border_width_left = 3
-    style.border_width_top = 3
-    style.border_width_right = 3
-    style.border_width_bottom = 3
+    style.border_width_left = 0
+    style.border_width_top = 0
+    style.border_width_right = 0
+    style.border_width_bottom = 0
     style.corner_radius_top_left = 18
     style.corner_radius_top_right = 18
     style.corner_radius_bottom_right = 18
     style.corner_radius_bottom_left = 18
-    style.shadow_color = Color(0, 0, 0, 0.28)
-    style.shadow_size = 5
+    style.shadow_color = Color(0, 0, 0, 0)
+    style.shadow_size = 0
     panel.add_theme_stylebox_override("panel", style)
     texture_rect.modulate = Color(0.62, 0.3, 0.3, 1.0)
 
@@ -973,12 +973,12 @@ func clear_all_drop_zone_previews() -> void:
 
 
 func _style_loadout_label(label: Label) -> void:
-    label.add_theme_color_override("font_color", HUD_MUTED)
+    label.add_theme_color_override("font_color", HUD_TEXT)
     label.add_theme_font_size_override("font_size", 13)
 
 
 func _style_debug_button(button: Button) -> void:
-    button.modulate = Color(0.9, 0.86, 0.79, 0.84)
+    button.modulate = Color(0.95, 0.92, 0.86, 0.98)
     button.add_theme_font_size_override("font_size", 12)
 
 

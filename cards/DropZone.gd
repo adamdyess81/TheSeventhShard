@@ -8,6 +8,7 @@ var combat_scene
 
 func _ready() -> void:
  combat_scene = get_node_or_null(combat_scene_path)
+ mouse_exited.connect(_on_mouse_exited)
  print("DropZone ready: ", name)
  print("drop_target: ", drop_target)
  print("combat_scene_path: ", combat_scene_path)
@@ -100,3 +101,8 @@ func _notification(what: int) -> void:
    combat_scene.clear_all_drop_zone_previews()
   if not get_viewport().gui_is_drag_successful():
    modulate.a = 1.0
+
+
+func _on_mouse_exited() -> void:
+ if combat_scene != null:
+  combat_scene.clear_all_drop_zone_previews()
