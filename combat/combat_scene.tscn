@@ -66,14 +66,17 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="EndModal" type="PanelContainer" parent="EndModalOverlay/EndModalCenter" unique_id=271828185]
 custom_minimum_size = Vector2(420, 260)
 layout_mode = 2
+mouse_filter = 2
 
 [node name="EndModalContent" type="VBoxContainer" parent="EndModalOverlay/EndModalCenter/EndModal" unique_id=271828186]
 layout_mode = 2
 theme_override_constants/separation = 16
+mouse_filter = 2
 
 [node name="EndModalTitle" type="Label" parent="EndModalOverlay/EndModalCenter/EndModal/EndModalContent" unique_id=271828187]
 layout_mode = 2
@@ -90,6 +93,7 @@ vertical_alignment = 1
 layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
+mouse_filter = 2
 
 [node name="RetryButton" type="Button" parent="EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalButtons" unique_id=271828190]
 layout_mode = 2

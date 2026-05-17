@@ -1182,15 +1182,12 @@ func _on_quit_battle_pressed() -> void:
     get_tree().quit()
 
 
-func _input(event: InputEvent) -> void:
+func _process(_delta: float) -> void:
     if end_modal_overlay == null or not end_modal_overlay.visible:
         return
 
-    if event is InputEventKey and event.pressed and not event.echo:
-        var key_event := event as InputEventKey
-        if key_event.keycode == KEY_ESCAPE:
-            get_viewport().set_input_as_handled()
-            _on_quit_battle_pressed()
+    if Input.is_action_just_pressed("ui_cancel"):
+        _on_quit_battle_pressed()
 
 func _on_take_first_monster_pressed() -> void:
  if restart_pending:
