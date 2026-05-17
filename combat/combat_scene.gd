@@ -156,6 +156,7 @@ func _refresh_ui() -> void:
     _refresh_board_cards()
     _refresh_drop_zone_textures()
     _refresh_equipment_labels()
+    _refresh_slot_state_visuals()
     _queue_restart_if_failed()
 
 
@@ -497,6 +498,41 @@ func _style_zone(panel: PanelContainer, border_color: Color) -> void:
     style.border_width_top = 2
     style.border_width_right = 2
     style.border_width_bottom = 2
+    style.corner_radius_top_left = 18
+    style.corner_radius_top_right = 18
+    style.corner_radius_bottom_right = 18
+    style.corner_radius_bottom_left = 18
+    style.shadow_color = Color(0, 0, 0, 0.28)
+    style.shadow_size = 5
+    panel.add_theme_stylebox_override("panel", style)
+
+
+func _refresh_slot_state_visuals() -> void:
+    _reset_slot_visual_state(left_hand_drop_zone, left_hand_texture, PANEL_BORDER)
+    _reset_slot_visual_state(right_hand_drop_zone, right_hand_texture, PANEL_BORDER)
+    _reset_slot_visual_state(backpack_drop_zone, backpack_texture, Color("6e7e66"))
+
+    if match_state.player_state.left_hand_exhausted:
+        _apply_exhausted_slot_visual(left_hand_drop_zone)
+
+    if match_state.player_state.right_hand_exhausted:
+        _apply_exhausted_slot_visual(right_hand_drop_zone)
+
+
+func _reset_slot_visual_state(panel: PanelContainer, texture_rect: TextureRect, border_color: Color) -> void:
+    _style_zone(panel, border_color)
+    panel.modulate = Color(1, 1, 1, 1)
+    texture_rect.modulate = Color(1, 1, 1, 1)
+
+
+func _apply_exhausted_slot_visual(panel: PanelContainer) -> void:
+    var style := StyleBoxFlat.new()
+    style.bg_color = Color("2b1414")
+    style.border_color = Color("d15b5b")
+    style.border_width_left = 3
+    style.border_width_top = 3
+    style.border_width_right = 3
+    style.border_width_bottom = 3
     style.corner_radius_top_left = 18
     style.corner_radius_top_right = 18
     style.corner_radius_bottom_right = 18

@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://deuf62lc3xk7n" path="res://art/ui/RightHand Placement Card.png" id="5_6ggyu"]
 [ext_resource type="Texture2D" uid="uid://cy8xyafcik6rj" path="res://art/ui/Backpack Placement Card.png" id="6_7f78p"]
 [ext_resource type="Texture2D" uid="uid://d3gpdmwg1yprj" path="res://art/ui/Trash Placement Card.png" id="7_w6j6n"]
+[ext_resource type="Texture2D" uid="uid://dbb1qd0v8em2x" path="res://art/backgrounds/Ossara-Titled-Arena.png" id="8_bg"]
 
 [node name="CombatScene" type="Control" unique_id=72309142]
 layout_mode = 3
@@ -16,6 +17,18 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_q5cen")
+
+[node name="Background" type="TextureRect" parent="." unique_id=184310001]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_bg")
+expand_mode = 1
+stretch_mode = 6
 
 [node name="RootLayout" type="VBoxContainer" parent="." unique_id=247386464]
 layout_mode = 1
@@ -103,9 +116,9 @@ horizontal_alignment = 1
 [node name="BoardLane" type="HBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection" unique_id=496576509]
 layout_mode = 2
 theme_override_constants/separation = 28
-alignment = 1
 
 [node name="DiscardCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane" unique_id=287941338]
+custom_minimum_size = Vector2(220, 300)
 layout_mode = 2
 
 [node name="DiscardColumn" type="VBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter" unique_id=1099231953]
@@ -134,6 +147,7 @@ text = "Discard"
 horizontal_alignment = 1
 
 [node name="BoardCardList" type="GridContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane" unique_id=1796195183]
+custom_minimum_size = Vector2(940, 300)
 layout_mode = 2
 theme_override_constants/h_separation = 20
 theme_override_constants/v_separation = 20
