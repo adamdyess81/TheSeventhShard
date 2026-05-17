@@ -58,6 +58,24 @@ func _get_drag_data(_at_position):
  return data
 
 
+func _can_drop_data(_at_position, data) -> bool:
+ if typeof(data) != TYPE_DICTIONARY:
+  return false
+
+ var source := String(data.get("source", "")).strip_edges()
+ var dragged_family := String(data.get("card_family", "")).strip_edges()
+ return source in ["left_hand", "right_hand"] and dragged_family == "weapon" and _get_card_family() == "monster"
+
+
+func _drop_data(_at_position, data) -> void:
+ var combat_scene = get_tree().get_first_node_in_group("combat_scene")
+ if combat_scene == null:
+  return
+
+ var source := String(data.get("source", "")).strip_edges()
+ combat_scene.handle_weapon_drop_on_board(source, board_index)
+
+
 func _apply_card_art() -> void:
  var card_id := _get_card_id()
  var art_path = CARD_ART_PATHS.get(card_id, "")

@@ -29,6 +29,29 @@ func _can_drop_data(_at_position, data) -> bool:
  return can_drop
 
 
+func _get_drag_data(_at_position):
+ if combat_scene == null:
+  return null
+
+ if drop_target not in ["left_hand", "right_hand"]:
+  return null
+
+ if not combat_scene.can_drag_slot_card(drop_target):
+  return null
+
+ var preview = duplicate()
+ set_drag_preview(preview)
+ modulate.a = 0.35
+
+ var data = {
+  "source": drop_target,
+  "card_family": combat_scene.get_slot_card_family(drop_target)
+ }
+
+ print("slot drag data: ", data)
+ return data
+
+
 func _drop_data(_at_position, data) -> void:
  print("_drop_data called on ", name, " with data: ", data)
 
@@ -61,3 +84,9 @@ func _drop_data(_at_position, data) -> void:
   combat_scene.handle_drop_to_discard(board_index)
  else:
   print("unhandled drop_target: '", normalized_target, "'")
+
+
+func _notification(what: int) -> void:
+ if what == NOTIFICATION_DRAG_END and is_instance_valid(self):
+  if not get_viewport().gui_is_drag_successful():
+   modulate.a = 1.0

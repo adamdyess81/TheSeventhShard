@@ -270,12 +270,13 @@ func _use_weapon_on_monster(match_state: MatchCombatState, board_index: int, wea
 
     var weapon_value := _get_card_runtime_value(weapon)
     var monster_value := _get_card_runtime_value(monster)
+    var remaining_monster := monster_value - weapon_value
 
-    if weapon_value < monster_value:
-        return false
-
-    _mark_card_resolved(monster)
-    match_state.board_state.remove_card_at(board_index)
+    if remaining_monster <= 0:
+        _mark_card_resolved(monster)
+        match_state.board_state.remove_card_at(board_index)
+    else:
+        _set_card_runtime_value(monster, remaining_monster)
 
     _mark_card_exhausted(weapon)
     _mark_card_destroyed(weapon)

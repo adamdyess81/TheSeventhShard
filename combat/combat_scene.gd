@@ -76,6 +76,7 @@ var backpack_visual_card_id := ""
 
 
 func _ready() -> void:
+    add_to_group("combat_scene")
     _build_test_match_state()
     _apply_visual_theme()
 
@@ -382,6 +383,75 @@ func _get_card_display_text(card) -> String:
         ]
 
     return "unknown card"
+
+
+func get_slot_card(slot_name: String):
+    match slot_name:
+        "left_hand":
+            return match_state.player_state.left_hand_card
+        "right_hand":
+            return match_state.player_state.right_hand_card
+        _:
+            return null
+
+
+func get_slot_card_family(slot_name: String) -> String:
+    return _get_card_family(get_slot_card(slot_name))
+
+
+func can_drag_slot_card(slot_name: String) -> bool:
+    if restart_pending:
+        return false
+
+    var card = get_slot_card(slot_name)
+    if card == null:
+        return false
+
+    if _get_card_family(card) != "weapon":
+        return false
+
+    if slot_name == "left_hand":
+        return not match_state.player_state.left_hand_exhausted
+
+    if slot_name == "right_hand":
+        return not match_state.player_state.right_hand_exhausted
+
+    return false
+
+
+func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
+    if restart_pending:
+        return
+
+    var before_count := match_state.board_state.active_count()
+    var before_value := -1
+    var before_cards = match_state.board_state.get_active_cards()
+    if board_index >= 0 and board_index < before_cards.size():
+        before_value = _get_card_runtime_value(before_cards[board_index])
+
+    var success := false
+    if source_hand == "left_hand":
+        success = combat_controller.use_left_hand_weapon_on_monster(board_index)
+    elif source_hand == "right_hand":
+        success = combat_controller.use_right_hand_weapon_on_monster(board_index)
+
+    if not success:
+        set_status("Could not use weapon on monster.")
+        _refresh_ui()
+        return
+
+    var after_count := match_state.board_state.active_count()
+    if after_count < before_count:
+        await _animate_board_card_resolution(board_index)
+        set_status("Weapon resolved the monster.")
+    else:
+        var after_cards = match_state.board_state.get_active_cards()
+        var remaining_value := -1
+        if board_index >= 0 and board_index < after_cards.size():
+            remaining_value = _get_card_runtime_value(after_cards[board_index])
+        set_status("Weapon hit. Monster reduced from %d to %d." % [before_value, remaining_value])
+
+    _refresh_ui()
 
 
 func _apply_visual_theme() -> void:

@@ -346,6 +346,62 @@ func _ready() -> void:
             print("Stashed Card Resolved?: ", stashed_card.is_resolved)
             print("Stashed Card Destroyed?: ", stashed_card.is_destroyed)
 
+    print("\n=== PARTIAL WEAPON DAMAGE TEST ===")
+
+    var partial_board_state := BoardState.new()
+    partial_board_state.setup(4)
+
+    var partial_player_state := PlayerCombatState.new()
+    partial_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+
+    var partial_boss_state := BossCombatState.new()
+    partial_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
+
+    var partial_shared_deck := SharedDeckState.new()
+    partial_shared_deck.setup([])
+    partial_board_state.get_active_cards().append(loader.get_card("sepulcher_guard").duplicate(true))
+
+    var weakened_weapon = loader.get_card("short_sword").duplicate(true)
+    if weakened_weapon is CardRuntimeState:
+        weakened_weapon.current_value = 2
+    elif weakened_weapon is Dictionary:
+        weakened_weapon["current_value"] = 2
+
+    var partial_match_state := MatchCombatState.new()
+    partial_match_state.setup(
+        partial_player_state,
+        partial_boss_state,
+        partial_board_state,
+        partial_shared_deck,
+        1
+    )
+    partial_match_state.player_state.set_left_hand_card(weakened_weapon)
+
+    var partial_resolution := ResolutionController.new()
+    var partial_outcome := OutcomeController.new()
+
+    var partial_controller := CombatController.new()
+    partial_controller.setup(
+        partial_match_state,
+        partial_resolution,
+        partial_outcome
+    )
+
+    var partial_result := partial_controller.use_left_hand_weapon_on_monster(0)
+    print("Partial weapon attack succeeded?: ", partial_result)
+    print("Left Hand After Partial Attack: ", partial_controller.match_state.player_state.left_hand_card)
+    print("Left Hand Exhausted After Partial Attack?: ", partial_controller.match_state.player_state.left_hand_exhausted)
+    print("Board Count After Partial Attack: ", partial_controller.match_state.board_state.active_count())
+
+    if partial_controller.match_state.board_state.active_count() > 0:
+        var remaining_monster = partial_controller.match_state.board_state.get_active_cards()[0]
+        if remaining_monster is CardRuntimeState:
+            print("Remaining Monster ID: ", remaining_monster.card_id)
+            print("Remaining Monster Value: ", remaining_monster.current_value)
+        elif remaining_monster is Dictionary:
+            print("Remaining Monster ID: ", remaining_monster.get("id", "[none]"))
+            print("Remaining Monster Value: ", remaining_monster.get("current_value", remaining_monster.get("base_value", "[none]")))
+
     print("\nController Final Outcome: ", combat_controller.get_current_outcome())
 
 
