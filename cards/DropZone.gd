@@ -14,17 +14,13 @@ func _ready() -> void:
  print("combat_scene: ", combat_scene)
 
 func _can_drop_data(_at_position, data) -> bool:
- var can_drop = typeof(data) == TYPE_DICTIONARY and data.get("source", "") == "board"
- if not can_drop:
+ var can_drop = typeof(data) == TYPE_DICTIONARY
+ if not can_drop or combat_scene == null:
   print("_can_drop_data called on ", name, " with data: ", data, " result: ", can_drop)
-  return can_drop
+  return false
 
- if allowed_families.is_empty():
-  print("_can_drop_data called on ", name, " with data: ", data, " result: ", can_drop)
-  return can_drop
-
- var card_family := String(data.get("card_family", "")).strip_edges()
- can_drop = card_family in allowed_families
+ var normalized_target = String(drop_target).strip_edges()
+ can_drop = combat_scene.can_drop_on_slot(normalized_target, data)
  print("_can_drop_data called on ", name, " with data: ", data, " result: ", can_drop)
  return can_drop
 
@@ -33,7 +29,7 @@ func _get_drag_data(_at_position):
  if combat_scene == null:
   return null
 
- if drop_target not in ["left_hand", "right_hand"]:
+ if drop_target not in ["left_hand", "right_hand", "backpack"]:
   return null
 
  if not combat_scene.can_drag_slot_card(drop_target):
@@ -59,29 +55,34 @@ func _drop_data(_at_position, data) -> void:
   print("combat_scene is null")
   return
 
- var board_index: int = data.get("board_index", -1)
- if board_index == -1:
-  print("invalid board_index")
-  return
-
  var normalized_target = String(drop_target).strip_edges()
  print("drop_target value is: '", normalized_target, "'")
 
- if normalized_target == "left_hand":
-  print("calling handle_drop_to_left_hand with index ", board_index)
-  combat_scene.handle_drop_to_left_hand(board_index)
- elif normalized_target == "right_hand":
-  print("calling handle_drop_to_right_hand with index ", board_index)
-  combat_scene.handle_drop_to_right_hand(board_index)
- elif normalized_target == "backpack":
-  print("calling handle_drop_to_backpack with index ", board_index)
-  combat_scene.handle_drop_to_backpack(board_index)
- elif normalized_target == "player_avatar":
-  print("calling handle_drop_to_player_avatar with index ", board_index)
-  combat_scene.handle_drop_to_player_avatar(board_index)
- elif normalized_target == "discard":
-  print("calling handle_drop_to_discard with index ", board_index)
-  combat_scene.handle_drop_to_discard(board_index)
+ if data.get("source", "") == "board":
+  var board_index: int = data.get("board_index", -1)
+  if board_index == -1:
+   print("invalid board_index")
+   return
+
+  if normalized_target == "left_hand":
+   print("calling handle_drop_to_left_hand with index ", board_index)
+   combat_scene.handle_drop_to_left_hand(board_index)
+  elif normalized_target == "right_hand":
+   print("calling handle_drop_to_right_hand with index ", board_index)
+   combat_scene.handle_drop_to_right_hand(board_index)
+  elif normalized_target == "backpack":
+   print("calling handle_drop_to_backpack with index ", board_index)
+   combat_scene.handle_drop_to_backpack(board_index)
+  elif normalized_target == "player_avatar":
+   print("calling handle_drop_to_player_avatar with index ", board_index)
+   combat_scene.handle_drop_to_player_avatar(board_index)
+  elif normalized_target == "discard":
+   print("calling handle_drop_to_discard with index ", board_index)
+   combat_scene.handle_drop_to_discard(board_index)
+  else:
+   print("unhandled board drop_target: '", normalized_target, "'")
+ elif normalized_target in ["left_hand", "right_hand", "backpack"]:
+  combat_scene.handle_slot_to_slot_drop(String(data.get("source", "")).strip_edges(), normalized_target)
  else:
   print("unhandled drop_target: '", normalized_target, "'")
 

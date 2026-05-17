@@ -402,6 +402,51 @@ func _ready() -> void:
             print("Remaining Monster ID: ", remaining_monster.get("id", "[none]"))
             print("Remaining Monster Value: ", remaining_monster.get("current_value", remaining_monster.get("base_value", "[none]")))
 
+    print("\n=== BACKPACK HAND TRANSFER TEST ===")
+
+    var transfer_board_state := BoardState.new()
+    transfer_board_state.setup(4)
+
+    var transfer_player_state := PlayerCombatState.new()
+    transfer_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+
+    var transfer_boss_state := BossCombatState.new()
+    transfer_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
+
+    var transfer_shared_deck := SharedDeckState.new()
+    transfer_shared_deck.setup([])
+
+    var transfer_match_state := MatchCombatState.new()
+    transfer_match_state.setup(
+        transfer_player_state,
+        transfer_boss_state,
+        transfer_board_state,
+        transfer_shared_deck,
+        1
+    )
+
+    transfer_match_state.player_state.add_to_backpack(loader.get_card("short_sword").duplicate(true))
+
+    var backpack_transfer_card = transfer_match_state.player_state.remove_backpack_card_at(0)
+    var backpack_to_hand_result := transfer_match_state.player_state.set_left_hand_card(backpack_transfer_card)
+    print("Backpack to left hand succeeded?: ", backpack_to_hand_result)
+    print("Backpack Count After Move To Hand: ", transfer_match_state.player_state.backpack_cards.size())
+    if transfer_match_state.player_state.left_hand_card is CardRuntimeState:
+        print("Left Hand Card After Backpack Move: ", transfer_match_state.player_state.left_hand_card.card_id)
+        print("Left Hand Zone After Backpack Move: ", transfer_match_state.player_state.left_hand_card.zone)
+
+    var hand_transfer_card = transfer_match_state.player_state.left_hand_card
+    transfer_match_state.player_state.clear_left_hand_card()
+    var hand_to_backpack_result := transfer_match_state.player_state.add_to_backpack(hand_transfer_card)
+    print("Left hand back to backpack succeeded?: ", hand_to_backpack_result)
+    print("Left Hand After Return To Backpack: ", transfer_match_state.player_state.left_hand_card)
+    print("Backpack Count After Return: ", transfer_match_state.player_state.backpack_cards.size())
+    if transfer_match_state.player_state.backpack_cards.size() > 0:
+        var returned_backpack_card = transfer_match_state.player_state.backpack_cards[0]
+        if returned_backpack_card is CardRuntimeState:
+            print("Returned Backpack Card ID: ", returned_backpack_card.card_id)
+            print("Returned Backpack Card Zone: ", returned_backpack_card.zone)
+
     print("\nController Final Outcome: ", combat_controller.get_current_outcome())
 
 

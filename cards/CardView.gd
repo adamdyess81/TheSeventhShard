@@ -64,7 +64,17 @@ func _can_drop_data(_at_position, data) -> bool:
 
  var source := String(data.get("source", "")).strip_edges()
  var dragged_family := String(data.get("card_family", "")).strip_edges()
- return source in ["left_hand", "right_hand"] and dragged_family == "weapon" and _get_card_family() == "monster"
+ if source not in ["left_hand", "right_hand"]:
+  return false
+
+ if dragged_family != "weapon" or _get_card_family() != "monster":
+  return false
+
+ var combat_scene = get_tree().get_first_node_in_group("combat_scene")
+ if combat_scene == null:
+  return false
+
+ return combat_scene.can_use_slot_weapon_on_monster(source)
 
 
 func _drop_data(_at_position, data) -> void:

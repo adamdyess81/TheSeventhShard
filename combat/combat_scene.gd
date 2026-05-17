@@ -8,6 +8,7 @@ const CARD_VIEW_SCENE = preload("res://cards/card_view.tscn")
 const LEFT_HAND_PLACEHOLDER = preload("res://art/ui/LeftHand Placement Card.png")
 const RIGHT_HAND_PLACEHOLDER = preload("res://art/ui/RightHand Placement Card.png")
 const BACKPACK_PLACEHOLDER = preload("res://art/ui/Backpack Placement Card.png")
+const BACKGROUND_TEXTURE = preload("res://art/backgrounds/Ossara-Titled-Arena-blured.png")
 const HUD_TEXT = Color("f1e7d6")
 const HUD_MUTED = Color("c4b59a")
 const SUCCESS_TEXT = Color("d5c074")
@@ -37,6 +38,7 @@ const CARD_ART_TEXTURES := {
 @onready var board_card_list = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/BoardCardList
 @onready var board_title = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardTitle
 @onready var button_bar = $RootLayout/StageCenter/Stage/ButtonBar
+@onready var background_texture = $Background
 
 @onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/PlacementTexture
 @onready var player_avatar_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/AvatarTexture
@@ -129,6 +131,8 @@ func _build_test_match_state() -> void:
         resolution_controller,
         outcome_controller
     )
+    if background_texture != null:
+        background_texture.texture = BACKGROUND_TEXTURE
 
 func set_status(message: String) -> void:
  status_label.text = message
@@ -392,6 +396,10 @@ func get_slot_card(slot_name: String):
             return match_state.player_state.left_hand_card
         "right_hand":
             return match_state.player_state.right_hand_card
+        "backpack":
+            if match_state.player_state.backpack_cards.size() > 0:
+                return match_state.player_state.backpack_cards[0]
+            return null
         _:
             return null
 
@@ -407,8 +415,15 @@ func can_drag_slot_card(slot_name: String) -> bool:
     var card = get_slot_card(slot_name)
     if card == null:
         return false
+    return slot_name in ["left_hand", "right_hand", "backpack"]
 
-    if _get_card_family(card) != "weapon":
+
+func can_use_slot_weapon_on_monster(slot_name: String) -> bool:
+    if restart_pending:
+        return false
+
+    var card = get_slot_card(slot_name)
+    if card == null or _get_card_family(card) != "weapon":
         return false
 
     if slot_name == "left_hand":
@@ -418,6 +433,126 @@ func can_drag_slot_card(slot_name: String) -> bool:
         return not match_state.player_state.right_hand_exhausted
 
     return false
+
+
+func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
+    if restart_pending:
+        return false
+
+    var source := String(data.get("source", "")).strip_edges()
+    var family := String(data.get("card_family", "")).strip_edges()
+
+    if source == "board":
+        if target_slot == "left_hand":
+            if match_state.player_state.left_hand_card != null or match_state.player_state.left_hand_exhausted:
+                return false
+            return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
+        elif target_slot == "right_hand":
+            if match_state.player_state.right_hand_card != null or match_state.player_state.right_hand_exhausted:
+                return false
+            return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
+        elif target_slot == "backpack":
+            if match_state.player_state.backpack_cards.size() >= match_state.player_state.backpack_capacity:
+                return false
+            return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
+        elif target_slot == "player_avatar":
+            return family == "monster"
+        elif target_slot == "discard":
+            return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
+        else:
+            return false
+
+    if source == "backpack" and target_slot in ["left_hand", "right_hand"]:
+        if family == "":
+            return false
+        if target_slot == "left_hand":
+            return match_state.player_state.left_hand_card == null and not match_state.player_state.left_hand_exhausted
+        return match_state.player_state.right_hand_card == null and not match_state.player_state.right_hand_exhausted
+
+    if source in ["left_hand", "right_hand"] and target_slot == "backpack":
+        if family == "":
+            return false
+        return match_state.player_state.backpack_cards.size() < match_state.player_state.backpack_capacity
+
+    return false
+
+
+func handle_slot_to_slot_drop(source_slot: String, target_slot: String) -> void:
+    if restart_pending or source_slot == target_slot:
+        return
+
+    var moved := false
+    if source_slot == "backpack" and target_slot == "left_hand":
+        moved = _move_backpack_to_hand(true)
+    elif source_slot == "backpack" and target_slot == "right_hand":
+        moved = _move_backpack_to_hand(false)
+    elif source_slot == "left_hand" and target_slot == "backpack":
+        moved = _move_hand_to_backpack(true)
+    elif source_slot == "right_hand" and target_slot == "backpack":
+        moved = _move_hand_to_backpack(false)
+
+    if moved:
+        set_status("Moved card from %s to %s." % [source_slot.replace("_", " "), target_slot.replace("_", " ")])
+    else:
+        set_status("Could not move card from %s to %s." % [source_slot.replace("_", " "), target_slot.replace("_", " ")])
+
+    _refresh_ui()
+
+
+func _move_backpack_to_hand(is_left_hand: bool) -> bool:
+    if match_state.player_state.backpack_cards.is_empty():
+        return false
+
+    var card = match_state.player_state.remove_backpack_card_at(0)
+    if card == null:
+        return false
+
+    var success := false
+    if is_left_hand:
+        success = match_state.player_state.set_left_hand_card(card)
+    else:
+        success = match_state.player_state.set_right_hand_card(card)
+
+    if not success:
+        match_state.player_state.backpack_cards.insert(0, card)
+        if card is CardRuntimeState:
+            card.set_zone("backpack")
+        elif card is Dictionary:
+            card["zone"] = "backpack"
+        return false
+
+    return true
+
+
+func _move_hand_to_backpack(is_left_hand: bool) -> bool:
+    if match_state.player_state.backpack_cards.size() >= match_state.player_state.backpack_capacity:
+        return false
+
+    var card = match_state.player_state.left_hand_card if is_left_hand else match_state.player_state.right_hand_card
+    if card == null:
+        return false
+
+    if is_left_hand:
+        match_state.player_state.clear_left_hand_card()
+    else:
+        match_state.player_state.clear_right_hand_card()
+
+    if not match_state.player_state.add_to_backpack(card):
+        if is_left_hand:
+            match_state.player_state.left_hand_card = card
+            if card is CardRuntimeState:
+                card.set_zone("left_hand")
+            elif card is Dictionary:
+                card["zone"] = "left_hand"
+        else:
+            match_state.player_state.right_hand_card = card
+            if card is CardRuntimeState:
+                card.set_zone("right_hand")
+            elif card is Dictionary:
+                card["zone"] = "right_hand"
+        return false
+
+    return true
 
 
 func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
