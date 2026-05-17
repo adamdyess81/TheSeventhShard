@@ -36,16 +36,26 @@ const CARD_ART_TEXTURES := {
 
 @onready var board_card_list = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/BoardCardList
 @onready var board_title = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardTitle
+@onready var button_bar = $RootLayout/StageCenter/Stage/ButtonBar
 
-@onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/PlacementTexture
+@onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/PlacementTexture
 @onready var player_avatar_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/AvatarTexture
-@onready var right_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/PlacementTexture
-@onready var backpack_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/PlacementTexture
+@onready var right_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas/PlacementTexture
+@onready var backpack_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas/PlacementTexture
 @onready var left_hand_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone
 @onready var player_avatar_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone
 @onready var right_hand_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone
 @onready var backpack_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone
 @onready var discard_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone
+@onready var left_hand_value_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/ValueLabel
+@onready var left_hand_name_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/BottomText/NameLabel
+@onready var left_hand_type_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/BottomText/TypeLabel
+@onready var right_hand_value_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas/ValueLabel
+@onready var right_hand_name_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas/BottomText/NameLabel
+@onready var right_hand_type_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas/BottomText/TypeLabel
+@onready var backpack_value_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas/ValueLabel
+@onready var backpack_name_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas/BottomText/NameLabel
+@onready var backpack_type_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas/BottomText/TypeLabel
 
 @onready var left_hand_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/LeftHandLabel
 @onready var player_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/PlayerLabel
@@ -162,14 +172,20 @@ func _refresh_board_cards() -> void:
 
 
 func _refresh_drop_zone_textures() -> void:
- left_hand_visual_card_id = _update_slot_texture(
+ left_hand_visual_card_id = _update_slot_visual(
   left_hand_texture,
+  left_hand_name_label,
+  left_hand_type_label,
+  left_hand_value_label,
   match_state.player_state.left_hand_card,
   LEFT_HAND_PLACEHOLDER,
   left_hand_visual_card_id
  )
- right_hand_visual_card_id = _update_slot_texture(
+ right_hand_visual_card_id = _update_slot_visual(
   right_hand_texture,
+  right_hand_name_label,
+  right_hand_type_label,
+  right_hand_value_label,
   match_state.player_state.right_hand_card,
   RIGHT_HAND_PLACEHOLDER,
   right_hand_visual_card_id
@@ -179,8 +195,11 @@ func _refresh_drop_zone_textures() -> void:
  if match_state.player_state.backpack_cards.size() > 0:
   backpack_card = match_state.player_state.backpack_cards[0]
 
- backpack_visual_card_id = _update_slot_texture(
+ backpack_visual_card_id = _update_slot_visual(
   backpack_texture,
+  backpack_name_label,
+  backpack_type_label,
+  backpack_value_label,
   backpack_card,
   BACKPACK_PLACEHOLDER,
   backpack_visual_card_id
@@ -287,10 +306,11 @@ func _animate_board_card_resolution(board_index: int) -> void:
  await tween.finished
 
 
-func _animate_slot_resolution(texture_rect: TextureRect, placeholder) -> void:
+func _animate_slot_resolution(texture_rect: TextureRect, name_label: Label, type_label: Label, value_label: Label, placeholder) -> void:
  if texture_rect.texture == null:
   texture_rect.texture = placeholder
   texture_rect.modulate.a = 1.0
+  _clear_slot_text(name_label, type_label, value_label)
   return
 
  var tween = create_tween()
@@ -298,21 +318,51 @@ func _animate_slot_resolution(texture_rect: TextureRect, placeholder) -> void:
  tween.tween_callback(func():
   texture_rect.texture = placeholder
   texture_rect.modulate.a = 1.0
+  _clear_slot_text(name_label, type_label, value_label)
  )
 
 
-func _update_slot_texture(texture_rect: TextureRect, card, placeholder, previous_card_id: String) -> String:
+func _update_slot_visual(texture_rect: TextureRect, name_label: Label, type_label: Label, value_label: Label, card, placeholder, previous_card_id: String) -> String:
  var next_card_id := ""
  if card != null:
   next_card_id = _get_card_name(card)
 
  if previous_card_id != "" and next_card_id == "":
-  _animate_slot_resolution(texture_rect, placeholder)
+  _animate_slot_resolution(texture_rect, name_label, type_label, value_label, placeholder)
   return ""
 
  texture_rect.modulate.a = 1.0
  texture_rect.texture = _get_card_texture_or_placeholder(card, placeholder)
+ _apply_slot_text(name_label, type_label, value_label, card)
  return next_card_id
+
+
+func _apply_slot_text(name_label: Label, type_label: Label, value_label: Label, card) -> void:
+ if card == null:
+  _clear_slot_text(name_label, type_label, value_label)
+  return
+
+ name_label.text = _humanize_card_name(_get_card_name(card))
+ type_label.text = _humanize_card_name(_get_card_family(card))
+ value_label.text = str(_get_card_runtime_value(card))
+
+
+func _clear_slot_text(name_label: Label, type_label: Label, value_label: Label) -> void:
+ name_label.text = ""
+ type_label.text = ""
+ value_label.text = ""
+
+
+func _get_card_runtime_value(card) -> int:
+ if card is CardRuntimeState:
+  return card.current_value
+
+ if card is Dictionary:
+  if card.has("current_value"):
+   return int(card.get("current_value", 0))
+  return int(card.get("base_value", 0))
+
+ return 0
 
 
 func _get_card_display_text(card) -> String:
@@ -343,6 +393,7 @@ func _apply_visual_theme() -> void:
     board_title.add_theme_font_size_override("font_size", 15)
     player_label.add_theme_color_override("font_color", HUD_MUTED)
 
+    button_bar.visible = false
     _style_zone(left_hand_drop_zone, PANEL_BORDER)
     _style_zone(player_avatar_drop_zone, Color("8d7867"))
     _style_zone(right_hand_drop_zone, PANEL_BORDER)
@@ -353,6 +404,9 @@ func _apply_visual_theme() -> void:
     _style_loadout_label(player_label)
     _style_loadout_label(right_hand_label)
     _style_loadout_label(backpack_label)
+    _style_slot_text(left_hand_name_label, left_hand_type_label, left_hand_value_label)
+    _style_slot_text(right_hand_name_label, right_hand_type_label, right_hand_value_label)
+    _style_slot_text(backpack_name_label, backpack_type_label, backpack_value_label)
 
     _style_debug_button(take_first_monster_button)
     _style_debug_button(move_first_to_left_hand_button)
@@ -390,6 +444,15 @@ func _style_loadout_label(label: Label) -> void:
 func _style_debug_button(button: Button) -> void:
     button.modulate = Color(0.9, 0.86, 0.79, 0.84)
     button.add_theme_font_size_override("font_size", 12)
+
+
+func _style_slot_text(name_label: Label, type_label: Label, value_label: Label) -> void:
+    name_label.add_theme_color_override("font_color", Color("f7ead7"))
+    name_label.add_theme_font_size_override("font_size", 17)
+    type_label.add_theme_color_override("font_color", Color("ddd0bb"))
+    type_label.add_theme_font_size_override("font_size", 12)
+    value_label.add_theme_color_override("font_color", Color("ffffff"))
+    value_label.add_theme_font_size_override("font_size", 18)
 
 
 func _queue_restart_if_failed() -> void:

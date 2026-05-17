@@ -111,7 +111,7 @@ func _apply_visual_theme() -> void:
  family_label.add_theme_color_override("font_color", Color("ddd0bb"))
  family_label.add_theme_font_size_override("font_size", 12)
 
- value_label.add_theme_color_override("font_color", Color("2e241c"))
+ value_label.add_theme_color_override("font_color", Color("ffffff"))
  value_label.add_theme_font_size_override("font_size", 18)
 
 
