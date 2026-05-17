@@ -59,6 +59,7 @@ var match_state: MatchCombatState
 var resolution_controller: ResolutionController
 var outcome_controller: OutcomeController
 var combat_controller: CombatController
+var restart_pending := false
 
 
 func _ready() -> void:
@@ -137,6 +138,7 @@ func _refresh_ui() -> void:
     _refresh_board_cards()
     _refresh_drop_zone_textures()
     _refresh_equipment_labels()
+    _queue_restart_if_failed()
 
 
 func _refresh_board_cards() -> void:
@@ -348,7 +350,45 @@ func _style_debug_button(button: Button) -> void:
     button.modulate = Color(0.9, 0.86, 0.79, 0.84)
     button.add_theme_font_size_override("font_size", 12)
 
+
+func _queue_restart_if_failed() -> void:
+    if restart_pending:
+        return
+
+    if outcome_controller == null or match_state == null:
+        return
+
+    if outcome_controller.check_outcome(match_state) != "failure":
+        return
+
+    restart_pending = true
+    _set_debug_controls_enabled(false)
+    call_deferred("_begin_failure_reset")
+
+
+func _begin_failure_reset() -> void:
+    _run_failure_reset()
+
+
+func _run_failure_reset() -> void:
+    set_status("You died. Restarting...")
+    await get_tree().create_timer(0.9).timeout
+    _build_test_match_state()
+    restart_pending = false
+    _set_debug_controls_enabled(true)
+    set_status("Fresh restart.")
+    _refresh_ui()
+
+
+func _set_debug_controls_enabled(is_enabled: bool) -> void:
+    take_first_monster_button.disabled = not is_enabled
+    move_first_to_left_hand_button.disabled = not is_enabled
+    move_first_to_backpack_button.disabled = not is_enabled
+
 func _on_take_first_monster_pressed() -> void:
+ if restart_pending:
+  return
+
  var board_cards = match_state.board_state.get_active_cards()
 
  for i in range(board_cards.size()):
@@ -367,6 +407,9 @@ func _on_take_first_monster_pressed() -> void:
 
 
 func _on_move_first_to_left_hand_pressed() -> void:
+ if restart_pending:
+  return
+
  var board_cards = match_state.board_state.get_active_cards()
 
  for i in range(board_cards.size()):
@@ -386,6 +429,9 @@ func _on_move_first_to_left_hand_pressed() -> void:
 
 
 func _on_move_first_to_backpack_pressed() -> void:
+ if restart_pending:
+  return
+
  var board_cards = match_state.board_state.get_active_cards()
 
  for i in range(board_cards.size()):
@@ -418,6 +464,9 @@ func _is_player_usable_card(card) -> bool:
     return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
 
 func handle_drop_to_left_hand(board_index: int) -> void:
+ if restart_pending:
+  return
+
  print("handle_drop_to_left_hand called with index: ", board_index)
 
  var before_left_hand = match_state.player_state.left_hand_card
@@ -436,6 +485,9 @@ func handle_drop_to_left_hand(board_index: int) -> void:
  _refresh_ui()
 
 func handle_drop_to_right_hand(board_index: int) -> void:
+ if restart_pending:
+  return
+
  print("handle_drop_to_right_hand called with index: ", board_index)
 
  var before_right_hand = match_state.player_state.right_hand_card
@@ -455,6 +507,9 @@ func handle_drop_to_right_hand(board_index: int) -> void:
 
 
 func handle_drop_to_backpack(board_index: int) -> void:
+ if restart_pending:
+  return
+
  print("handle_drop_to_backpack called with index: ", board_index)
 
  var before_backpack = match_state.player_state.backpack_cards.size()
@@ -474,6 +529,9 @@ func handle_drop_to_backpack(board_index: int) -> void:
 
 
 func handle_drop_to_player_avatar(board_index: int) -> void:
+ if restart_pending:
+  return
+
  print("handle_drop_to_player_avatar called with index: ", board_index)
 
  var before_health = match_state.player_state.current_health
@@ -494,6 +552,9 @@ func handle_drop_to_player_avatar(board_index: int) -> void:
 
 
 func handle_drop_to_discard(board_index: int) -> void:
+ if restart_pending:
+  return
+
  print("handle_drop_to_discard called with index: ", board_index)
 
  var success := combat_controller.trash_player_card_from_board(board_index)
