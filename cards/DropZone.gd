@@ -20,6 +20,9 @@ func _can_drop_data(_at_position, data) -> bool:
   print("_can_drop_data called on ", name, " with data: ", data, " result: ", can_drop)
   return false
 
+ if combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
+  return false
+
  var normalized_target = String(drop_target).strip_edges()
  can_drop = combat_scene.can_drop_on_slot(normalized_target, data)
  combat_scene.preview_drop_zone_state(normalized_target, can_drop)
@@ -29,6 +32,9 @@ func _can_drop_data(_at_position, data) -> bool:
 
 func _get_drag_data(_at_position):
  if combat_scene == null:
+  return null
+
+ if combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
   return null
 
  if drop_target not in ["left_hand", "right_hand", "backpack"]:
@@ -77,6 +83,9 @@ func _drop_data(_at_position, data) -> void:
 
  if combat_scene == null:
   print("combat_scene is null")
+  return
+
+ if combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
   return
 
  var normalized_target = String(drop_target).strip_edges()

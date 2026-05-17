@@ -45,6 +45,10 @@ func setup(card, index: int) -> void:
  ]
 
 func _get_drag_data(_at_position):
+ var combat_scene = get_tree().get_first_node_in_group("combat_scene")
+ if combat_scene != null and combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
+  return null
+
  var preview = duplicate()
  set_drag_preview(preview)
  modulate.a = 0.35
@@ -75,12 +79,18 @@ func _can_drop_data(_at_position, data) -> bool:
  if combat_scene == null:
   return false
 
+ if combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
+  return false
+
  return combat_scene.can_use_slot_weapon_on_monster(source)
 
 
 func _drop_data(_at_position, data) -> void:
  var combat_scene = get_tree().get_first_node_in_group("combat_scene")
  if combat_scene == null:
+  return
+
+ if combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
   return
 
  var source := String(data.get("source", "")).strip_edges()

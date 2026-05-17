@@ -60,6 +60,7 @@ const CARD_ART_TEXTURES := {
 @onready var end_modal_stats = $EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalStats
 @onready var retry_button = $EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalButtons/RetryButton
 @onready var quit_button = $EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalButtons/QuitButton
+@onready var root_layout = $RootLayout
 
 @onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/PlacementTexture
 @onready var player_avatar_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas/AvatarTexture
@@ -97,6 +98,7 @@ var right_hand_visual_card_id := ""
 var backpack_visual_card_id := ""
 var last_board_card_ids: Array[String] = []
 var board_visuals_initialized := false
+var escape_was_pressed := false
 
 
 func _ready() -> void:
@@ -125,6 +127,7 @@ func _start_battle_music() -> void:
 func _play_battle_intro() -> void:
     _hide_end_modal()
     if fade_overlay != null:
+        move_child(fade_overlay, get_child_count() - 1)
         fade_overlay.visible = true
         fade_overlay.modulate.a = 1.0
 
@@ -560,7 +563,7 @@ func get_slot_card_family(slot_name: String) -> String:
 
 
 func can_drag_slot_card(slot_name: String) -> bool:
-    if restart_pending:
+    if restart_pending or is_modal_open():
         return false
 
     var card = get_slot_card(slot_name)
@@ -604,7 +607,7 @@ func can_resolve_monster_into_shield(slot_name: String) -> bool:
 
 
 func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
-    if restart_pending:
+    if restart_pending or is_modal_open():
         return false
 
     var source := String(data.get("source", "")).strip_edges()
@@ -1154,6 +1157,7 @@ func _show_battle_end_modal(outcome: String) -> void:
         match_state.round_number,
         gold_text
     ]
+    move_child(end_modal_overlay, get_child_count() - 1)
     end_modal_overlay.visible = true
     retry_button.disabled = false
     quit_button.disabled = false
@@ -1163,6 +1167,11 @@ func _show_battle_end_modal(outcome: String) -> void:
 func _hide_end_modal() -> void:
     if end_modal_overlay != null:
         end_modal_overlay.visible = false
+    escape_was_pressed = false
+
+
+func is_modal_open() -> bool:
+    return end_modal_overlay != null and end_modal_overlay.visible
 
 
 func _restart_battle() -> void:
@@ -1183,11 +1192,14 @@ func _on_quit_battle_pressed() -> void:
 
 
 func _process(_delta: float) -> void:
-    if end_modal_overlay == null or not end_modal_overlay.visible:
+    if not is_modal_open():
+        escape_was_pressed = false
         return
 
-    if Input.is_action_just_pressed("ui_cancel"):
+    var escape_pressed := Input.is_action_pressed("ui_cancel") or Input.is_key_pressed(KEY_ESCAPE)
+    if escape_pressed and not escape_was_pressed:
         _on_quit_battle_pressed()
+    escape_was_pressed = escape_pressed
 
 func _on_take_first_monster_pressed() -> void:
  if restart_pending:
