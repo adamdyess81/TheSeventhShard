@@ -75,20 +75,15 @@ text = "Gold:"
 
 [node name="StatusLabel" type="Label" parent="RootLayout/StageCenter/Stage/TopBar" unique_id=1057061874]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Ready."
 horizontal_alignment = 2
-
-[node name="ButtonBar" type="HBoxContainer" parent="RootLayout/StageCenter/Stage" unique_id=678403159]
-layout_mode = 2
-visible = false
-theme_override_constants/separation = 12
-alignment = 1
 
 [node name="BossCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage" unique_id=204300001]
 layout_mode = 2
 
 [node name="BossDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/BossCenter" unique_id=204300002]
-custom_minimum_size = Vector2(360, 264)
+custom_minimum_size = Vector2(400, 294)
 layout_mode = 2
 script = ExtResource("2_a5s3s")
 drop_target = "boss"
@@ -119,13 +114,13 @@ layout_mode = 1
 anchors_preset = 10
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -92.0
+offset_left = -132.0
 offset_top = 14.0
-offset_right = 92.0
+offset_right = 132.0
 offset_bottom = 44.0
 mouse_filter = 2
 horizontal_alignment = 1
-autowrap_mode = 2
+autowrap_mode = 0
 
 [node name="LifeBar" type="PanelContainer" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas" unique_id=204300006]
 custom_minimum_size = Vector2(134, 32)
@@ -145,18 +140,6 @@ mouse_filter = 2
 layout_mode = 2
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="TakeFirstMonsterButton" type="Button" parent="RootLayout/StageCenter/Stage/ButtonBar" unique_id=988054690]
-layout_mode = 2
-text = "Take First Monster"
-
-[node name="MoveFirstToLeftHandButton" type="Button" parent="RootLayout/StageCenter/Stage/ButtonBar" unique_id=2093251546]
-layout_mode = 2
-text = "Move First To Left Hand"
-
-[node name="MoveFirstToBackpackButton" type="Button" parent="RootLayout/StageCenter/Stage/ButtonBar" unique_id=1206476387]
-layout_mode = 2
-text = "Move First To Backpack"
 
 [node name="PlayArea" type="VBoxContainer" parent="RootLayout/StageCenter/Stage" unique_id=194280336]
 layout_mode = 2
@@ -292,6 +275,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="BottomText" type="VBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas" unique_id=1195069396]
+visible = false
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -409,6 +393,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="BottomText" type="VBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas" unique_id=962472170]
+visible = false
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
@@ -477,6 +462,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="BottomText" type="VBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas" unique_id=1243900248]
+visible = false
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0

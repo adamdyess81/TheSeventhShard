@@ -51,7 +51,6 @@ const CARD_ART_TEXTURES := {
 @onready var deck_card_texture = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter/DeckColumn/DeckCard
 @onready var deck_count_label = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter/DeckColumn/DeckCountLabel
 @onready var discard_texture = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone/DiscardTexture
-@onready var button_bar = $RootLayout/StageCenter/Stage/ButtonBar
 @onready var background_texture = $Background
 
 @onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/PlacementTexture
@@ -79,9 +78,6 @@ const CARD_ART_TEXTURES := {
 @onready var player_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/PlayerLabel
 @onready var right_hand_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/RightHandLabel
 @onready var backpack_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/BackpackLabel
-@onready var take_first_monster_button = $RootLayout/StageCenter/Stage/ButtonBar/TakeFirstMonsterButton
-@onready var move_first_to_left_hand_button = $RootLayout/StageCenter/Stage/ButtonBar/MoveFirstToLeftHandButton
-@onready var move_first_to_backpack_button = $RootLayout/StageCenter/Stage/ButtonBar/MoveFirstToBackpackButton
 
 var match_state: MatchCombatState
 var resolution_controller: ResolutionController
@@ -99,10 +95,6 @@ func _ready() -> void:
     add_to_group("combat_scene")
     _build_test_match_state()
     _apply_visual_theme()
-
-    take_first_monster_button.pressed.connect(_on_take_first_monster_pressed)
-    move_first_to_left_hand_button.pressed.connect(_on_move_first_to_left_hand_pressed)
-    move_first_to_backpack_button.pressed.connect(_on_move_first_to_backpack_pressed)
     set_status("Ready.")
 
     _refresh_ui()
@@ -855,7 +847,6 @@ func _apply_visual_theme() -> void:
     deck_count_label.add_theme_font_size_override("font_size", 14)
     player_label.add_theme_color_override("font_color", HUD_MUTED)
 
-    button_bar.visible = true
     _style_zone(left_hand_drop_zone, PANEL_BORDER, Color(0, 0, 0, 0), 0)
     _style_zone(boss_drop_zone, Color("8a6651"), Color(0, 0, 0, 0), 0)
     _style_zone(player_avatar_drop_zone, Color("8d7867"), Color(0, 0, 0, 0), 0)
@@ -871,7 +862,7 @@ func _apply_visual_theme() -> void:
     _style_slot_text(right_hand_name_label, right_hand_type_label, right_hand_value_label)
     _style_slot_text(backpack_name_label, backpack_type_label, backpack_value_label)
     boss_title_label.add_theme_color_override("font_color", Color("f7ead7"))
-    boss_title_label.add_theme_font_size_override("font_size", 20)
+    boss_title_label.add_theme_font_size_override("font_size", 19)
     var boss_life_style := StyleBoxFlat.new()
     boss_life_style.bg_color = Color("5e2726")
     boss_life_style.border_color = Color("d7b17a")
@@ -900,14 +891,6 @@ func _apply_visual_theme() -> void:
     player_life_bar.add_theme_stylebox_override("panel", player_life_style)
     player_life_label.add_theme_color_override("font_color", Color("ffffff"))
     player_life_label.add_theme_font_size_override("font_size", 18)
-
-    _style_debug_button(take_first_monster_button)
-    _style_debug_button(move_first_to_left_hand_button)
-    _style_debug_button(move_first_to_backpack_button)
-
-    take_first_monster_button.text = "Debug: First Monster"
-    move_first_to_left_hand_button.text = "Debug: Left Hand"
-    move_first_to_backpack_button.text = "Debug: Backpack"
 
     status_label.add_theme_font_size_override("font_size", 15)
 
@@ -997,11 +980,6 @@ func _style_loadout_label(label: Label) -> void:
     label.add_theme_font_size_override("font_size", 13)
 
 
-func _style_debug_button(button: Button) -> void:
-    button.modulate = Color(0.95, 0.92, 0.86, 0.98)
-    button.add_theme_font_size_override("font_size", 12)
-
-
 func _style_slot_text(name_label: Label, type_label: Label, value_label: Label) -> void:
     name_label.add_theme_color_override("font_color", Color("f7ead7"))
     name_label.add_theme_font_size_override("font_size", 17)
@@ -1023,7 +1001,6 @@ func _queue_restart_if_finished() -> void:
         return
 
     restart_pending = true
-    _set_debug_controls_enabled(false)
     call_deferred("_begin_combat_reset", outcome)
 
 
@@ -1039,15 +1016,8 @@ func _run_combat_reset(outcome: String) -> void:
     await get_tree().create_timer(0.9).timeout
     _build_test_match_state()
     restart_pending = false
-    _set_debug_controls_enabled(true)
     set_status("Fresh restart.")
     _refresh_ui()
-
-
-func _set_debug_controls_enabled(is_enabled: bool) -> void:
-    take_first_monster_button.disabled = not is_enabled
-    move_first_to_left_hand_button.disabled = not is_enabled
-    move_first_to_backpack_button.disabled = not is_enabled
 
 func _on_take_first_monster_pressed() -> void:
  if restart_pending:
