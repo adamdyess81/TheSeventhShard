@@ -191,6 +191,34 @@ func use_right_hand_weapon_on_monster(match_state: MatchCombatState, board_index
     return _use_weapon_on_monster(match_state, board_index, weapon, false)
 
 
+func use_left_hand_weapon_on_boss(match_state: MatchCombatState) -> bool:
+    var weapon = match_state.player_state.left_hand_card
+    if weapon == null:
+        return false
+
+    if _get_card_family(weapon) != "weapon":
+        return false
+
+    if match_state.player_state.left_hand_exhausted:
+        return false
+
+    return _use_weapon_on_boss(match_state, weapon, true)
+
+
+func use_right_hand_weapon_on_boss(match_state: MatchCombatState) -> bool:
+    var weapon = match_state.player_state.right_hand_card
+    if weapon == null:
+        return false
+
+    if _get_card_family(weapon) != "weapon":
+        return false
+
+    if match_state.player_state.right_hand_exhausted:
+        return false
+
+    return _use_weapon_on_boss(match_state, weapon, false)
+
+
 func resolve_monster_into_left_hand_shield(match_state: MatchCombatState, board_index: int) -> bool:
     var shield = match_state.player_state.left_hand_card
     if shield == null:
@@ -338,6 +366,24 @@ func _resolve_monster_into_shield(match_state: MatchCombatState, board_index: in
 
         if overflow_damage > 0:
             match_state.player_state.take_damage(overflow_damage)
+
+    return true
+
+
+func _use_weapon_on_boss(match_state: MatchCombatState, weapon, is_left_hand: bool) -> bool:
+    var weapon_value := _get_card_runtime_value(weapon)
+    match_state.boss_state.take_damage(weapon_value)
+
+    _mark_card_resolved(weapon)
+    _mark_card_exhausted(weapon)
+    _mark_card_destroyed(weapon)
+
+    if is_left_hand:
+        match_state.player_state.clear_left_hand_card()
+        match_state.player_state.exhaust_left_hand()
+    else:
+        match_state.player_state.clear_right_hand_card()
+        match_state.player_state.exhaust_right_hand()
 
     return true
 

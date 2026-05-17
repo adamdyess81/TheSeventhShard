@@ -10,6 +10,7 @@ const RIGHT_HAND_PLACEHOLDER = preload("res://art/ui/RightHand Placement Card.pn
 const BACKPACK_PLACEHOLDER = preload("res://art/ui/Backpack Placement Card.png")
 const BACKGROUND_TEXTURE = preload("res://art/backgrounds/Ossara-Titled-Arena-blured.png")
 const CARD_BACK_TEXTURE = preload("res://art/ui/CardBack.png")
+const BOSS_CARD_TEXTURE = preload("res://art/cards/Gravebound Warden.png")
 const EMPTY_BOARD_SLOT_SIZE = Vector2(220, 300)
 const HUD_TEXT = Color("f1e7d6")
 const HUD_MUTED = Color("c4b59a")
@@ -23,6 +24,7 @@ const CARD_ART_TEXTURES := {
 	"grave_thrall": preload("res://art/cards/Grave Thrall.png"),
 	"large_health_potion": preload("res://art/cards/Large Healing Potion.png"),
 	"gold_10": preload("res://art/cards/Coins.png"),
+	"gravebound_warden": preload("res://art/cards/Gravebound Warden.png"),
 	"risen_bones": preload("res://art/cards/Risen Bones.png"),
 	"sepulcher_guard": preload("res://art/cards/Sepulcher Guard.png"),
 	"short_sword": preload("res://art/cards/Short Sword.png"),
@@ -36,6 +38,11 @@ const CARD_ART_TEXTURES := {
 @onready var round_label = $RootLayout/StageCenter/Stage/TopBar/RoundLabel
 @onready var gold_label = $RootLayout/StageCenter/Stage/TopBar/GoldLabel
 @onready var status_label = $RootLayout/StageCenter/Stage/TopBar/StatusLabel
+@onready var boss_drop_zone = $RootLayout/StageCenter/Stage/BossCenter/BossDropZone
+@onready var boss_art_texture = $RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas/BossArt
+@onready var boss_title_label = $RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas/TitleLabel
+@onready var boss_life_bar = $RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas/LifeBar
+@onready var boss_life_label = $RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas/LifeBar/LifeLabel
 
 @onready var board_card_list = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/BoardCardList
 @onready var board_title = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardTitle
@@ -168,11 +175,21 @@ func _refresh_ui() -> void:
     gold_label.text = "Gold: %d" % match_state.player_state.temporary_gold
     deck_count_label.text = "Deck: %d" % match_state.shared_deck_state.remaining_count()
 
+    _refresh_boss_panel()
     _refresh_board_cards()
     _refresh_drop_zone_textures()
     _refresh_equipment_labels()
     _refresh_slot_state_visuals()
-    _queue_restart_if_failed()
+    _queue_restart_if_finished()
+
+
+func _refresh_boss_panel() -> void:
+    boss_art_texture.texture = BOSS_CARD_TEXTURE
+    boss_title_label.text = match_state.boss_state.boss_name
+    boss_life_label.text = "%d/%d" % [
+        match_state.boss_state.current_health,
+        match_state.boss_state.max_health
+    ]
 
 
 func _refresh_board_cards() -> void:
@@ -567,6 +584,9 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
             return match_state.player_state.left_hand_card == null and not match_state.player_state.left_hand_exhausted
         return match_state.player_state.right_hand_card == null and not match_state.player_state.right_hand_exhausted
 
+    if source in ["left_hand", "right_hand"] and target_slot == "boss":
+        return family == "weapon" and can_use_slot_weapon_on_monster(source)
+
     if source in ["left_hand", "right_hand"] and target_slot == "backpack":
         if family == "":
             return false
@@ -790,6 +810,31 @@ func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
     _refresh_ui()
 
 
+func handle_weapon_drop_on_boss(source_hand: String) -> void:
+    if restart_pending:
+        return
+
+    var before_health := match_state.boss_state.current_health
+    var success := false
+    if source_hand == "left_hand":
+        success = combat_controller.use_left_hand_weapon_on_boss()
+    elif source_hand == "right_hand":
+        success = combat_controller.use_right_hand_weapon_on_boss()
+
+    if not success:
+        set_status("Could not use weapon on boss.")
+        _refresh_ui()
+        return
+
+    var after_health := match_state.boss_state.current_health
+    if after_health <= 0:
+        set_status("Gravebound Warden defeated.")
+    else:
+        set_status("Weapon hit the boss. %d to %d." % [before_health, after_health])
+
+    _refresh_ui()
+
+
 func _apply_visual_theme() -> void:
     player_health_label.add_theme_color_override("font_color", HUD_TEXT)
     boss_health_label.add_theme_color_override("font_color", HUD_TEXT)
@@ -803,6 +848,7 @@ func _apply_visual_theme() -> void:
 
     button_bar.visible = false
     _style_zone(left_hand_drop_zone, PANEL_BORDER)
+    _style_zone(boss_drop_zone, Color("8a6651"))
     _style_zone(player_avatar_drop_zone, Color("8d7867"))
     _style_zone(right_hand_drop_zone, PANEL_BORDER)
     _style_zone(backpack_drop_zone, Color("6e7e66"))
@@ -815,6 +861,22 @@ func _apply_visual_theme() -> void:
     _style_slot_text(left_hand_name_label, left_hand_type_label, left_hand_value_label)
     _style_slot_text(right_hand_name_label, right_hand_type_label, right_hand_value_label)
     _style_slot_text(backpack_name_label, backpack_type_label, backpack_value_label)
+    boss_title_label.add_theme_color_override("font_color", Color("f7ead7"))
+    boss_title_label.add_theme_font_size_override("font_size", 18)
+    var boss_life_style := StyleBoxFlat.new()
+    boss_life_style.bg_color = Color("5e2726")
+    boss_life_style.border_color = Color("d7b17a")
+    boss_life_style.border_width_left = 2
+    boss_life_style.border_width_top = 2
+    boss_life_style.border_width_right = 2
+    boss_life_style.border_width_bottom = 2
+    boss_life_style.corner_radius_top_left = 10
+    boss_life_style.corner_radius_top_right = 10
+    boss_life_style.corner_radius_bottom_right = 10
+    boss_life_style.corner_radius_bottom_left = 10
+    boss_life_bar.add_theme_stylebox_override("panel", boss_life_style)
+    boss_life_label.add_theme_color_override("font_color", Color("ffffff"))
+    boss_life_label.add_theme_font_size_override("font_size", 18)
 
     _style_debug_button(take_first_monster_button)
     _style_debug_button(move_first_to_left_hand_button)
@@ -898,27 +960,31 @@ func _style_slot_text(name_label: Label, type_label: Label, value_label: Label) 
     value_label.add_theme_font_size_override("font_size", 18)
 
 
-func _queue_restart_if_failed() -> void:
+func _queue_restart_if_finished() -> void:
     if restart_pending:
         return
 
     if outcome_controller == null or match_state == null:
         return
 
-    if outcome_controller.check_outcome(match_state) != "failure":
+    var outcome := outcome_controller.check_outcome(match_state)
+    if outcome not in ["failure", "victory"]:
         return
 
     restart_pending = true
     _set_debug_controls_enabled(false)
-    call_deferred("_begin_failure_reset")
+    call_deferred("_begin_combat_reset", outcome)
 
 
-func _begin_failure_reset() -> void:
-    _run_failure_reset()
+func _begin_combat_reset(outcome: String) -> void:
+    _run_combat_reset(outcome)
 
 
-func _run_failure_reset() -> void:
-    set_status("You died. Restarting...")
+func _run_combat_reset(outcome: String) -> void:
+    if outcome == "victory":
+        set_status("Boss defeated. Restarting combat...")
+    else:
+        set_status("You died. Restarting...")
     await get_tree().create_timer(0.9).timeout
     _build_test_match_state()
     restart_pending = false

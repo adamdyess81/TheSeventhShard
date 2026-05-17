@@ -79,10 +79,15 @@ func _drop_data(_at_position, data) -> void:
   elif normalized_target == "discard":
    print("calling handle_drop_to_discard with index ", board_index)
    combat_scene.handle_drop_to_discard(board_index)
+  elif normalized_target == "boss":
+   print("boss only accepts slot-dragged weapons")
   else:
    print("unhandled board drop_target: '", normalized_target, "'")
- elif normalized_target in ["left_hand", "right_hand", "backpack"]:
-  combat_scene.handle_slot_to_slot_drop(String(data.get("source", "")).strip_edges(), normalized_target)
+ elif normalized_target in ["left_hand", "right_hand", "backpack", "boss"]:
+  if normalized_target == "boss":
+   combat_scene.handle_weapon_drop_on_boss(String(data.get("source", "")).strip_edges())
+  else:
+   combat_scene.handle_slot_to_slot_drop(String(data.get("source", "")).strip_edges(), normalized_target)
  else:
   print("unhandled drop_target: '", normalized_target, "'")
 

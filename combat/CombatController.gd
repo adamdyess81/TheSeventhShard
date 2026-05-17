@@ -72,6 +72,18 @@ func use_right_hand_weapon_on_monster(board_index: int) -> bool:
     return success
 
 
+func use_left_hand_weapon_on_boss() -> bool:
+    var success := resolution_controller.use_left_hand_weapon_on_boss(match_state)
+    _post_action_update()
+    return success
+
+
+func use_right_hand_weapon_on_boss() -> bool:
+    var success := resolution_controller.use_right_hand_weapon_on_boss(match_state)
+    _post_action_update()
+    return success
+
+
 func resolve_monster_into_left_hand_shield(board_index: int) -> bool:
     var success := resolution_controller.resolve_monster_into_left_hand_shield(match_state, board_index)
     _post_action_update()

@@ -84,6 +84,68 @@ visible = false
 theme_override_constants/separation = 12
 alignment = 1
 
+[node name="BossCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage" unique_id=204300001]
+layout_mode = 2
+
+[node name="BossDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/BossCenter" unique_id=204300002]
+custom_minimum_size = Vector2(220, 300)
+layout_mode = 2
+script = ExtResource("2_a5s3s")
+drop_target = "boss"
+combat_scene_path = NodePath("../../../../../")
+
+[node name="BossCanvas" type="Control" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone" unique_id=204300003]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BossArt" type="TextureRect" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas" unique_id=204300004]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas" unique_id=204300005]
+layout_mode = 1
+anchors_preset = 10
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -84.0
+offset_top = 16.0
+offset_right = 84.0
+offset_bottom = 46.0
+mouse_filter = 2
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="LifeBar" type="PanelContainer" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas" unique_id=204300006]
+custom_minimum_size = Vector2(132, 34)
+layout_mode = 1
+anchors_preset = 12
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -66.0
+offset_top = -52.0
+offset_right = 66.0
+offset_bottom = -18.0
+mouse_filter = 2
+
+[node name="LifeLabel" type="Label" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas/LifeBar" unique_id=204300007]
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="TakeFirstMonsterButton" type="Button" parent="RootLayout/StageCenter/Stage/ButtonBar" unique_id=988054690]
 layout_mode = 2
 text = "Take First Monster"
