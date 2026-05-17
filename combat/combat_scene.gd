@@ -1111,9 +1111,13 @@ func _style_end_modal() -> void:
     end_modal_stats.add_theme_color_override("font_color", HUD_TEXT)
     end_modal_stats.add_theme_font_size_override("font_size", 18)
     end_modal_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
-    end_modal.mouse_filter = Control.MOUSE_FILTER_STOP
+    end_modal.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    end_modal_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    end_modal_stats.mouse_filter = Control.MOUSE_FILTER_IGNORE
     retry_button.mouse_filter = Control.MOUSE_FILTER_STOP
     quit_button.mouse_filter = Control.MOUSE_FILTER_STOP
+    retry_button.focus_mode = Control.FOCUS_ALL
+    quit_button.focus_mode = Control.FOCUS_ALL
     retry_button.add_theme_font_size_override("font_size", 16)
     quit_button.add_theme_font_size_override("font_size", 16)
 
@@ -1178,10 +1182,15 @@ func _on_quit_battle_pressed() -> void:
     get_tree().quit()
 
 
-func _unhandled_input(event: InputEvent) -> void:
-    if event.is_action_pressed("ui_cancel") and end_modal_overlay != null and end_modal_overlay.visible:
-        get_viewport().set_input_as_handled()
-        _on_quit_battle_pressed()
+func _input(event: InputEvent) -> void:
+    if end_modal_overlay == null or not end_modal_overlay.visible:
+        return
+
+    if event is InputEventKey and event.pressed and not event.echo:
+        var key_event := event as InputEventKey
+        if key_event.keycode == KEY_ESCAPE:
+            get_viewport().set_input_as_handled()
+            _on_quit_battle_pressed()
 
 func _on_take_first_monster_pressed() -> void:
  if restart_pending:
