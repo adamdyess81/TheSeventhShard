@@ -1110,6 +1110,10 @@ func _style_end_modal() -> void:
     end_modal_title.add_theme_font_size_override("font_size", 28)
     end_modal_stats.add_theme_color_override("font_color", HUD_TEXT)
     end_modal_stats.add_theme_font_size_override("font_size", 18)
+    end_modal_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+    end_modal.mouse_filter = Control.MOUSE_FILTER_STOP
+    retry_button.mouse_filter = Control.MOUSE_FILTER_STOP
+    quit_button.mouse_filter = Control.MOUSE_FILTER_STOP
     retry_button.add_theme_font_size_override("font_size", 16)
     quit_button.add_theme_font_size_override("font_size", 16)
 
@@ -1129,23 +1133,26 @@ func _queue_restart_if_finished() -> void:
     call_deferred("_show_battle_end_modal", outcome)
 
 func _show_battle_end_modal(outcome: String) -> void:
+    var gold_delta := match_state.player_state.temporary_gold
+    var gold_text := "Gold Gained: %d" % gold_delta
+
     if outcome == "victory":
         set_status("Boss defeated.")
         end_modal_title.text = "Victory"
+        if gold_delta < 0:
+            gold_text = "Gold Lost: %d" % abs(gold_delta)
     else:
         set_status("You died.")
         end_modal_title.text = "Defeat"
-
-    var gold_delta := match_state.player_state.temporary_gold
-    var gold_text := "Gold Gained: %d" % gold_delta
-    if gold_delta < 0:
-        gold_text = "Gold Lost: %d" % abs(gold_delta)
+        gold_text = "Gold Lost: %d" % max(gold_delta, 0)
 
     end_modal_stats.text = "Rounds: %d\n%s" % [
         match_state.round_number,
         gold_text
     ]
     end_modal_overlay.visible = true
+    retry_button.disabled = false
+    quit_button.disabled = false
     retry_button.grab_focus()
 
 
