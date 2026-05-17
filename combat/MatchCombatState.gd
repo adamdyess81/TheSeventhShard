@@ -26,6 +26,7 @@ func setup(
 func advance_round() -> void:
  round_number += 1
  player_state.reset_hand_exhaustion()
+ shared_deck_state.advance_round_specials()
 
 
 func refill_board_if_allowed() -> bool:

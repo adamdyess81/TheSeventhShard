@@ -49,6 +49,17 @@ func is_empty() -> bool:
     return _cards.is_empty()
 
 
+func advance_round_specials() -> void:
+    for i in range(1, _cards.size()):
+        var card = _cards[i]
+        if not (card is CardRuntimeState):
+            continue
+        if not _has_special_rule(card, "rush"):
+            continue
+        _cards[i] = _cards[i - 1]
+        _cards[i - 1] = card
+
+
 func _build_runtime_card(card_data: Dictionary) -> CardRuntimeState:
     _instance_counter += 1
 
@@ -71,3 +82,10 @@ func _infer_owner_source(card_data: Dictionary) -> String:
         return "monster_deck"
 
     return "player_deck"
+
+
+func _has_special_rule(card: CardRuntimeState, special_rule: String) -> bool:
+    var special_rules = card.card_data.get("special_rules", [])
+    if special_rules is Array:
+        return special_rule in special_rules
+    return false
