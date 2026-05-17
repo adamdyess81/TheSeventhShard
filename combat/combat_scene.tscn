@@ -174,7 +174,7 @@ horizontal_alignment = 2
 [node name="CryptHoundDebugLabel" type="Label" parent="RootLayout/StageCenter/Stage" unique_id=1057061875]
 layout_mode = 2
 text = "Crypt Hounds: []"
-horizontal_alignment = 1
+horizontal_alignment = 0
 
 [node name="BossCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage" unique_id=204300001]
 layout_mode = 2
