@@ -212,7 +212,7 @@ func _refresh_board_cards() -> void:
    continue
   var card_key := _get_card_unique_key(card)
   next_board_card_ids.append(card_key)
- if board_visuals_initialized:
+  if board_visuals_initialized:
    var previous_key := ""
    if i < last_board_card_ids.size():
     previous_key = last_board_card_ids[i]
