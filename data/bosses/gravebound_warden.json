@@ -17,5 +17,5 @@
   "board_cap_modifier": 0,
   "unresolved_card_cap_modifier": 0,
   "art_ref": null,
-  "notes": "Baseline Ossara boss. Each round he summons a 1-value Risen Bones with Rush 1 into the deck."
+  "notes": "Baseline Ossara boss. After the player kills a monster card with an attack, he summons a 1-value Risen Bones with Rush 1 into the deck."
 }

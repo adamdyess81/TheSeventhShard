@@ -413,6 +413,56 @@ func _ready() -> void:
             print("Remaining Monster ID: ", remaining_monster.get("id", "[none]"))
             print("Remaining Monster Value: ", remaining_monster.get("current_value", remaining_monster.get("base_value", "[none]")))
 
+    print("\n=== SUMMON TRIGGER TEST ===")
+
+    var summon_board_state := BoardState.new()
+    summon_board_state.setup(4)
+
+    var summon_player_state := PlayerCombatState.new()
+    summon_player_state.setup(player_starting_health, STARTING_BACKPACK_CAPACITY, player_max_deck_size)
+
+    var summon_boss_state := BossCombatState.new()
+    summon_boss_state.setup(
+        "gravebound_warden",
+        "Gravebound Warden",
+        BOSS_STARTING_HEALTH,
+        ["summon"],
+        {
+            "summon_card_data": loader.get_card("risen_bones").duplicate(true),
+            "summon_value": 1,
+            "summon_rush": 1
+        }
+    )
+
+    var summon_shared_deck := SharedDeckState.new()
+    summon_shared_deck.setup([])
+
+    var summon_match_state := MatchCombatState.new()
+    summon_match_state.setup(
+        summon_player_state,
+        summon_boss_state,
+        summon_board_state,
+        summon_shared_deck,
+        1
+    )
+
+    var summon_weapon = loader.get_card("short_sword").duplicate(true)
+    summon_match_state.player_state.set_left_hand_card(summon_weapon)
+    summon_board_state.get_active_cards().append(loader.get_card("risen_bones").duplicate(true))
+
+    summon_match_state.advance_round()
+    print("Deck Count After Round Advance Without Kill: ", summon_match_state.shared_deck_state.remaining_count())
+    print("Pending Events After Round Advance Without Kill: ", summon_match_state.consume_pending_round_events().size())
+
+    var summon_resolution := ResolutionController.new()
+    var summon_result := summon_resolution.use_left_hand_weapon_on_monster(summon_match_state, 0)
+    var summon_events := summon_match_state.consume_pending_round_events()
+    print("Weapon kill triggered successfully?: ", summon_result)
+    print("Deck Count After Weapon Kill Summon: ", summon_match_state.shared_deck_state.remaining_count())
+    print("Pending Events After Weapon Kill Summon: ", summon_events.size())
+    if summon_events.size() > 0:
+        print("First Summon Event Type: ", summon_events[0].get("type", "[none]"))
+
     print("\n=== BACKPACK HAND TRANSFER TEST ===")
 
     var transfer_board_state := BoardState.new()

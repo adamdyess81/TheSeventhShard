@@ -31,7 +31,6 @@ func advance_round() -> void:
  player_state.reset_hand_exhaustion()
  player_state.clear_stun()
  shared_deck_state.advance_round_specials()
- _apply_boss_round_specials()
 
 
 func refill_board_if_allowed() -> bool:
@@ -65,7 +64,7 @@ func consume_pending_round_events() -> Array:
  return events
 
 
-func _apply_boss_round_specials() -> void:
+func trigger_boss_on_player_monster_kill() -> void:
  if boss_state == null or shared_deck_state == null:
   return
 

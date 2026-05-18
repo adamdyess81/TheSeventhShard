@@ -327,6 +327,7 @@ func _use_weapon_on_monster(match_state: MatchCombatState, board_index: int, wea
     if remaining_monster <= 0:
         _mark_card_resolved(monster)
         match_state.board_state.remove_card_at(board_index)
+        match_state.trigger_boss_on_player_monster_kill()
     else:
         _set_card_runtime_value(monster, remaining_monster)
 
