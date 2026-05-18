@@ -137,14 +137,14 @@ var player_profile_data: Dictionary = {}
 func _ready() -> void:
     randomize()
     add_to_group("combat_scene")
-    _build_test_match_state()
+    _build_battle_match_state()
     _apply_visual_theme()
     _start_battle_music()
     root_layout_base_position = root_layout.position
     background_base_position = background_texture.position
     retry_button.pressed.connect(_on_retry_battle_pressed)
     quit_button.pressed.connect(_on_quit_battle_pressed)
-    set_status("Ready.")
+    set_status("Battle ready.")
     _refresh_ui()
     call_deferred("_play_battle_intro")
 
@@ -350,7 +350,7 @@ func _deal_opening_board() -> void:
 
 
 
-func _build_test_match_state() -> void:
+func _build_battle_match_state() -> void:
     left_hand_visual_card_id = ""
     right_hand_visual_card_id = ""
     backpack_visual_card_id = ""
@@ -408,12 +408,12 @@ func _build_test_match_state() -> void:
     var boss_values = boss_data.get("special_values", {})
     if not (boss_values is Dictionary):
         boss_values = {}
-    if boss_values.has("summon_card_id"):
-        var summon_card_id := str(boss_values.get("summon_card_id", "")).strip_edges()
-        if summon_card_id != "":
-            var summon_card_data := loader.get_card(summon_card_id)
-            if not summon_card_data.is_empty():
-                boss_values["summon_card_data"] = summon_card_data.duplicate(true)
+    if boss_values.has("reanimation_card_id"):
+        var reanimation_card_id := str(boss_values.get("reanimation_card_id", "")).strip_edges()
+        if reanimation_card_id != "":
+            var reanimation_card_data := loader.get_card(reanimation_card_id)
+            if not reanimation_card_data.is_empty():
+                boss_values["reanimation_card_data"] = reanimation_card_data.duplicate(true)
 
     var boss_state := BossCombatState.new()
     boss_state.setup(
@@ -485,8 +485,13 @@ func _play_pending_round_events() -> void:
     var events = match_state.consume_pending_round_events()
     for event in events:
         var event_type := str(event.get("type", ""))
-        if event_type == "boss_summon":
+        if event_type == "boss_reanimation":
             _animate_boss_summon_to_deck(str(event.get("card_id", "")))
+            _play_sfx(GRAVEBOUND_WARDEN_SPECIAL_SFX)
+        elif event_type == "boss_retaliation":
+            _show_player_damage_slash()
+            _play_damage_screen_shake()
+            _play_random_player_hurt_sfx()
             _play_sfx(GRAVEBOUND_WARDEN_SPECIAL_SFX)
 
 
@@ -1256,6 +1261,7 @@ func handle_weapon_drop_on_boss(source_hand: String) -> void:
         return
 
     var before_health := match_state.boss_state.current_health
+    var player_health_before := match_state.player_state.current_health
     var success := false
     if source_hand == "left_hand":
         success = combat_controller.use_left_hand_weapon_on_boss()
@@ -1268,15 +1274,23 @@ func handle_weapon_drop_on_boss(source_hand: String) -> void:
         return
 
     var after_health := match_state.boss_state.current_health
+    var player_health_after := match_state.player_state.current_health
+    var retaliation_damage := max(player_health_before - player_health_after, 0)
     _play_sfx(DROP_CARD_SFX)
     _play_sfx(SWORD_SWING_SFX)
     _play_sfx(GRAVEBOUND_WARDEN_HURT_SFX)
     if after_health <= 0:
         _show_boss_damage_slash()
-        set_status("Gravebound Warden defeated.")
+        if retaliation_damage > 0:
+            set_status("Gravebound Warden defeated. Retaliation dealt %d damage." % retaliation_damage)
+        else:
+            set_status("Gravebound Warden defeated.")
     else:
         _show_boss_damage_slash()
-        set_status("Weapon hit the boss. %d to %d." % [before_health, after_health])
+        if retaliation_damage > 0:
+            set_status("Weapon hit the boss. %d to %d. Retaliation dealt %d damage." % [before_health, after_health, retaliation_damage])
+        else:
+            set_status("Weapon hit the boss. %d to %d." % [before_health, after_health])
 
     _refresh_ui()
 
@@ -1569,9 +1583,9 @@ func is_modal_open() -> bool:
 
 func _restart_battle() -> void:
     await _resume_battle_music_from_outcome()
-    _build_test_match_state()
+    _build_battle_match_state()
     restart_pending = false
-    set_status("Fresh restart.")
+    set_status("Battle restarted.")
     _refresh_ui()
     await _play_battle_intro()
 

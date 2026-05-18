@@ -397,7 +397,11 @@ func _resolve_monster_into_shield(match_state: MatchCombatState, board_index: in
 
 func _use_weapon_on_boss(match_state: MatchCombatState, weapon, is_left_hand: bool) -> bool:
     var weapon_value := _get_card_runtime_value(weapon)
+    var boss_health_before := match_state.boss_state.current_health
     match_state.boss_state.take_damage(weapon_value)
+    var boss_damage_dealt := max(boss_health_before - match_state.boss_state.current_health, 0)
+    if boss_damage_dealt > 0:
+        match_state.trigger_boss_retaliation_on_player_attack()
 
     _mark_card_resolved(weapon)
     _mark_card_exhausted(weapon)

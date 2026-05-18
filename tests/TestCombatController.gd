@@ -428,11 +428,11 @@ func _ready() -> void:
         "gravebound_warden",
         "Gravebound Warden",
         BOSS_STARTING_HEALTH,
-        ["summon"],
+        ["reanimation"],
         {
-            "summon_card_data": loader.get_card("risen_bones").duplicate(true),
-            "summon_value": 1,
-            "summon_rush": 1
+            "reanimation_card_data": loader.get_card("risen_bones").duplicate(true),
+            "reanimation_value": 1,
+            "reanimation_rush": 1
         }
     )
 
@@ -460,10 +460,53 @@ func _ready() -> void:
     var summon_result := summon_resolution.use_left_hand_weapon_on_monster(summon_match_state, 0)
     var summon_events := summon_match_state.consume_pending_round_events()
     print("Weapon kill triggered successfully?: ", summon_result)
-    print("Deck Count After Weapon Kill Summon: ", summon_match_state.shared_deck_state.remaining_count())
-    print("Pending Events After Weapon Kill Summon: ", summon_events.size())
+    print("Deck Count After Weapon Kill Reanimation: ", summon_match_state.shared_deck_state.remaining_count())
+    print("Pending Events After Weapon Kill Reanimation: ", summon_events.size())
     if summon_events.size() > 0:
-        print("First Summon Event Type: ", summon_events[0].get("type", "[none]"))
+        print("First Reanimation Event Type: ", summon_events[0].get("type", "[none]"))
+
+    print("\n=== BOSS RETALIATION TEST ===")
+
+    var retaliation_player_state := PlayerCombatState.new()
+    retaliation_player_state.setup(PLAYER_STARTING_HEALTH, 1, 20)
+
+    var retaliation_boss_state := BossCombatState.new()
+    retaliation_boss_state.setup(
+        "gravebound_warden",
+        "Gravebound Warden",
+        BOSS_STARTING_HEALTH,
+        ["retaliation"],
+        {
+            "retaliation": 3
+        }
+    )
+
+    var retaliation_board_state := BoardState.new()
+    retaliation_board_state.setup(ACTIVE_BOARD_CAP)
+
+    var retaliation_shared_deck := SharedDeckState.new()
+    retaliation_shared_deck.setup([])
+
+    var retaliation_match_state := MatchCombatState.new()
+    retaliation_match_state.setup(
+        retaliation_player_state,
+        retaliation_boss_state,
+        retaliation_board_state,
+        retaliation_shared_deck,
+        1
+    )
+
+    var retaliation_weapon = loader.get_card("short_sword").duplicate(true)
+    retaliation_match_state.player_state.set_left_hand_card(retaliation_weapon)
+    var retaliation_resolution := ResolutionController.new()
+    var retaliation_result := retaliation_resolution.use_left_hand_weapon_on_boss(retaliation_match_state)
+    var retaliation_events := retaliation_match_state.consume_pending_round_events()
+    print("Boss retaliation triggered successfully?: ", retaliation_result)
+    print("Boss Health After Retaliation Test: ", retaliation_match_state.boss_state.current_health)
+    print("Player Health After Retaliation Test: ", retaliation_match_state.player_state.current_health)
+    print("Pending Events After Boss Retaliation: ", retaliation_events.size())
+    if retaliation_events.size() > 0:
+        print("First Retaliation Event Type: ", retaliation_events[0].get("type", "[none]"))
 
     print("\n=== XP MULTIPLIER TEST ===")
 

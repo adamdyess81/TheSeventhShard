@@ -98,39 +98,59 @@ func trigger_boss_on_player_monster_kill() -> void:
  if boss_state == null or shared_deck_state == null:
   return
 
- if not boss_state.has_special_rule("summon"):
+ if not boss_state.has_special_rule("reanimation"):
   return
 
- var summon_card_data = boss_state.get_special_value("summon_card_data", null)
- if not (summon_card_data is Dictionary):
+ var reanimation_card_data = boss_state.get_special_value("reanimation_card_data", null)
+ if not (reanimation_card_data is Dictionary):
   return
 
- var summon_data = summon_card_data.duplicate(true)
- if summon_data.is_empty():
+ var reanimation_data = reanimation_card_data.duplicate(true)
+ if reanimation_data.is_empty():
   return
 
- var summon_value = boss_state.get_special_value("summon_value", null)
- if summon_value != null:
-  summon_data["base_value"] = int(summon_value)
+ var reanimation_value = boss_state.get_special_value("reanimation_value", null)
+ if reanimation_value != null:
+  reanimation_data["base_value"] = int(reanimation_value)
 
- var summon_rush = int(boss_state.get_special_value("summon_rush", 0))
- if summon_rush > 0:
-  var special_rules = summon_data.get("special_rules", [])
+ var reanimation_rush = int(boss_state.get_special_value("reanimation_rush", 0))
+ if reanimation_rush > 0:
+  var special_rules = reanimation_data.get("special_rules", [])
   if not (special_rules is Array):
    special_rules = []
   if "rush" not in special_rules:
    special_rules.append("rush")
-  summon_data["special_rules"] = special_rules
+  reanimation_data["special_rules"] = special_rules
 
-  var special_values = summon_data.get("special_values", {})
+  var special_values = reanimation_data.get("special_values", {})
   if not (special_values is Dictionary):
    special_values = {}
-  special_values["rush"] = summon_rush
-  summon_data["special_values"] = special_values
+  special_values["rush"] = reanimation_rush
+  reanimation_data["special_values"] = special_values
 
- var summoned_card = shared_deck_state.insert_card_at_random(summon_data)
+ var reanimated_card = shared_deck_state.insert_card_at_random(reanimation_data)
  pending_round_events.append({
-  "type": "boss_summon",
+  "type": "boss_reanimation",
   "boss_id": boss_state.boss_id,
-  "card_id": summoned_card.card_id
+  "card_id": reanimated_card.card_id
  })
+
+
+func trigger_boss_retaliation_on_player_attack() -> int:
+ if boss_state == null or player_state == null:
+  return 0
+
+ if not boss_state.has_special_rule("retaliation"):
+  return 0
+
+ var retaliation_damage := int(boss_state.get_special_value("retaliation", 0))
+ if retaliation_damage <= 0:
+  return 0
+
+ player_state.take_damage(retaliation_damage)
+ pending_round_events.append({
+  "type": "boss_retaliation",
+  "boss_id": boss_state.boss_id,
+  "damage": retaliation_damage
+ })
+ return retaliation_damage
