@@ -8,6 +8,10 @@ var shared_deck_state: SharedDeckState
 
 var round_number: int = 1
 var pending_round_events: Array = []
+var battle_xp_earned: int = 0
+var battle_xp_multiplier: int = 1
+var battle_xp_awarded: int = 0
+var battle_xp_persisted: bool = false
 
 
 func setup(
@@ -23,6 +27,10 @@ func setup(
  shared_deck_state = shared_deck
  round_number = starting_round
  pending_round_events.clear()
+ battle_xp_earned = 0
+ battle_xp_multiplier = 1
+ battle_xp_awarded = 0
+ battle_xp_persisted = false
 
 
 func advance_round() -> void:
@@ -62,6 +70,28 @@ func consume_pending_round_events() -> Array:
  var events = pending_round_events.duplicate(true)
  pending_round_events.clear()
  return events
+
+
+func add_battle_xp(amount: int) -> void:
+ if amount <= 0:
+  return
+
+ battle_xp_earned += amount
+
+
+func finalize_battle_xp(outcome: String) -> int:
+ if battle_xp_awarded > 0:
+  return battle_xp_awarded
+
+ if outcome == "survival":
+  battle_xp_multiplier = 3
+ elif outcome == "victory":
+  battle_xp_multiplier = 2
+ else:
+  battle_xp_multiplier = 1
+
+ battle_xp_awarded = battle_xp_earned * battle_xp_multiplier
+ return battle_xp_awarded
 
 
 func trigger_boss_on_player_monster_kill() -> void:

@@ -66,6 +66,7 @@ func _ready() -> void:
     var controller_monster_result := combat_controller.resolve_enemy_to_player(0)
     print("\nController resolved monster to player?: ", controller_monster_result)
     print("Player Health After Controller Monster Resolve: ", combat_controller.match_state.player_state.current_health, "/", combat_controller.match_state.player_state.max_health)
+    print("Battle XP After Controller Monster Resolve: ", combat_controller.match_state.battle_xp_earned)
     print("Board After Controller Monster Resolve:")
     _print_card_list(combat_controller.match_state.get_active_board_cards())
     print("Deck Remaining After Auto-Refill: ", combat_controller.match_state.shared_deck_state.remaining_count())
@@ -73,6 +74,7 @@ func _ready() -> void:
 
     var controller_left_hand_result := combat_controller.move_player_card_to_left_hand(0)
     print("\nController moved player card to left hand?: ", controller_left_hand_result)
+    print("Battle XP After Controller Left Hand Move: ", combat_controller.match_state.battle_xp_earned)
     if combat_controller.match_state.player_state.left_hand_card is CardRuntimeState:
         print("Left Hand After Controller Move: ", combat_controller.match_state.player_state.left_hand_card.card_id)
         print("Left Hand Zone: ", combat_controller.match_state.player_state.left_hand_card.zone)
@@ -462,6 +464,50 @@ func _ready() -> void:
     print("Pending Events After Weapon Kill Summon: ", summon_events.size())
     if summon_events.size() > 0:
         print("First Summon Event Type: ", summon_events[0].get("type", "[none]"))
+
+    print("\n=== XP MULTIPLIER TEST ===")
+
+    var xp_match_state := MatchCombatState.new()
+    xp_match_state.setup(
+        summon_player_state,
+        summon_boss_state,
+        summon_board_state,
+        summon_shared_deck,
+        1
+    )
+    xp_match_state.add_battle_xp(4)
+    print("XP Awarded On Defeat: ", xp_match_state.finalize_battle_xp("failure"))
+
+    var victory_xp_match_state := MatchCombatState.new()
+    victory_xp_match_state.setup(
+        summon_player_state,
+        summon_boss_state,
+        summon_board_state,
+        summon_shared_deck,
+        1
+    )
+    victory_xp_match_state.add_battle_xp(4)
+    print("XP Awarded On Victory: ", victory_xp_match_state.finalize_battle_xp("victory"))
+
+    var survival_xp_match_state := MatchCombatState.new()
+    survival_xp_match_state.setup(
+        summon_player_state,
+        summon_boss_state,
+        summon_board_state,
+        summon_shared_deck,
+        1
+    )
+    survival_xp_match_state.add_battle_xp(4)
+    print("XP Awarded On Survival: ", survival_xp_match_state.finalize_battle_xp("survival"))
+
+    print("\n=== LEVEL CURVE TEST ===")
+    print("Level From 0 XP: ", Progression.calculate_level_from_total_xp(0))
+    print("Level From 20 XP: ", Progression.calculate_level_from_total_xp(20))
+    print("Level From 100 XP: ", Progression.calculate_level_from_total_xp(100))
+    print("Level 1 -> 2 XP: ", Progression.get_xp_to_next_level(1))
+    print("Level 10 -> 11 XP: ", Progression.get_xp_to_next_level(10))
+    print("Level 25 -> 26 XP: ", Progression.get_xp_to_next_level(25))
+    print("Level 40 -> 41 XP: ", Progression.get_xp_to_next_level(40))
 
     print("\n=== BACKPACK HAND TRANSFER TEST ===")
 

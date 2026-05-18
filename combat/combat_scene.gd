@@ -6,6 +6,7 @@ const BOSS_STARTING_HEALTH := 12
 const ACTIVE_BOARD_CAP := 4
 const STARTING_BACKPACK_CAPACITY := 1
 const PLAYER_PROFILE_PATH := "res://profiles/player_main.json"
+const HOVEL_SCENE_PATH := "res://hovel/hovel_scene.tscn"
 const CARD_VIEW_SCENE = preload("res://cards/card_view.tscn")
 const LEFT_HAND_PLACEHOLDER = preload("res://art/ui/LeftHand Placement Card.png")
 const RIGHT_HAND_PLACEHOLDER = preload("res://art/ui/RightHand Placement Card.png")
@@ -128,6 +129,7 @@ var board_visuals_initialized := false
 var escape_was_pressed := false
 var root_layout_base_position := Vector2.ZERO
 var background_base_position := Vector2.ZERO
+var player_profile_data: Dictionary = {}
 
 
 func _ready() -> void:
@@ -355,12 +357,12 @@ func _build_test_match_state() -> void:
 
     var loader = GameDataLoader.new()
     loader.build_card_registry()
-    var player_profile := loader.load_json(PLAYER_PROFILE_PATH)
-    var player_starting_health := int(player_profile.get(
+    player_profile_data = loader.load_json(PLAYER_PROFILE_PATH)
+    var player_starting_health := int(player_profile_data.get(
         "starting_health_base",
         DEFAULT_PLAYER_STARTING_HEALTH
     ))
-    var player_max_deck_size := int(player_profile.get(
+    var player_max_deck_size := int(player_profile_data.get(
         "max_deck_size_base",
         DEFAULT_PLAYER_MAX_DECK_SIZE
     ))
@@ -1467,8 +1469,14 @@ func _queue_restart_if_finished() -> void:
     call_deferred("_show_battle_end_modal", outcome)
 
 func _show_battle_end_modal(outcome: String) -> void:
+    var xp_gained := _apply_battle_xp_rewards(outcome)
+    var xp_base := match_state.battle_xp_earned
+    var xp_multiplier := match_state.battle_xp_multiplier
     var gold_delta := match_state.player_state.temporary_gold
     var gold_text := "Gold Gained: %d" % gold_delta
+    var xp_text := "XP Gained: %d" % xp_gained
+    if xp_multiplier > 1:
+        xp_text = "XP Gained: %d (%d x%d)" % [xp_gained, xp_base, xp_multiplier]
 
     if outcome == "victory":
         set_status("Boss defeated.")
@@ -1490,12 +1498,18 @@ func _show_battle_end_modal(outcome: String) -> void:
 
     end_modal_stats.text = "Rounds: %d\n%s" % [
         match_state.round_number,
-        gold_text
+        "%s\n%s\nLevel: %d\nTotal XP: %d" % [
+            gold_text,
+            xp_text,
+            int(player_profile_data.get("player_level", 1)),
+            int(player_profile_data.get("total_xp", 0))
+        ]
     ]
     move_child(end_modal_overlay, get_child_count() - 1)
     end_modal_overlay.visible = true
     retry_button.disabled = false
     quit_button.disabled = false
+    quit_button.text = "Return to Hovel"
     retry_button.grab_focus()
 
 
@@ -1503,6 +1517,36 @@ func _hide_end_modal() -> void:
     if end_modal_overlay != null:
         end_modal_overlay.visible = false
     escape_was_pressed = false
+
+
+func _apply_battle_xp_rewards(outcome: String) -> int:
+    if match_state == null:
+        return 0
+
+    var xp_gained := match_state.finalize_battle_xp(outcome)
+    if match_state.battle_xp_persisted:
+        return xp_gained
+
+    if player_profile_data.is_empty():
+        return xp_gained
+
+    var starting_total_xp := int(player_profile_data.get("total_xp", 0))
+    var updated_total_xp := starting_total_xp + xp_gained
+    player_profile_data["total_xp"] = updated_total_xp
+    player_profile_data["player_level"] = Progression.calculate_level_from_total_xp(updated_total_xp)
+    _save_player_profile()
+    match_state.battle_xp_persisted = true
+    return xp_gained
+
+
+func _save_player_profile() -> void:
+    var file := FileAccess.open(PLAYER_PROFILE_PATH, FileAccess.WRITE)
+    if file == null:
+        push_error("Failed to open player profile for write: " + PLAYER_PROFILE_PATH)
+        return
+
+    file.store_string(JSON.stringify(player_profile_data, "\t"))
+    file.close()
 
 
 func is_modal_open() -> bool:
@@ -1524,7 +1568,7 @@ func _on_retry_battle_pressed() -> void:
 
 
 func _on_quit_battle_pressed() -> void:
-    get_tree().quit()
+    get_tree().change_scene_to_file(HOVEL_SCENE_PATH)
 
 
 func _process(_delta: float) -> void:
