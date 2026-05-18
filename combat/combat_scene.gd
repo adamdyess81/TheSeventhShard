@@ -26,6 +26,7 @@ const DROP_CARD_SFX = preload("res://audio/sound fx/drop_card.wav")
 const GAIN_COINS_SFX = preload("res://audio/sound fx/gain_coins.wav")
 const GRAVE_THRALL_SFX = preload("res://audio/sound fx/grave_thrall.wav")
 const GRAVEBOUND_WARDEN_HURT_SFX = preload("res://audio/sound fx/gravebound_warden_hurt.wav")
+const GRAVEBOUND_WARDEN_SPECIAL_SFX = preload("res://audio/sound fx/gravebound_warden_special.wav")
 const PLAYER_HURT_SFX := [
 	preload("res://audio/sound fx/player_hurt_001_male.wav"),
 	preload("res://audio/sound fx/player_hurt_002_male.wav"),
@@ -486,6 +487,7 @@ func _play_pending_round_events() -> void:
         var event_type := str(event.get("type", ""))
         if event_type == "boss_summon":
             _animate_boss_summon_to_deck(str(event.get("card_id", "")))
+            _play_sfx(GRAVEBOUND_WARDEN_SPECIAL_SFX)
 
 
 func _animate_boss_summon_to_deck(card_id: String) -> void:

@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://bcjmtaa73u4jp"]
 
-[ext_resource type="Script" path="res://hovel/hovel_scene.gd" id="1"]
+[ext_resource type="Script" uid="uid://dwapb7jhjopnk" path="res://hovel/hovel_scene.gd" id="1"]
 
-[node name="HovelScene" type="Control"]
+[node name="HovelScene" type="Control" unique_id=2020094156]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
 
-[node name="Backdrop" type="ColorRect" parent="."]
+[node name="Backdrop" type="ColorRect" parent="." unique_id=535169265]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.0627451, 0.0431373, 0.0352941, 1)
 
-[node name="Root" type="MarginContainer" parent="."]
+[node name="Root" type="MarginContainer" parent="." unique_id=1318335778]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -36,136 +36,136 @@ theme_override_constants/margin_top = 0
 theme_override_constants/margin_right = 0
 theme_override_constants/margin_bottom = 0
 
-[node name="Content" type="HBoxContainer" parent="Root"]
+[node name="Content" type="HBoxContainer" parent="Root" unique_id=711283901]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 28
 
-[node name="StatsPanel" type="PanelContainer" parent="Root/Content"]
+[node name="StatsPanel" type="PanelContainer" parent="Root/Content" unique_id=1199470966]
 custom_minimum_size = Vector2(560, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="StatsContent" type="VBoxContainer" parent="Root/Content/StatsPanel"]
+[node name="StatsContent" type="VBoxContainer" parent="Root/Content/StatsPanel" unique_id=1493739369]
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="Title" type="Label" parent="Root/Content/StatsPanel/StatsContent"]
+[node name="Title" type="Label" parent="Root/Content/StatsPanel/StatsContent" unique_id=2028750576]
 layout_mode = 2
 text = "The Old Man's Hovel"
 horizontal_alignment = 1
 
-[node name="StatsRows" type="VBoxContainer" parent="Root/Content/StatsPanel/StatsContent"]
+[node name="StatsRows" type="VBoxContainer" parent="Root/Content/StatsPanel/StatsContent" unique_id=1374913831]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="HealthRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows"]
+[node name="HealthRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows" unique_id=749675892]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/HealthRow"]
+[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/HealthRow" unique_id=84496019]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Health"
 
-[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/HealthRow"]
+[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/HealthRow" unique_id=1736846179]
 layout_mode = 2
 text = "0"
 horizontal_alignment = 2
 
-[node name="GoldRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows"]
+[node name="GoldRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows" unique_id=9537807]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/GoldRow"]
+[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/GoldRow" unique_id=2031238293]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Gold in Stash"
 
-[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/GoldRow"]
+[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/GoldRow" unique_id=943718050]
 layout_mode = 2
 text = "0"
 horizontal_alignment = 2
 
-[node name="ExperienceRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows"]
+[node name="ExperienceRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows" unique_id=1461836148]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/ExperienceRow"]
+[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/ExperienceRow" unique_id=1804867972]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Experience"
 
-[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/ExperienceRow"]
+[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/ExperienceRow" unique_id=346379923]
 layout_mode = 2
 text = "0"
 horizontal_alignment = 2
 
-[node name="LevelRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows"]
+[node name="LevelRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows" unique_id=723405807]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/LevelRow"]
+[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/LevelRow" unique_id=241264428]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Level"
 
-[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/LevelRow"]
+[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/LevelRow" unique_id=316139086]
 layout_mode = 2
 text = "1"
 horizontal_alignment = 2
 
-[node name="DeckSizeRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows"]
+[node name="DeckSizeRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows" unique_id=1359138703]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/DeckSizeRow"]
+[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/DeckSizeRow" unique_id=846238379]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Max Deck Size"
 
-[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/DeckSizeRow"]
+[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/DeckSizeRow" unique_id=46033466]
 layout_mode = 2
 text = "15"
 horizontal_alignment = 2
 
-[node name="ActionPanel" type="PanelContainer" parent="Root/Content"]
+[node name="ActionPanel" type="PanelContainer" parent="Root/Content" unique_id=397982995]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ActionContent" type="VBoxContainer" parent="Root/Content/ActionPanel"]
+[node name="ActionContent" type="VBoxContainer" parent="Root/Content/ActionPanel" unique_id=1096402782]
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="ActionTitle" type="Label" parent="Root/Content/ActionPanel/ActionContent"]
+[node name="ActionTitle" type="Label" parent="Root/Content/ActionPanel/ActionContent" unique_id=445002313]
 layout_mode = 2
 text = "Base Camp"
 horizontal_alignment = 1
 
-[node name="ActionButtons" type="VBoxContainer" parent="Root/Content/ActionPanel/ActionContent"]
+[node name="ActionButtons" type="VBoxContainer" parent="Root/Content/ActionPanel/ActionContent" unique_id=1098993176]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="CardInventoryButton" type="Button" parent="Root/Content/ActionPanel/ActionContent/ActionButtons"]
+[node name="CardInventoryButton" type="Button" parent="Root/Content/ActionPanel/ActionContent/ActionButtons" unique_id=702904602]
 layout_mode = 2
 text = "Card Inventory"
 
-[node name="GoFightButton" type="Button" parent="Root/Content/ActionPanel/ActionContent/ActionButtons"]
+[node name="GoFightButton" type="Button" parent="Root/Content/ActionPanel/ActionContent/ActionButtons" unique_id=41464060]
 layout_mode = 2
 text = "Go Fight"
 
-[node name="ExitGameButton" type="Button" parent="Root/Content/ActionPanel/ActionContent/ActionButtons"]
+[node name="ExitGameButton" type="Button" parent="Root/Content/ActionPanel/ActionContent/ActionButtons" unique_id=1666680272]
 layout_mode = 2
 text = "Exit Game"
 
-[node name="StatusLabel" type="Label" parent="Root/Content/ActionPanel/ActionContent"]
+[node name="StatusLabel" type="Label" parent="Root/Content/ActionPanel/ActionContent" unique_id=940615885]
 layout_mode = 2
-autowrap_mode = 3
 text = "The Hovel stands ready."
+autowrap_mode = 3
 
-[node name="InventoryOverlay" type="ColorRect" parent="."]
+[node name="InventoryOverlay" type="ColorRect" parent="." unique_id=402638379]
 visible = false
 z_index = 100
 layout_mode = 1
@@ -176,7 +176,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.74)
 
-[node name="InventoryCenter" type="CenterContainer" parent="InventoryOverlay"]
+[node name="InventoryCenter" type="CenterContainer" parent="InventoryOverlay" unique_id=1778321187]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -184,21 +184,21 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="InventoryPanel" type="PanelContainer" parent="InventoryOverlay/InventoryCenter"]
+[node name="InventoryPanel" type="PanelContainer" parent="InventoryOverlay/InventoryCenter" unique_id=1863968359]
 custom_minimum_size = Vector2(540, 440)
 layout_mode = 2
 
-[node name="InventoryContent" type="VBoxContainer" parent="InventoryOverlay/InventoryCenter/InventoryPanel"]
+[node name="InventoryContent" type="VBoxContainer" parent="InventoryOverlay/InventoryCenter/InventoryPanel" unique_id=2132774703]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="InventoryText" type="Label" parent="InventoryOverlay/InventoryCenter/InventoryPanel/InventoryContent"]
+[node name="InventoryText" type="Label" parent="InventoryOverlay/InventoryCenter/InventoryPanel/InventoryContent" unique_id=1307109658]
 layout_mode = 2
 size_flags_vertical = 3
 text = "Card Inventory"
 vertical_alignment = 1
 autowrap_mode = 3
 
-[node name="CloseButton" type="Button" parent="InventoryOverlay/InventoryCenter/InventoryPanel/InventoryContent"]
+[node name="CloseButton" type="Button" parent="InventoryOverlay/InventoryCenter/InventoryPanel/InventoryContent" unique_id=1451186042]
 layout_mode = 2
 text = "Close"
