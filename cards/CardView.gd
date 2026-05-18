@@ -41,118 +41,118 @@ func setup(card, index: int) -> void:
 	tooltip_text = _build_tooltip_text()
 
 func _get_drag_data(_at_position):
- var combat_scene = get_tree().get_first_node_in_group("combat_scene")
- if combat_scene != null and combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
-  return null
+	var combat_scene = get_tree().get_first_node_in_group("combat_scene")
+	if combat_scene != null and combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
+		return null
 
- var preview = duplicate()
- set_drag_preview(preview)
- modulate.a = 0.35
+	var preview = duplicate()
+	set_drag_preview(preview)
+	modulate.a = 0.35
 
- var data = {
-  "source": "board",
-  "board_index": board_index,
-  "card_family": _get_card_family()
- }
+	var data = {
+		"source": "board",
+		"board_index": board_index,
+		"card_family": _get_card_family()
+	}
 
- print("drag data: ", data)
- return data
+	print("drag data: ", data)
+	return data
 
 
 func _can_drop_data(_at_position, data) -> bool:
- if typeof(data) != TYPE_DICTIONARY:
-  return false
+	if typeof(data) != TYPE_DICTIONARY:
+		return false
 
- var source := String(data.get("source", "")).strip_edges()
- var dragged_family := String(data.get("card_family", "")).strip_edges()
- if source not in ["left_hand", "right_hand"]:
-  return false
+	var source := String(data.get("source", "")).strip_edges()
+	var dragged_family := String(data.get("card_family", "")).strip_edges()
+	if source not in ["left_hand", "right_hand"]:
+		return false
 
- if dragged_family != "weapon" or _get_card_family() != "monster":
-  return false
+	if dragged_family != "weapon" or _get_card_family() != "monster":
+		return false
 
- var combat_scene = get_tree().get_first_node_in_group("combat_scene")
- if combat_scene == null:
-  return false
+	var combat_scene = get_tree().get_first_node_in_group("combat_scene")
+	if combat_scene == null:
+		return false
 
- if combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
-  return false
+	if combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
+		return false
 
- return combat_scene.can_use_slot_weapon_on_monster(source)
+	return combat_scene.can_use_slot_weapon_on_monster(source)
 
 
 func _drop_data(_at_position, data) -> void:
- var combat_scene = get_tree().get_first_node_in_group("combat_scene")
- if combat_scene == null:
-  return
+	var combat_scene = get_tree().get_first_node_in_group("combat_scene")
+	if combat_scene == null:
+		return
 
- if combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
-  return
+	if combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
+		return
 
- var source := String(data.get("source", "")).strip_edges()
- combat_scene.handle_weapon_drop_on_board(source, board_index)
+	var source := String(data.get("source", "")).strip_edges()
+	combat_scene.handle_weapon_drop_on_board(source, board_index)
 
 
 func _apply_card_art() -> void:
- var card_id := _get_card_id()
- var art_path = CARD_ART_PATHS.get(card_id, "")
+	var card_id := _get_card_id()
+	var art_path = CARD_ART_PATHS.get(card_id, "")
 
- if art_path == "":
-  art_rect.texture = null
-  return
+	if art_path == "":
+		art_rect.texture = null
+		return
 
- art_rect.texture = load(art_path)
+	art_rect.texture = load(art_path)
 
 
 func _get_card_id() -> String:
- if card_data is CardRuntimeState:
-  return String(card_data.card_id)
+	if card_data is CardRuntimeState:
+		return String(card_data.card_id)
 
- if card_data is Dictionary:
-  return String(card_data.get("id", ""))
+	if card_data is Dictionary:
+		return String(card_data.get("id", ""))
 
- return ""
+	return ""
 
 
 func _get_card_family() -> String:
- if card_data is CardRuntimeState:
-  return String(card_data.get_family())
+	if card_data is CardRuntimeState:
+		return String(card_data.get_family())
 
- if card_data is Dictionary:
-  return String(card_data.get("family", ""))
+	if card_data is Dictionary:
+		return String(card_data.get("family", ""))
 
- return ""
+	return ""
 
 
 func _notification(what: int) -> void:
- if what == NOTIFICATION_DRAG_END and is_instance_valid(self):
-  if not get_viewport().gui_is_drag_successful():
-   modulate.a = 1.0
+	if what == NOTIFICATION_DRAG_END and is_instance_valid(self):
+		if not get_viewport().gui_is_drag_successful():
+			modulate.a = 1.0
 
 
 func set_content_visible(is_visible: bool) -> void:
- if card_canvas != null:
-  card_canvas.visible = is_visible
+	if card_canvas != null:
+		card_canvas.visible = is_visible
 
 
 func _apply_visual_theme() -> void:
- var panel_style := StyleBoxFlat.new()
- panel_style.bg_color = Color(0, 0, 0, 0)
- panel_style.border_width_left = 0
- panel_style.border_width_top = 0
- panel_style.border_width_right = 0
- panel_style.border_width_bottom = 0
- panel_style.shadow_size = 0
- add_theme_stylebox_override("panel", panel_style)
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0, 0, 0, 0)
+	panel_style.border_width_left = 0
+	panel_style.border_width_top = 0
+	panel_style.border_width_right = 0
+	panel_style.border_width_bottom = 0
+	panel_style.shadow_size = 0
+	add_theme_stylebox_override("panel", panel_style)
 
- name_label.add_theme_color_override("font_color", Color("f7ead7"))
- name_label.add_theme_font_size_override("font_size", 17)
+	name_label.add_theme_color_override("font_color", Color("f7ead7"))
+	name_label.add_theme_font_size_override("font_size", 17)
 
- family_label.add_theme_color_override("font_color", Color("ddd0bb"))
- family_label.add_theme_font_size_override("font_size", 12)
+	family_label.add_theme_color_override("font_color", Color("ddd0bb"))
+	family_label.add_theme_font_size_override("font_size", 12)
 
- value_label.add_theme_color_override("font_color", Color("ffffff"))
- value_label.add_theme_font_size_override("font_size", 18)
+	value_label.add_theme_color_override("font_color", Color("ffffff"))
+	value_label.add_theme_font_size_override("font_size", 18)
 
 
 func _humanize_token(value: String) -> String:
@@ -172,14 +172,14 @@ func _humanize_token(value: String) -> String:
 
 func _build_tooltip_text() -> String:
 	var meta := _get_card_meta()
-	var lines: Array[String] = []
+	var lines: Array = []
 
 	var display_name := String(meta.get("name", name_label.text)).strip_edges()
 	if display_name == "":
 		display_name = name_label.text
 	lines.append(display_name)
 
-	var identity_parts: Array[String] = []
+	var identity_parts: Array = []
 	var subtype := String(meta.get("subtype", "")).strip_edges()
 	if subtype != "":
 		identity_parts.append(_humanize_token(subtype))
@@ -227,7 +227,7 @@ func _format_specials(meta: Dictionary) -> String:
 	if not (special_values is Dictionary):
 		special_values = {}
 
-	var parts: Array[String] = []
+	var parts: Array = []
 	for rule in special_rules:
 		var key := String(rule).strip_edges()
 		if key == "":
@@ -246,7 +246,7 @@ func _format_tags(raw_tags) -> String:
 	if not (raw_tags is Array):
 		return ""
 
-	var tags: Array[String] = []
+	var tags: Array = []
 	for raw_tag in raw_tags:
 		var tag := String(raw_tag).strip_edges()
 		if tag == "":
