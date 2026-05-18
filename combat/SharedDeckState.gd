@@ -50,15 +50,20 @@ func is_empty() -> bool:
 
 
 func advance_round_specials() -> void:
-    for step in range(2):
-        for i in range(1, _cards.size()):
-            var card = _cards[i]
-            if not (card is CardRuntimeState):
-                continue
-            if not _has_special_rule(card, "rush"):
-                continue
-            _cards[i] = _cards[i - 1]
-            _cards[i - 1] = card
+    for i in range(1, _cards.size()):
+        var card = _cards[i]
+        if not (card is CardRuntimeState):
+            continue
+        if not _has_special_rule(card, "rush"):
+            continue
+
+        var rush_amount := _get_special_rule_value(card, "rush", 1)
+        var target_index := max(i - rush_amount, 0)
+        if target_index == i:
+            continue
+
+        _cards.remove_at(i)
+        _cards.insert(target_index, card)
 
 
 func _build_runtime_card(card_data: Dictionary) -> CardRuntimeState:
@@ -90,3 +95,10 @@ func _has_special_rule(card: CardRuntimeState, special_rule: String) -> bool:
     if special_rules is Array:
         return special_rule in special_rules
     return false
+
+
+func _get_special_rule_value(card: CardRuntimeState, special_rule: String, default_value: int = 0) -> int:
+    var special_values = card.card_data.get("special_values", {})
+    if special_values is Dictionary and special_values.has(special_rule):
+        return int(special_values.get(special_rule, default_value))
+    return default_value

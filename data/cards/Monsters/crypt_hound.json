@@ -5,11 +5,14 @@
   "subtype": "undead",
   "rarity": "common",
   "base_value": 2,
-  "description": "An aggressive undead hound. Rush: moves 1 spot closer in the deck each round.",
+  "description": "An aggressive undead hound. Rush 2: moves 2 spots closer in the deck each round.",
   "tags": ["ossara", "undead", "aggressive"],
   "keywords": [],
   "target_rules": ["player_avatar", "shield_card"],
   "special_rules": ["rush"],
+  "special_values": {
+    "rush": 2
+  },
   "consumed_on_use": false,
   "auto_resolve_on_hand_place": false,
   "can_be_trashed": false,
