@@ -49,17 +49,6 @@ func is_empty() -> bool:
     return _cards.is_empty()
 
 
-func insert_card_at_random(card_data: Dictionary) -> CardRuntimeState:
-    var runtime_card := _build_runtime_card(card_data)
-    var insert_index := 0
-
-    if _cards.size() > 0:
-        insert_index = randi_range(0, _cards.size())
-
-    _cards.insert(insert_index, runtime_card)
-    return runtime_card
-
-
 func advance_round_specials() -> void:
     for i in range(1, _cards.size()):
         var card = _cards[i]

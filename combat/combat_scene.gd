@@ -371,28 +371,8 @@ func _build_test_match_state() -> void:
     var player_state := PlayerCombatState.new()
     player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
 
-    var boss_data := loader.load_json("res://data/bosses/gravebound_warden.json")
-    var boss_rules = boss_data.get("special_rule_ids", [])
-    if not (boss_rules is Array):
-        boss_rules = []
-    var boss_values = boss_data.get("special_values", {})
-    if not (boss_values is Dictionary):
-        boss_values = {}
-    if boss_values.has("summon_card_id"):
-        var summon_card_id := str(boss_values.get("summon_card_id", "")).strip_edges()
-        if summon_card_id != "":
-            var summon_card_data := loader.get_card(summon_card_id)
-            if not summon_card_data.is_empty():
-                boss_values["summon_card_data"] = summon_card_data.duplicate(true)
-
     var boss_state := BossCombatState.new()
-    boss_state.setup(
-        str(boss_data.get("id", "gravebound_warden")),
-        str(boss_data.get("name", "Gravebound Warden")),
-        int(boss_data.get("base_health", BOSS_STARTING_HEALTH)),
-        boss_rules,
-        boss_values
-    )
+    boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
 
     match_state = MatchCombatState.new()
     match_state.setup(player_state, boss_state, board_state, shared_deck, 1)
@@ -420,8 +400,6 @@ func set_status(message: String) -> void:
 
 
 func _refresh_ui() -> void:
-    _play_pending_round_events()
-
     player_health_label.text = "Player HP: %d/%d" % [
         match_state.player_state.current_health,
         match_state.player_state.max_health
@@ -446,56 +424,6 @@ func _refresh_ui() -> void:
     _refresh_equipment_labels()
     _refresh_slot_state_visuals()
     _queue_restart_if_finished()
-
-
-func _play_pending_round_events() -> void:
-    if match_state == null:
-        return
-
-    var events = match_state.consume_pending_round_events()
-    for event in events:
-        var event_type := str(event.get("type", ""))
-        if event_type == "boss_summon":
-            _animate_boss_summon_to_deck(str(event.get("card_id", "")))
-
-
-func _animate_boss_summon_to_deck(card_id: String) -> void:
-    if boss_drop_zone == null or deck_card_texture == null:
-        return
-
-    var summon_texture = CARD_ART_TEXTURES.get(card_id, CARD_BACK_TEXTURE)
-    if summon_texture == null:
-        summon_texture = CARD_BACK_TEXTURE
-
-    var source_rect: Rect2 = boss_drop_zone.get_global_rect()
-    var target_rect: Rect2 = deck_card_texture.get_global_rect()
-
-    var summon_card := TextureRect.new()
-    summon_card.texture = summon_texture
-    summon_card.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-    summon_card.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-    summon_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    summon_card.z_index = 145
-
-    var summon_size := Vector2(
-        max(target_rect.size.x * 0.95, 96.0),
-        max(target_rect.size.y * 0.95, 132.0)
-    )
-    summon_card.size = summon_size
-    summon_card.position = source_rect.position - global_position + ((source_rect.size - summon_size) * 0.5)
-    add_child(summon_card)
-
-    _play_sfx(DEAL_CARDS_SFX, -2.0)
-
-    var target_position := target_rect.position - global_position + ((target_rect.size - summon_size) * 0.5)
-    var tween := create_tween()
-    tween.set_trans(Tween.TRANS_SINE)
-    tween.set_ease(Tween.EASE_OUT)
-    tween.set_parallel(true)
-    tween.tween_property(summon_card, "position", target_position, 0.42)
-    tween.tween_property(summon_card, "scale", Vector2(0.78, 0.78), 0.42)
-    tween.tween_property(summon_card, "modulate:a", 0.0, 0.18).set_delay(0.24)
-    tween.finished.connect(Callable(summon_card, "queue_free"))
 
 
 func _refresh_boss_panel() -> void:
