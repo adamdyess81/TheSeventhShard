@@ -53,7 +53,7 @@ theme_override_constants/separation = 18
 
 [node name="Title" type="Label" parent="Root/Content/StatsPanel/StatsContent" unique_id=2028750576]
 layout_mode = 2
-text = "The Old Man's Hovel"
+text = "The Keeper's Hovel"
 horizontal_alignment = 1
 
 [node name="StatsRows" type="VBoxContainer" parent="Root/Content/StatsPanel/StatsContent" unique_id=1374913831]

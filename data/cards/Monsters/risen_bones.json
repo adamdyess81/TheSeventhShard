@@ -9,7 +9,10 @@
   "tags": ["ossara", "undead"],
   "keywords": [],
   "target_rules": ["player_avatar", "shield_card"],
-  "special_rules": [],
+  "special_rules": ["rush"],
+  "special_values": {
+    "rush": 1
+  },
   "consumed_on_use": false,
   "auto_resolve_on_hand_place": false,
   "can_be_trashed": false,
