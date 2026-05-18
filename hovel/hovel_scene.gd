@@ -63,7 +63,7 @@ func _refresh_inventory_text() -> void:
 		return
 
 	var card_lines: Array[String] = []
-	var card_ids := owned_cards.keys()
+	var card_ids: Array = owned_cards.keys()
 	card_ids.sort()
 	for card_id in card_ids:
 		card_lines.append("%s x%d" % [str(card_id), int(owned_cards.get(card_id, 0))])
