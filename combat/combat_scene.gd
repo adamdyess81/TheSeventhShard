@@ -7,6 +7,7 @@ const ACTIVE_BOARD_CAP := 4
 const STARTING_BACKPACK_CAPACITY := 1
 const PLAYER_PROFILE_PATH := "res://profiles/player_main.json"
 const HOVEL_SCENE_PATH := "res://hovel/hovel_scene.tscn"
+const PROFILE_DECK_SCRIPT = preload("res://core/ProfileDeck.gd")
 const CARD_VIEW_SCENE = preload("res://cards/card_view.tscn")
 const LEFT_HAND_PLACEHOLDER = preload("res://art/ui/LeftHand Placement Card.png")
 const RIGHT_HAND_PLACEHOLDER = preload("res://art/ui/RightHand Placement Card.png")
@@ -358,17 +359,28 @@ func _build_test_match_state() -> void:
     var loader = GameDataLoader.new()
     loader.build_card_registry()
     player_profile_data = loader.load_json(PLAYER_PROFILE_PATH)
-    var player_starting_health := int(player_profile_data.get(
+    var player_level := int(player_profile_data.get("player_level", 1))
+    var player_starting_health_base := int(player_profile_data.get(
         "starting_health_base",
         DEFAULT_PLAYER_STARTING_HEALTH
     ))
-    var player_max_deck_size := int(player_profile_data.get(
+    var player_max_deck_size_base := int(player_profile_data.get(
         "max_deck_size_base",
         DEFAULT_PLAYER_MAX_DECK_SIZE
     ))
+    var player_starting_health := Progression.get_effective_max_health(
+        player_starting_health_base,
+        player_level
+    )
+    var player_max_deck_size := Progression.get_effective_max_deck_size(
+        player_max_deck_size_base,
+        player_level
+    )
 
-    var starter_deck := loader.load_deck("res://data/decks/starter_knight_deck.json")
-    var resolved_player_cards := loader.resolve_deck_cards(starter_deck)
+    var player_deck_counts := PROFILE_DECK_SCRIPT.get_selected_deck_card_counts(player_profile_data)
+    var player_deck_entries := PROFILE_DECK_SCRIPT.build_deck_entries(player_deck_counts)
+    var player_deck_data := {"cards": player_deck_entries}
+    var resolved_player_cards := loader.resolve_deck_cards(player_deck_data)
 
     var monster_deck := loader.load_deck("res://data/decks/ossara_baseline_monster_deck.json")
     var resolved_monster_cards := loader.resolve_monster_deck(monster_deck)

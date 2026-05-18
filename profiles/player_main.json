@@ -1,27 +1,41 @@
 {
-  "player_profile_id": "player_main",
-  "profile_name": "Main Profile",
-  "created_at": null,
-  "updated_at": null,
-  "player_level": 1,
-  "total_xp": 0,
-  "persistent_gold": 0,
-  "starting_health_base": 20,
-  "max_deck_size_base": 15,
-  "unlocked_classes": ["knight"],
-  "active_class_id": "knight",
-  "owned_card_counts": {
-	"small_health_potion": 5,
-	"large_health_potion": 2,
-	"small_shield": 4,
-	"short_sword": 4
-  },
-  "owned_rune_ids": [],
-  "owned_relic_ids": [],
-  "saved_loadout_ids": ["loadout_knight_starter_01"],
-  "unlocked_branch_ids": ["ossara"],
-  "unlocked_campaign_ids": ["ossara_short_01"],
-  "hovel_upgrade_ids": [],
-  "progression_flag_ids": [],
-  "notes": "First baseline profile for prototype testing."
+	"active_class_id": "knight",
+	"created_at": null,
+	"hovel_upgrade_ids": [],
+	"max_deck_size_base": 15.0,
+	"notes": "First baseline profile for prototype testing.",
+	"owned_card_counts": {
+		"large_health_potion": 2.0,
+		"short_sword": 4.0,
+		"small_health_potion": 5.0,
+		"small_shield": 4.0
+	},
+	"owned_relic_ids": [],
+	"owned_rune_ids": [],
+	"persistent_gold": 0.0,
+	"player_level": 1.0,
+	"player_profile_id": "player_main",
+	"profile_name": "Main Profile",
+	"progression_flag_ids": [],
+	"saved_loadout_ids": [
+		"loadout_knight_starter_01"
+	],
+	"selected_deck_card_counts": {
+		"large_health_potion": 2,
+		"short_sword": 4,
+		"small_health_potion": 5,
+		"small_shield": 4
+	},
+	"starting_health_base": 15.0,
+	"total_xp": 0.0,
+	"unlocked_branch_ids": [
+		"ossara"
+	],
+	"unlocked_campaign_ids": [
+		"ossara_short_01"
+	],
+	"unlocked_classes": [
+		"knight"
+	],
+	"updated_at": null
 }

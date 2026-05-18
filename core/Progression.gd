@@ -1,11 +1,11 @@
 extends RefCounted
 class_name Progression
 
-const LEVEL_1_XP_TO_NEXT := 20
+const LEVEL_1_XP_TO_NEXT := 100
 const EARLY_LEVEL_CAP := 10
 const MID_LEVEL_CAP := 25
 const LATE_LEVEL_CAP := 40
-const EARLY_LEVEL_GROWTH := 1.22
+const EARLY_LEVEL_GROWTH := 1.18
 const MID_LEVEL_GROWTH := 1.14
 const LATE_LEVEL_GROWTH := 1.12
 const ENDGAME_LEVEL_GROWTH := 1.10
@@ -65,3 +65,15 @@ static func get_current_level_progress(total_xp: int) -> Dictionary:
 		"xp_into_level": remaining_xp,
 		"xp_to_next_level": xp_to_next
 	}
+
+
+static func get_level_bonus(level: int) -> int:
+	return max(level - 1, 0)
+
+
+static func get_effective_max_health(base_health: int, level: int) -> int:
+	return base_health + get_level_bonus(level)
+
+
+static func get_effective_max_deck_size(base_deck_size: int, level: int) -> int:
+	return base_deck_size + get_level_bonus(level)
