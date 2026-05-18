@@ -1352,7 +1352,7 @@ func _queue_restart_if_finished() -> void:
         return
 
     var outcome := outcome_controller.check_outcome(match_state)
-    if outcome not in ["failure", "victory"]:
+    if outcome not in ["failure", "victory", "survival"]:
         return
 
     restart_pending = true
@@ -1365,6 +1365,12 @@ func _show_battle_end_modal(outcome: String) -> void:
     if outcome == "victory":
         set_status("Boss defeated.")
         end_modal_title.text = "Victory"
+        _play_outcome_music(true)
+        if gold_delta < 0:
+            gold_text = "Gold Lost: %d" % abs(gold_delta)
+    elif outcome == "survival":
+        set_status("You survived the deck.")
+        end_modal_title.text = "Survived"
         _play_outcome_music(true)
         if gold_delta < 0:
             gold_text = "Gold Lost: %d" % abs(gold_delta)
