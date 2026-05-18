@@ -1275,7 +1275,7 @@ func handle_weapon_drop_on_boss(source_hand: String) -> void:
 
     var after_health := match_state.boss_state.current_health
     var player_health_after := match_state.player_state.current_health
-    var retaliation_damage := max(player_health_before - player_health_after, 0)
+    var retaliation_damage: int = maxi(player_health_before - player_health_after, 0)
     _play_sfx(DROP_CARD_SFX)
     _play_sfx(SWORD_SWING_SFX)
     _play_sfx(GRAVEBOUND_WARDEN_HURT_SFX)
