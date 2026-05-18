@@ -23,26 +23,22 @@ var board_index: int = -1
 @onready var value_label: Label = %ValueLabel
 
 func setup(card, index: int) -> void:
- card_data = card
- board_index = index
+	card_data = card
+	board_index = index
 
- _apply_visual_theme()
- _apply_card_art()
+	_apply_visual_theme()
+	_apply_card_art()
 
- if card_data is CardRuntimeState:
-  name_label.text = _humanize_token(card_data.card_id)
-  family_label.text = _humanize_token(str(card_data.get_family()))
-  value_label.text = str(card_data.current_value)
- else:
-  name_label.text = "Unknown"
-  family_label.text = "Unknown"
-  value_label.text = "?"
+	if card_data is CardRuntimeState:
+		name_label.text = _humanize_token(card_data.card_id)
+		family_label.text = _humanize_token(str(card_data.get_family()))
+		value_label.text = str(card_data.current_value)
+	else:
+		name_label.text = "Unknown"
+		family_label.text = "Unknown"
+		value_label.text = "?"
 
- tooltip_text = "%s\n%s\n%s" % [
-  name_label.text,
-  family_label.text,
-  value_label.text
- ]
+	tooltip_text = _build_tooltip_text()
 
 func _get_drag_data(_at_position):
  var combat_scene = get_tree().get_first_node_in_group("combat_scene")
@@ -160,15 +156,101 @@ func _apply_visual_theme() -> void:
 
 
 func _humanize_token(value: String) -> String:
- var cleaned := value.strip_edges().replace("_", " ")
- if cleaned == "":
-  return "Unknown"
+	var cleaned := value.strip_edges().replace("_", " ")
+	if cleaned == "":
+		return "Unknown"
 
- var words := cleaned.split(" ", false)
- for i in range(words.size()):
-  var word := String(words[i])
-  if word == "":
-   continue
-  words[i] = word.substr(0, 1).to_upper() + word.substr(1)
+	var words := cleaned.split(" ", false)
+	for i in range(words.size()):
+		var word := String(words[i])
+		if word == "":
+			continue
+		words[i] = word.substr(0, 1).to_upper() + word.substr(1)
 
- return " ".join(words)
+	return " ".join(words)
+
+
+func _build_tooltip_text() -> String:
+	var meta := _get_card_meta()
+	var lines: Array[String] = []
+
+	var display_name := String(meta.get("name", name_label.text)).strip_edges()
+	if display_name == "":
+		display_name = name_label.text
+	lines.append(display_name)
+
+	var identity_parts: Array[String] = []
+	var subtype := String(meta.get("subtype", "")).strip_edges()
+	if subtype != "":
+		identity_parts.append(_humanize_token(subtype))
+
+	var rarity := String(meta.get("rarity", "")).strip_edges()
+	if rarity != "":
+		identity_parts.append(_humanize_token(rarity))
+
+	if not identity_parts.is_empty():
+		lines.append(" • ".join(identity_parts))
+
+	var description := String(meta.get("description", "")).strip_edges()
+	if description != "":
+		lines.append("")
+		lines.append(description)
+
+	var specials_text := _format_specials(meta)
+	if specials_text != "":
+		lines.append("")
+		lines.append("Specials: %s" % specials_text)
+
+	var tags_text := _format_tags(meta.get("tags", []))
+	if tags_text != "":
+		lines.append("Tags: %s" % tags_text)
+
+	return "\n".join(lines)
+
+
+func _get_card_meta() -> Dictionary:
+	if card_data is CardRuntimeState:
+		return card_data.card_data
+
+	if card_data is Dictionary:
+		return card_data
+
+	return {}
+
+
+func _format_specials(meta: Dictionary) -> String:
+	var special_rules = meta.get("special_rules", [])
+	if not (special_rules is Array):
+		return ""
+
+	var special_values = meta.get("special_values", {})
+	if not (special_values is Dictionary):
+		special_values = {}
+
+	var parts: Array[String] = []
+	for rule in special_rules:
+		var key := String(rule).strip_edges()
+		if key == "":
+			continue
+
+		var label := _humanize_token(key)
+		if special_values.has(key):
+			label += " %s" % String(special_values[key])
+
+		parts.append(label)
+
+	return ", ".join(parts)
+
+
+func _format_tags(raw_tags) -> String:
+	if not (raw_tags is Array):
+		return ""
+
+	var tags: Array[String] = []
+	for raw_tag in raw_tags:
+		var tag := String(raw_tag).strip_edges()
+		if tag == "":
+			continue
+		tags.append(_humanize_token(tag))
+
+	return ", ".join(tags)
