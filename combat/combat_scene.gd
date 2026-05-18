@@ -541,6 +541,11 @@ func _refresh_boss_panel() -> void:
         match_state.boss_state.current_health,
         match_state.boss_state.max_health
     ]
+    var boss_tooltip := _build_boss_tooltip_text()
+    boss_drop_zone.tooltip_text = boss_tooltip
+    boss_art_texture.tooltip_text = boss_tooltip
+    boss_title_label.tooltip_text = boss_tooltip
+    boss_life_label.tooltip_text = boss_tooltip
 
 
 func _refresh_board_cards() -> void:
@@ -680,6 +685,47 @@ func _humanize_card_name(card_id: String) -> String:
         words[i] = word.substr(0, 1).to_upper() + word.substr(1)
 
     return " ".join(words)
+
+
+func _build_boss_tooltip_text() -> String:
+    if match_state == null or match_state.boss_state == null:
+        return ""
+
+    var lines: Array[String] = []
+    lines.append(match_state.boss_state.boss_name)
+    lines.append("")
+    lines.append("Life: %d/%d" % [
+        match_state.boss_state.current_health,
+        match_state.boss_state.max_health
+    ])
+
+    var special_lines := _build_boss_special_lines(
+        match_state.boss_state.special_rules,
+        match_state.boss_state.special_values
+    )
+    if special_lines.is_empty():
+        lines.append("Special: None")
+    else:
+        lines.append("Special:")
+        for special_line in special_lines:
+            lines.append("- " + special_line)
+
+    return "\n".join(lines)
+
+
+func _build_boss_special_lines(special_rules: Array, special_values: Dictionary) -> Array[String]:
+    var lines: Array[String] = []
+    for rule in special_rules:
+        var key := str(rule).strip_edges().to_lower()
+        if key == "":
+            continue
+
+        var label := _humanize_card_name(key)
+        if special_values.has(key):
+            label += ": %s" % str(special_values[key])
+        lines.append(label)
+
+    return lines
 
 
 func _get_card_texture_or_placeholder(card, placeholder):
