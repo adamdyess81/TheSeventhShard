@@ -57,8 +57,10 @@ func advance_round_specials() -> void:
         if not _has_special_rule(card, "rush"):
             continue
 
-        var rush_amount := _get_special_rule_value(card, "rush", 1)
-        var target_index := max(i - rush_amount, 0)
+        var rush_amount = _get_special_rule_value(card, "rush", 1)
+        var target_index = i - rush_amount
+        if target_index < 0:
+            target_index = 0
         if target_index == i:
             continue
 
