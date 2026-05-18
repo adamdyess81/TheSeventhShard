@@ -7,6 +7,7 @@ var board_state: BoardState
 var shared_deck_state: SharedDeckState
 
 var round_number: int = 1
+var pending_round_events: Array = []
 
 
 func setup(
@@ -21,13 +22,16 @@ func setup(
  board_state = board
  shared_deck_state = shared_deck
  round_number = starting_round
+ pending_round_events.clear()
 
 
 func advance_round() -> void:
  round_number += 1
+ pending_round_events.clear()
  player_state.reset_hand_exhaustion()
  player_state.clear_stun()
  shared_deck_state.advance_round_specials()
+ _apply_boss_round_specials()
 
 
 func refill_board_if_allowed() -> bool:
@@ -53,3 +57,51 @@ func is_shared_deck_empty() -> bool:
 
 func get_active_board_cards() -> Array:
  return board_state.get_active_cards()
+
+
+func consume_pending_round_events() -> Array:
+ var events = pending_round_events.duplicate(true)
+ pending_round_events.clear()
+ return events
+
+
+func _apply_boss_round_specials() -> void:
+ if boss_state == null or shared_deck_state == null:
+  return
+
+ if not boss_state.has_special_rule("summon"):
+  return
+
+ var summon_card_data = boss_state.get_special_value("summon_card_data", null)
+ if not (summon_card_data is Dictionary):
+  return
+
+ var summon_data = summon_card_data.duplicate(true)
+ if summon_data.is_empty():
+  return
+
+ var summon_value = boss_state.get_special_value("summon_value", null)
+ if summon_value != null:
+  summon_data["base_value"] = int(summon_value)
+
+ var summon_rush = int(boss_state.get_special_value("summon_rush", 0))
+ if summon_rush > 0:
+  var special_rules = summon_data.get("special_rules", [])
+  if not (special_rules is Array):
+   special_rules = []
+  if "rush" not in special_rules:
+   special_rules.append("rush")
+  summon_data["special_rules"] = special_rules
+
+  var special_values = summon_data.get("special_values", {})
+  if not (special_values is Dictionary):
+   special_values = {}
+  special_values["rush"] = summon_rush
+  summon_data["special_values"] = special_values
+
+ var summoned_card = shared_deck_state.insert_card_at_random(summon_data)
+ pending_round_events.append({
+  "type": "boss_summon",
+  "boss_id": boss_state.boss_id,
+  "card_id": summoned_card.card_id
+ })
