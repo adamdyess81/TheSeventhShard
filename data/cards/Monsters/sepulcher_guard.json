@@ -5,11 +5,14 @@
   "subtype": "undead",
   "rarity": "uncommon",
   "base_value": 4,
-  "description": "A sturdy grave sentinel.",
+  "description": "A sturdy grave sentinel. Armored 1: adds 1 to its value when attacked by a weapon.",
   "tags": ["ossara", "undead", "elite"],
   "keywords": [],
   "target_rules": ["player_avatar", "shield_card"],
-  "special_rules": [],
+  "special_rules": ["armored"],
+  "special_values": {
+    "armored": 1
+  },
   "consumed_on_use": false,
   "auto_resolve_on_hand_place": false,
   "can_be_trashed": false,

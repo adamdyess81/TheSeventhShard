@@ -298,7 +298,8 @@ func _use_weapon_on_monster(match_state: MatchCombatState, board_index: int, wea
 
     var weapon_value := _get_card_runtime_value(weapon)
     var monster_value := _get_card_runtime_value(monster)
-    var remaining_monster := monster_value - weapon_value
+    var armor_value := _get_special_rule_value(monster, "armored", 0)
+    var remaining_monster := (monster_value + armor_value) - weapon_value
 
     if remaining_monster <= 0:
         _mark_card_resolved(monster)
@@ -427,6 +428,41 @@ func _set_card_runtime_value(card, value: int) -> void:
 
     if card is Dictionary:
         card["current_value"] = value
+
+
+func _has_special_rule(card, special_rule: String) -> bool:
+    if card is CardRuntimeState:
+        var special_rules = card.card_data.get("special_rules", [])
+        if special_rules is Array:
+            return special_rule in special_rules
+        return false
+
+    if card is Dictionary:
+        var special_rules = card.get("special_rules", [])
+        if special_rules is Array:
+            return special_rule in special_rules
+        return false
+
+    return false
+
+
+func _get_special_rule_value(card, special_rule: String, default_value: int = 0) -> int:
+    if not _has_special_rule(card, special_rule):
+        return default_value
+
+    if card is CardRuntimeState:
+        var special_values = card.card_data.get("special_values", {})
+        if special_values is Dictionary and special_values.has(special_rule):
+            return int(special_values.get(special_rule, default_value))
+        return default_value
+
+    if card is Dictionary:
+        var special_values = card.get("special_values", {})
+        if special_values is Dictionary and special_values.has(special_rule):
+            return int(special_values.get(special_rule, default_value))
+        return default_value
+
+    return default_value
 
 
 func _mark_card_resolved(card) -> void:
