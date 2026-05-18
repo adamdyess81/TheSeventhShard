@@ -5,7 +5,7 @@
   "guardian_id": "velmora",
   "boss_type": "baseline",
   "theme_tags": ["ossara", "undead", "baseline", "prototype"],
-  "base_health": 12,
+  "base_health": 16,
   "has_special_rules": true,
   "special_rule_ids": ["summon"],
   "special_values": {

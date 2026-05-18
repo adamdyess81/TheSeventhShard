@@ -6,7 +6,7 @@
   "player_level": 1,
   "total_xp": 0,
   "persistent_gold": 0,
-  "starting_health_base": 15,
+  "starting_health_base": 20,
   "max_deck_size_base": 15,
   "unlocked_classes": ["knight"],
   "active_class_id": "knight",

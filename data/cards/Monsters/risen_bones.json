@@ -4,7 +4,7 @@
   "family": "monster",
   "subtype": "undead",
   "rarity": "common",
-  "base_value": 2,
+  "base_value": 1,
   "description": "Basic undead threat.",
   "tags": ["ossara", "undead"],
   "keywords": [],
