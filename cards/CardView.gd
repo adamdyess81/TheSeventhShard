@@ -235,7 +235,7 @@ func _format_specials(meta: Dictionary) -> String:
 
 		var label := _humanize_token(key)
 		if special_values.has(key):
-			label += " %s" % String(special_values[key])
+			label += " %s" % str(special_values[key])
 
 		parts.append(label)
 
