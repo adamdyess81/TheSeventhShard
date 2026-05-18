@@ -759,6 +759,9 @@ func can_drag_slot_card(slot_name: String) -> bool:
     if restart_pending or is_modal_open():
         return false
 
+    if match_state.player_state.is_stunned():
+        return false
+
     var card = get_slot_card(slot_name)
     if card == null:
         return false
@@ -767,6 +770,9 @@ func can_drag_slot_card(slot_name: String) -> bool:
 
 func can_use_slot_weapon_on_monster(slot_name: String) -> bool:
     if restart_pending:
+        return false
+
+    if match_state.player_state.is_stunned():
         return false
 
     var card = get_slot_card(slot_name)
@@ -805,21 +811,28 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
 
     var source := String(data.get("source", "")).strip_edges()
     var family := String(data.get("card_family", "")).strip_edges()
+    var player_is_stunned := match_state.player_state.is_stunned()
 
     if source == "board":
         if target_slot == "left_hand":
             if family == "monster":
                 return can_resolve_monster_into_shield("left_hand")
+            if player_is_stunned:
+                return false
             if match_state.player_state.left_hand_card != null or match_state.player_state.left_hand_exhausted:
                 return false
             return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
         elif target_slot == "right_hand":
             if family == "monster":
                 return can_resolve_monster_into_shield("right_hand")
+            if player_is_stunned:
+                return false
             if match_state.player_state.right_hand_card != null or match_state.player_state.right_hand_exhausted:
                 return false
             return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
         elif target_slot == "backpack":
+            if player_is_stunned:
+                return false
             if match_state.player_state.backpack_cards.size() >= match_state.player_state.backpack_capacity:
                 return false
             return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
@@ -831,6 +844,8 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
             return false
 
     if source == "backpack" and target_slot in ["left_hand", "right_hand"]:
+        if player_is_stunned:
+            return false
         if family == "":
             return false
         if target_slot == "left_hand":
@@ -838,17 +853,23 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
         return match_state.player_state.right_hand_card == null and not match_state.player_state.right_hand_exhausted
 
     if source == "backpack" and target_slot == "discard":
+        if player_is_stunned:
+            return false
         return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
 
     if source in ["left_hand", "right_hand"] and target_slot == "boss":
         return family == "weapon" and can_use_slot_weapon_on_monster(source)
 
     if source in ["left_hand", "right_hand"] and target_slot == "backpack":
+        if player_is_stunned:
+            return false
         if family == "":
             return false
         return match_state.player_state.backpack_cards.size() < match_state.player_state.backpack_capacity
 
     if source in ["left_hand", "right_hand"] and target_slot == "discard":
+        if player_is_stunned:
+            return false
         return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
 
     return false
@@ -1631,7 +1652,10 @@ func handle_drop_to_player_avatar(board_index: int) -> void:
    _show_player_damage_slash()
    _play_damage_screen_shake()
    _play_random_player_hurt_sfx()
-  set_status("Dropped monster onto player.")
+  if match_state.player_state.is_stunned():
+   set_status("Dropped monster onto player. You are stunned until round end.")
+  else:
+   set_status("Dropped monster onto player.")
  else:
   set_status("Only monsters can be dropped onto the player.")
 

@@ -13,6 +13,7 @@ var backpack_cards: Array = []
 
 var left_hand_exhausted: bool = false
 var right_hand_exhausted: bool = false
+var stunned_until_round_end: bool = false
 
 var backpack_capacity: int = 1
 
@@ -30,6 +31,7 @@ func setup(starting_health: int, starting_backpack_capacity: int = 1) -> void:
 
     left_hand_exhausted = false
     right_hand_exhausted = false
+    stunned_until_round_end = false
 
     backpack_capacity = starting_backpack_capacity
 
@@ -87,6 +89,18 @@ func exhaust_right_hand() -> void:
 func reset_hand_exhaustion() -> void:
     left_hand_exhausted = false
     right_hand_exhausted = false
+
+
+func apply_stun() -> void:
+    stunned_until_round_end = true
+
+
+func clear_stun() -> void:
+    stunned_until_round_end = false
+
+
+func is_stunned() -> bool:
+    return stunned_until_round_end
 
 
 func add_to_backpack(card) -> bool:

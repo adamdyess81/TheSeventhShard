@@ -26,6 +26,7 @@ func setup(
 func advance_round() -> void:
  round_number += 1
  player_state.reset_hand_exhaustion()
+ player_state.clear_stun()
  shared_deck_state.advance_round_specials()
 
 

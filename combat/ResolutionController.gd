@@ -14,6 +14,8 @@ func resolve_enemy_to_player(match_state: MatchCombatState, board_index: int) ->
 
     var damage := _get_card_runtime_value(card)
     match_state.player_state.take_damage(damage)
+    if _has_special_rule(card, "stun"):
+        match_state.player_state.apply_stun()
     _mark_card_resolved(card)
     match_state.board_state.remove_card_at(board_index)
 
@@ -48,6 +50,9 @@ func move_player_card_to_left_hand(match_state: MatchCombatState, board_index: i
     var card = active_cards[board_index]
 
     if not _is_player_usable_card(card):
+        return false
+
+    if match_state.player_state.is_stunned():
         return false
 
     if match_state.player_state.left_hand_exhausted:
@@ -95,6 +100,9 @@ func move_player_card_to_right_hand(match_state: MatchCombatState, board_index: 
     var card = active_cards[board_index]
 
     if not _is_player_usable_card(card):
+        return false
+
+    if match_state.player_state.is_stunned():
         return false
 
     if match_state.player_state.right_hand_exhausted:
@@ -145,6 +153,9 @@ func move_player_card_to_backpack(match_state: MatchCombatState, board_index: in
     if not _is_player_usable_card(card):
         return false
 
+    if match_state.player_state.is_stunned():
+        return false
+
     if not match_state.player_state.add_to_backpack(card):
         return false
 
@@ -173,6 +184,8 @@ func use_left_hand_weapon_on_monster(match_state: MatchCombatState, board_index:
     var weapon = match_state.player_state.left_hand_card
     if weapon == null:
         return false
+    if match_state.player_state.is_stunned():
+        return false
 
     if _get_card_family(weapon) != "weapon":
         return false
@@ -184,6 +197,8 @@ func use_right_hand_weapon_on_monster(match_state: MatchCombatState, board_index
     var weapon = match_state.player_state.right_hand_card
     if weapon == null:
         return false
+    if match_state.player_state.is_stunned():
+        return false
 
     if _get_card_family(weapon) != "weapon":
         return false
@@ -194,6 +209,8 @@ func use_right_hand_weapon_on_monster(match_state: MatchCombatState, board_index
 func use_left_hand_weapon_on_boss(match_state: MatchCombatState) -> bool:
     var weapon = match_state.player_state.left_hand_card
     if weapon == null:
+        return false
+    if match_state.player_state.is_stunned():
         return false
 
     if _get_card_family(weapon) != "weapon":
@@ -208,6 +225,8 @@ func use_left_hand_weapon_on_boss(match_state: MatchCombatState) -> bool:
 func use_right_hand_weapon_on_boss(match_state: MatchCombatState) -> bool:
     var weapon = match_state.player_state.right_hand_card
     if weapon == null:
+        return false
+    if match_state.player_state.is_stunned():
         return false
 
     if _get_card_family(weapon) != "weapon":
@@ -245,6 +264,8 @@ func use_left_hand_potion(match_state: MatchCombatState) -> bool:
     var potion = match_state.player_state.left_hand_card
     if potion == null:
         return false
+    if match_state.player_state.is_stunned():
+        return false
 
     if _get_card_family(potion) != "potion":
         return false
@@ -266,6 +287,8 @@ func use_left_hand_potion(match_state: MatchCombatState) -> bool:
 func use_right_hand_potion(match_state: MatchCombatState) -> bool:
     var potion = match_state.player_state.right_hand_card
     if potion == null:
+        return false
+    if match_state.player_state.is_stunned():
         return false
 
     if _get_card_family(potion) != "potion":
