@@ -1,18 +1,29 @@
 extends Node
 
-const PLAYER_STARTING_HEALTH := 15
+const DEFAULT_PLAYER_STARTING_HEALTH := 15
+const DEFAULT_PLAYER_MAX_DECK_SIZE := 15
 const BOSS_STARTING_HEALTH := 12
 const STARTING_BACKPACK_CAPACITY := 1
+const PLAYER_PROFILE_PATH := "res://profiles/player_main.json"
 
 func _ready() -> void:
     var loader = GameDataLoader.new()
     loader.build_card_registry()
+    var player_profile := loader.load_json(PLAYER_PROFILE_PATH)
+    var player_starting_health := int(player_profile.get(
+        "starting_health_base",
+        DEFAULT_PLAYER_STARTING_HEALTH
+    ))
+    var player_max_deck_size := int(player_profile.get(
+        "max_deck_size_base",
+        DEFAULT_PLAYER_MAX_DECK_SIZE
+    ))
 
     var controller_board_state := BoardState.new()
     controller_board_state.setup(4)
 
     var controller_player_state := PlayerCombatState.new()
-    controller_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+    controller_player_state.setup(player_starting_health, STARTING_BACKPACK_CAPACITY, player_max_deck_size)
 
     var controller_boss_state := BossCombatState.new()
     controller_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
@@ -79,7 +90,7 @@ func _ready() -> void:
     backpack_board_state.setup(4)
 
     var backpack_player_state := PlayerCombatState.new()
-    backpack_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+    backpack_player_state.setup(player_starting_health, STARTING_BACKPACK_CAPACITY, player_max_deck_size)
 
     var backpack_boss_state := BossCombatState.new()
     backpack_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
@@ -134,7 +145,7 @@ func _ready() -> void:
     right_hand_board_state.setup(4)
 
     var right_hand_player_state := PlayerCombatState.new()
-    right_hand_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+    right_hand_player_state.setup(player_starting_health, STARTING_BACKPACK_CAPACITY, player_max_deck_size)
 
     var right_hand_boss_state := BossCombatState.new()
     right_hand_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
@@ -187,7 +198,7 @@ func _ready() -> void:
     flag_board_state.setup(4)
 
     var flag_player_state := PlayerCombatState.new()
-    flag_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+    flag_player_state.setup(player_starting_health, STARTING_BACKPACK_CAPACITY, player_max_deck_size)
 
     var flag_boss_state := BossCombatState.new()
     flag_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
@@ -249,7 +260,7 @@ func _ready() -> void:
     occupied_board_state.setup(4)
 
     var occupied_player_state := PlayerCombatState.new()
-    occupied_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+    occupied_player_state.setup(player_starting_health, STARTING_BACKPACK_CAPACITY, player_max_deck_size)
 
     var occupied_boss_state := BossCombatState.new()
     occupied_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
@@ -304,7 +315,7 @@ func _ready() -> void:
     stash_board_state.setup(4)
 
     var stash_player_state := PlayerCombatState.new()
-    stash_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+    stash_player_state.setup(player_starting_health, STARTING_BACKPACK_CAPACITY, player_max_deck_size)
     stash_player_state.take_damage(4)
 
     var stash_boss_state := BossCombatState.new()
@@ -352,7 +363,7 @@ func _ready() -> void:
     partial_board_state.setup(4)
 
     var partial_player_state := PlayerCombatState.new()
-    partial_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+    partial_player_state.setup(player_starting_health, STARTING_BACKPACK_CAPACITY, player_max_deck_size)
 
     var partial_boss_state := BossCombatState.new()
     partial_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
@@ -408,7 +419,7 @@ func _ready() -> void:
     transfer_board_state.setup(4)
 
     var transfer_player_state := PlayerCombatState.new()
-    transfer_player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+    transfer_player_state.setup(player_starting_health, STARTING_BACKPACK_CAPACITY, player_max_deck_size)
 
     var transfer_boss_state := BossCombatState.new()
     transfer_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)

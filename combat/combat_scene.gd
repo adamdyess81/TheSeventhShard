@@ -1,9 +1,11 @@
 extends Control
 
-const PLAYER_STARTING_HEALTH := 15
+const DEFAULT_PLAYER_STARTING_HEALTH := 15
+const DEFAULT_PLAYER_MAX_DECK_SIZE := 15
 const BOSS_STARTING_HEALTH := 12
 const ACTIVE_BOARD_CAP := 4
 const STARTING_BACKPACK_CAPACITY := 1
+const PLAYER_PROFILE_PATH := "res://profiles/player_main.json"
 const CARD_VIEW_SCENE = preload("res://cards/card_view.tscn")
 const LEFT_HAND_PLACEHOLDER = preload("res://art/ui/LeftHand Placement Card.png")
 const RIGHT_HAND_PLACEHOLDER = preload("res://art/ui/RightHand Placement Card.png")
@@ -353,6 +355,15 @@ func _build_test_match_state() -> void:
 
     var loader = GameDataLoader.new()
     loader.build_card_registry()
+    var player_profile := loader.load_json(PLAYER_PROFILE_PATH)
+    var player_starting_health := int(player_profile.get(
+        "starting_health_base",
+        DEFAULT_PLAYER_STARTING_HEALTH
+    ))
+    var player_max_deck_size := int(player_profile.get(
+        "max_deck_size_base",
+        DEFAULT_PLAYER_MAX_DECK_SIZE
+    ))
 
     var starter_deck := loader.load_deck("res://data/decks/starter_knight_deck.json")
     var resolved_player_cards := loader.resolve_deck_cards(starter_deck)
@@ -369,7 +380,11 @@ func _build_test_match_state() -> void:
     board_state.setup(ACTIVE_BOARD_CAP)
 
     var player_state := PlayerCombatState.new()
-    player_state.setup(PLAYER_STARTING_HEALTH, STARTING_BACKPACK_CAPACITY)
+    player_state.setup(
+        player_starting_health,
+        STARTING_BACKPACK_CAPACITY,
+        player_max_deck_size
+    )
 
     var boss_data := loader.load_json("res://data/bosses/gravebound_warden.json")
     var boss_rules = boss_data.get("special_rule_ids", [])

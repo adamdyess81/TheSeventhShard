@@ -3,6 +3,7 @@ class_name PlayerCombatState
 
 var max_health: int = 0
 var current_health: int = 0
+var max_deck_size: int = 0
 var temporary_gold: int = 0
 var carried_chests: Array = []
 
@@ -18,9 +19,14 @@ var stunned_until_round_end: bool = false
 var backpack_capacity: int = 1
 
 
-func setup(starting_health: int, starting_backpack_capacity: int = 1) -> void:
+func setup(
+    starting_health: int,
+    starting_backpack_capacity: int = 1,
+    starting_max_deck_size: int = 0
+) -> void:
     max_health = starting_health
     current_health = starting_health
+    max_deck_size = starting_max_deck_size
     temporary_gold = 0
     carried_chests.clear()
 
