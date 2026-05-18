@@ -15,9 +15,9 @@ static func calculate_level_from_total_xp(total_xp: int) -> int:
 	if total_xp <= 0:
 		return 1
 
-	var level := 1
-	var remaining_xp := total_xp
-	var xp_to_next := LEVEL_1_XP_TO_NEXT
+	var level: int = 1
+	var remaining_xp: int = total_xp
+	var xp_to_next: int = LEVEL_1_XP_TO_NEXT
 
 	while remaining_xp >= xp_to_next:
 		remaining_xp -= xp_to_next
@@ -31,10 +31,10 @@ static func get_xp_to_next_level(level: int) -> int:
 	if level <= 1:
 		return LEVEL_1_XP_TO_NEXT
 
-	var xp_to_next := LEVEL_1_XP_TO_NEXT
+	var xp_to_next: int = LEVEL_1_XP_TO_NEXT
 
 	for current_level in range(1, level):
-		var growth := get_level_growth_multiplier(current_level)
+		var growth: float = get_level_growth_multiplier(current_level)
 		xp_to_next = int(ceil(float(xp_to_next) * growth))
 
 	return xp_to_next
@@ -51,9 +51,9 @@ static func get_level_growth_multiplier(level: int) -> float:
 
 
 static func get_current_level_progress(total_xp: int) -> Dictionary:
-	var level := 1
-	var remaining_xp := max(total_xp, 0)
-	var xp_to_next := LEVEL_1_XP_TO_NEXT
+	var level: int = 1
+	var remaining_xp: int = max(total_xp, 0)
+	var xp_to_next: int = LEVEL_1_XP_TO_NEXT
 
 	while remaining_xp >= xp_to_next:
 		remaining_xp -= xp_to_next

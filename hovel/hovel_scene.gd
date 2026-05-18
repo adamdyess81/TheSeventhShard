@@ -4,6 +4,8 @@ const PLAYER_PROFILE_PATH := "res://profiles/player_main.json"
 const COMBAT_SCENE_PATH := "res://combat/combat_scene.tscn"
 const DEFAULT_STARTING_HEALTH := 20
 const DEFAULT_MAX_DECK_SIZE := 15
+const GAME_DATA_LOADER_SCRIPT = preload("res://core/GameDataLoader.gd")
+const PROGRESSION_SCRIPT = preload("res://core/Progression.gd")
 
 @onready var health_value = $Root/Content/StatsPanel/StatsContent/StatsRows/HealthRow/Value
 @onready var gold_value = $Root/Content/StatsPanel/StatsContent/StatsRows/GoldRow/Value
@@ -34,7 +36,7 @@ func _ready() -> void:
 
 
 func _load_player_profile() -> void:
-	var loader = GameDataLoader.new()
+	var loader = GAME_DATA_LOADER_SCRIPT.new()
 	player_profile_data = loader.load_json(PLAYER_PROFILE_PATH)
 
 
@@ -43,7 +45,7 @@ func _refresh_stats() -> void:
 	var persistent_gold := int(player_profile_data.get("persistent_gold", 0))
 	var max_deck_size := int(player_profile_data.get("max_deck_size_base", DEFAULT_MAX_DECK_SIZE))
 	var total_xp := int(player_profile_data.get("total_xp", 0))
-	var progress := Progression.get_current_level_progress(total_xp)
+	var progress: Dictionary = PROGRESSION_SCRIPT.get_current_level_progress(total_xp)
 
 	health_value.text = str(starting_health)
 	gold_value.text = str(persistent_gold)
