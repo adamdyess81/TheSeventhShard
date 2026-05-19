@@ -13,7 +13,7 @@
 	"owned_relic_ids": [],
 	"owned_rune_ids": [],
 	"persistent_gold": 0.0,
-	"player_level": 2,
+	"player_level": 3,
 	"player_profile_id": "player_main",
 	"profile_name": "Main Profile",
 	"progression_flag_ids": [],
@@ -27,7 +27,7 @@
 		"small_shield": 4.0
 	},
 	"starting_health_base": 15.0,
-	"total_xp": 165,
+	"total_xp": 321,
 	"unlocked_branch_ids": [
 		"ossara"
 	],

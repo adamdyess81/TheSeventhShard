@@ -13,6 +13,7 @@ mouse_filter = 2
 
 [node name="ArtRect" type="TextureRect" parent="CardCanvas" unique_id=615004321]
 unique_name_in_owner = true
+texture_filter = 6
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

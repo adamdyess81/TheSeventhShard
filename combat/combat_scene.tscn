@@ -185,6 +185,7 @@ layout_mode = 2
 mouse_filter = 2
 
 [node name="BossArt" type="TextureRect" parent="RootLayout/StageCenter/Stage/BossCenter/BossDropZone/BossCanvas" unique_id=204300004]
+texture_filter = 6
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -267,6 +268,7 @@ drop_target = "discard"
 combat_scene_path = NodePath("../../../../../../../../../..")
 
 [node name="DiscardTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone" unique_id=1071775794]
+texture_filter = 6
 custom_minimum_size = Vector2(220, 300)
 layout_mode = 2
 mouse_filter = 2
@@ -295,6 +297,7 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="DeckCard" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DeckCenter/DeckColumn" unique_id=1368101348]
+texture_filter = 6
 custom_minimum_size = Vector2(220, 300)
 layout_mode = 2
 mouse_filter = 2
@@ -332,6 +335,7 @@ layout_mode = 2
 mouse_filter = 2
 
 [node name="PlacementTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas" unique_id=1195069394]
+texture_filter = 6
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -390,6 +394,7 @@ layout_mode = 2
 mouse_filter = 2
 
 [node name="AvatarTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas" unique_id=1326504604]
+texture_filter = 6
 custom_minimum_size = Vector2(248, 340)
 layout_mode = 1
 anchors_preset = 15
@@ -435,6 +440,7 @@ layout_mode = 2
 mouse_filter = 2
 
 [node name="PlacementTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas" unique_id=962472168]
+texture_filter = 6
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -493,6 +499,7 @@ layout_mode = 2
 mouse_filter = 2
 
 [node name="PlacementTexture" type="TextureRect" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas" unique_id=1243900246]
+texture_filter = 6
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
