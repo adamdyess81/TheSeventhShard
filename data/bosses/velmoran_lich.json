@@ -1,0 +1,22 @@
+{
+  "id": "velmoran_lich",
+  "name": "Velmoran Lich",
+  "branch_id": "ossara",
+  "guardian_id": "velmora",
+  "boss_type": "baseline",
+  "theme_tags": ["ossara", "undead", "lich", "prototype"],
+  "base_health": 18,
+  "has_special_rules": true,
+  "special_rule_ids": ["reanimation"],
+  "special_values": {
+    "reanimation_card_id": "risen_bones",
+    "reanimation_value": 1,
+    "reanimation_rush": 1,
+    "reanimation_trigger": "on_kill"
+  },
+  "global_rule_ids": [],
+  "board_cap_modifier": 0,
+  "unresolved_card_cap_modifier": 0,
+  "art_ref": null,
+  "notes": "Ossara lich boss. Reanimation triggers on kill and inserts the reanimated monster into the deck at a random position."
+}

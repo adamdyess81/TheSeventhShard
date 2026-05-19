@@ -1,0 +1,20 @@
+{
+  "id": "spore_matriarch",
+  "name": "Spore Matriarch",
+  "branch_id": "ossara",
+  "guardian_id": "velmora",
+  "boss_type": "baseline",
+  "theme_tags": ["ossara", "blight", "fungal", "prototype"],
+  "base_health": 20,
+  "has_special_rules": true,
+  "special_rule_ids": ["blight"],
+  "special_values": {
+    "blight_card_id": "necrotic_spore",
+    "blight_interval": 2
+  },
+  "global_rule_ids": [],
+  "board_cap_modifier": 0,
+  "unresolved_card_cap_modifier": 0,
+  "art_ref": null,
+  "notes": "Ossara blight boss. Every 2 rounds, insert a Necrotic Spore into the deck at a random position."
+}

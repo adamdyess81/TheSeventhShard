@@ -1,0 +1,22 @@
+{
+  "id": "velmora_hallow_reliquary",
+  "name": "Velmora, The Hallow Reliquary",
+  "branch_id": "ossara",
+  "guardian_id": null,
+  "boss_type": "guardian",
+  "theme_tags": ["ossara", "guardian", "reliquary", "prototype"],
+  "base_health": 24,
+  "has_special_rules": true,
+  "special_rule_ids": ["reliquary_benediction"],
+  "special_values": {
+    "soul_counter_threshold": 3,
+    "hallowed_benediction_value_bonus": 1,
+    "martyrdom_bonus_soul": 1,
+    "reliquary_counter_source": "resolved_monsters"
+  },
+  "global_rule_ids": [],
+  "board_cap_modifier": 0,
+  "unresolved_card_cap_modifier": 0,
+  "art_ref": null,
+  "notes": "Ossara guardian. Whenever a monster is resolved, Velmora gains 1 Soul Counter. At 3 Soul Counters, clear them and at the beginning of the next round release Hallowed Benediction, giving all monsters +1 value for that round. Martyrdom grants an additional Soul Counter during this fight."
+}
