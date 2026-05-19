@@ -1,0 +1,23 @@
+{
+  "id": "rotcap_forager",
+  "name": "Rotcap Forager",
+  "family": "monster",
+  "subtype": "blight",
+  "rarity": "common",
+  "base_value": 2,
+  "description": "A skittering fungus-beast. Corrosion: if blocked by a defense card, double this monster's value for that resolution.",
+  "tags": ["ossara", "blight", "fungal"],
+  "keywords": [],
+  "target_rules": ["player_avatar", "shield_card"],
+  "special_rules": ["corrosion"],
+  "consumed_on_use": false,
+  "auto_resolve_on_hand_place": false,
+  "can_be_trashed": false,
+  "can_go_to_hand": false,
+  "can_go_to_backpack": false,
+  "can_be_used_from_backpack": false,
+  "requires_hand_to_use": false,
+  "occupies_two_hands": false,
+  "art_ref": null,
+  "icon_ref": null
+}

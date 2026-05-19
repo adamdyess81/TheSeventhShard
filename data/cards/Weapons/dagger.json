@@ -1,0 +1,23 @@
+{
+  "id": "dagger",
+  "name": "Dagger",
+  "family": "weapon",
+  "subtype": "melee",
+  "rarity": "common",
+  "base_value": 1,
+  "description": "Deal 1 melee damage. Second Strike: return this card to the hand it came from and do not exhaust that hand.",
+  "tags": ["weapon", "melee", "tempo"],
+  "keywords": [],
+  "target_rules": ["enemy_card", "hand_slot"],
+  "special_rules": ["second_strike"],
+  "consumed_on_use": true,
+  "auto_resolve_on_hand_place": false,
+  "can_be_trashed": true,
+  "can_go_to_hand": true,
+  "can_go_to_backpack": true,
+  "can_be_used_from_backpack": false,
+  "requires_hand_to_use": true,
+  "occupies_two_hands": false,
+  "art_ref": null,
+  "icon_ref": null
+}

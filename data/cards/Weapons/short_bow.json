@@ -1,0 +1,23 @@
+{
+  "id": "short_bow",
+  "name": "Short Bow",
+  "family": "weapon",
+  "subtype": "ranged",
+  "rarity": "common",
+  "base_value": 2,
+  "description": "Deal 2 ranged damage. Split: spend this value 1 point at a time across legal targets of your choice.",
+  "tags": ["weapon", "ranged", "split"],
+  "keywords": [],
+  "target_rules": ["enemy_card", "hand_slot"],
+  "special_rules": ["split"],
+  "consumed_on_use": true,
+  "auto_resolve_on_hand_place": false,
+  "can_be_trashed": true,
+  "can_go_to_hand": true,
+  "can_go_to_backpack": true,
+  "can_be_used_from_backpack": false,
+  "requires_hand_to_use": true,
+  "occupies_two_hands": false,
+  "art_ref": null,
+  "icon_ref": null
+}

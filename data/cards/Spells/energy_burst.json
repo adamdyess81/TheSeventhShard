@@ -1,0 +1,23 @@
+{
+  "id": "energy_burst",
+  "name": "Energy Burst",
+  "family": "spell",
+  "subtype": "damage",
+  "rarity": "common",
+  "base_value": 1,
+  "description": "Cast from a hand. Deal Magic damage equal to this card's value to all monsters on the board.",
+  "tags": ["spell", "damage", "magic", "board"],
+  "keywords": [],
+  "target_rules": ["enemy_card", "boss", "hand_slot"],
+  "special_rules": ["magic_damage", "board_burst"],
+  "consumed_on_use": true,
+  "auto_resolve_on_hand_place": false,
+  "can_be_trashed": true,
+  "can_go_to_hand": true,
+  "can_go_to_backpack": true,
+  "can_be_used_from_backpack": false,
+  "requires_hand_to_use": true,
+  "occupies_two_hands": false,
+  "art_ref": null,
+  "icon_ref": null
+}

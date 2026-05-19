@@ -1,0 +1,26 @@
+{
+  "id": "ward_of_ash",
+  "name": "Ward of Ash",
+  "family": "spell",
+  "subtype": "effect",
+  "rarity": "common",
+  "base_value": 0,
+  "description": "Cast onto the player avatar. Prevent the next 2 damage the player would take this round.",
+  "tags": ["spell", "effect", "defense"],
+  "keywords": [],
+  "target_rules": ["player_avatar", "hand_slot"],
+  "special_rules": ["ward_of_ash"],
+  "special_values": {
+    "ward_of_ash": 2
+  },
+  "consumed_on_use": true,
+  "auto_resolve_on_hand_place": false,
+  "can_be_trashed": true,
+  "can_go_to_hand": true,
+  "can_go_to_backpack": true,
+  "can_be_used_from_backpack": false,
+  "requires_hand_to_use": true,
+  "occupies_two_hands": false,
+  "art_ref": null,
+  "icon_ref": null
+}

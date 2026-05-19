@@ -1,0 +1,23 @@
+{
+  "id": "battle_focus",
+  "name": "Battle Focus",
+  "family": "spell",
+  "subtype": "effect",
+  "rarity": "common",
+  "base_value": 0,
+  "description": "Cast onto the player avatar. Refresh both hands.",
+  "tags": ["spell", "effect", "tempo"],
+  "keywords": [],
+  "target_rules": ["player_avatar", "hand_slot"],
+  "special_rules": ["battle_focus"],
+  "consumed_on_use": true,
+  "auto_resolve_on_hand_place": false,
+  "can_be_trashed": true,
+  "can_go_to_hand": true,
+  "can_go_to_backpack": true,
+  "can_be_used_from_backpack": false,
+  "requires_hand_to_use": true,
+  "occupies_two_hands": false,
+  "art_ref": null,
+  "icon_ref": null
+}

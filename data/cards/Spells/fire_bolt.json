@@ -1,0 +1,23 @@
+{
+  "id": "fire_bolt",
+  "name": "Fire Bolt",
+  "family": "spell",
+  "subtype": "damage",
+  "rarity": "common",
+  "base_value": 1,
+  "description": "Cast from a hand onto a monster or boss. Deal Fire damage equal to this card's value to a single target.",
+  "tags": ["spell", "damage", "fire"],
+  "keywords": [],
+  "target_rules": ["enemy_card", "boss", "hand_slot"],
+  "special_rules": ["fire_damage"],
+  "consumed_on_use": true,
+  "auto_resolve_on_hand_place": false,
+  "can_be_trashed": true,
+  "can_go_to_hand": true,
+  "can_go_to_backpack": true,
+  "can_be_used_from_backpack": false,
+  "requires_hand_to_use": true,
+  "occupies_two_hands": false,
+  "art_ref": null,
+  "icon_ref": null
+}

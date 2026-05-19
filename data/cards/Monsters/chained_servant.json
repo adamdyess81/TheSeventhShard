@@ -1,0 +1,23 @@
+{
+  "id": "chained_servant",
+  "name": "Chained Servant",
+  "family": "monster",
+  "subtype": "tormented",
+  "rarity": "common",
+  "base_value": 2,
+  "description": "A dragging slave bound in iron. Entangle: if blocked, the player's hands and backpack are exhausted for the rest of the round.",
+  "tags": ["ossara", "warden", "tormented"],
+  "keywords": [],
+  "target_rules": ["player_avatar", "shield_card"],
+  "special_rules": ["entangle"],
+  "consumed_on_use": false,
+  "auto_resolve_on_hand_place": false,
+  "can_be_trashed": false,
+  "can_go_to_hand": false,
+  "can_go_to_backpack": false,
+  "can_be_used_from_backpack": false,
+  "requires_hand_to_use": false,
+  "occupies_two_hands": false,
+  "art_ref": null,
+  "icon_ref": null
+}
