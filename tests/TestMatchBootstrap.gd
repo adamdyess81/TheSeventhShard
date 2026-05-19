@@ -86,7 +86,7 @@ func _ready() -> void:
     var basic_match_state := MatchCombatState.new()
     basic_match_state.setup(basic_player_state, basic_boss_state, basic_board_state, basic_shared_deck, 1)
 
-    basic_board_state.get_active_cards().append(loader.get_card("grave_thrall").duplicate(true))
+    basic_board_state.get_active_cards().append(loader.get_card("banshee").duplicate(true))
     basic_board_state.get_active_cards().append(loader.get_card("gold_10").duplicate(true))
     basic_board_state.get_active_cards().append(loader.get_card("short_sword").duplicate(true))
     basic_board_state.get_active_cards().append(loader.get_card("small_shield").duplicate(true))
@@ -110,7 +110,7 @@ func _ready() -> void:
 
     var left_hand_result := resolution.move_player_card_to_left_hand(basic_match_state, 0)
     print("\nMoved player card to left hand?: ", left_hand_result)
-    print("Left Hand Card: ", basic_match_state.player_state.left_hand_card.get("id", "[none]"))
+    print("Left Hand Card: ", _card_id(basic_match_state.player_state.left_hand_card))
     print("Board After Left Hand Move:")
     _print_card_list(basic_match_state.get_active_board_cards())
 
@@ -118,7 +118,7 @@ func _ready() -> void:
     print("\nMoved player card to backpack?: ", backpack_result)
     print("Backpack Count: ", basic_match_state.player_state.backpack_cards.size())
     if basic_match_state.player_state.backpack_cards.size() > 0:
-        print("Backpack Card 0: ", basic_match_state.player_state.backpack_cards[0].get("id", "[none]"))
+        print("Backpack Card 0: ", _card_id(basic_match_state.player_state.backpack_cards[0]))
     print("Board After Backpack Move:")
     _print_card_list(basic_match_state.get_active_board_cards())
 
@@ -144,11 +144,11 @@ func _ready() -> void:
 
     print("Weapon Test Board Start:")
     _print_card_list(weapon_match_state.get_active_board_cards())
-    print("Left Hand Before Weapon Use: ", weapon_match_state.player_state.left_hand_card.get("id", "[none]"))
+    print("Left Hand Before Weapon Use: ", _card_id(weapon_match_state.player_state.left_hand_card))
 
     var weapon_result := resolution.use_left_hand_weapon_on_monster(weapon_match_state, 0)
     print("Weapon used successfully?: ", weapon_result)
-    print("Left Hand After Weapon Use: ", weapon_match_state.player_state.left_hand_card.get("id", "[none]"))
+    print("Left Hand After Weapon Use: ", _card_id(weapon_match_state.player_state.left_hand_card))
     print("Left Hand Exhausted?: ", weapon_match_state.player_state.left_hand_exhausted)
     print("Board After Weapon Use:")
     _print_card_list(weapon_match_state.get_active_board_cards())
@@ -171,17 +171,17 @@ func _ready() -> void:
     shield_match_state.setup(shield_player_state, shield_boss_state, shield_board_state, shield_shared_deck, 1)
 
     shield_match_state.player_state.set_left_hand_card(loader.get_card("small_shield").duplicate(true))
-    shield_board_state.get_active_cards().append(loader.get_card("grave_thrall").duplicate(true))
+    shield_board_state.get_active_cards().append(loader.get_card("banshee").duplicate(true))
 
     print("Shield Test Board Start:")
     _print_card_list(shield_match_state.get_active_board_cards())
-    print("Left Hand Shield Before Resolve: ", shield_match_state.player_state.left_hand_card.get("id", "[none]"))
+    print("Left Hand Shield Before Resolve: ", _card_id(shield_match_state.player_state.left_hand_card))
     print("Shield Value Before Resolve: ", shield_match_state.player_state.left_hand_card.get("base_value", "null"))
 
     var shield_result := resolution.resolve_monster_into_left_hand_shield(shield_match_state, 0)
     print("Shield resolve successful?: ", shield_result)
     print("Player Health After Shield Resolve: ", shield_match_state.player_state.current_health, "/", shield_match_state.player_state.max_health)
-    print("Left Hand Shield After Resolve: ", shield_match_state.player_state.left_hand_card.get("id", "[none]"))
+    print("Left Hand Shield After Resolve: ", _card_id(shield_match_state.player_state.left_hand_card))
     print("Shield Value After Resolve: ", shield_match_state.player_state.left_hand_card.get("base_value", "null"))
     print("Board After Shield Resolve:")
     _print_card_list(shield_match_state.get_active_board_cards())
@@ -223,7 +223,7 @@ func _ready() -> void:
     var overflow_result := resolution.resolve_monster_into_left_hand_shield(overflow_match_state, 0)
     print("Overflow shield resolve successful?: ", overflow_result)
     print("Player Health After Overflow Test: ", overflow_match_state.player_state.current_health, "/", overflow_match_state.player_state.max_health)
-    print("Left Hand After Overflow Test: ", overflow_match_state.player_state.left_hand_card.get("id", "[none]"))
+    print("Left Hand After Overflow Test: ", _card_id(overflow_match_state.player_state.left_hand_card))
     print("Left Hand Exhausted After Overflow Test?: ", overflow_match_state.player_state.left_hand_exhausted)
     print("Board After Overflow Test:")
     _print_card_list(overflow_match_state.get_active_board_cards())
@@ -250,12 +250,12 @@ func _ready() -> void:
 
     print("Potion Test Start:")
     print("Player Health Before Potion: ", potion_match_state.player_state.current_health, "/", potion_match_state.player_state.max_health)
-    print("Left Hand Before Potion Use: ", potion_match_state.player_state.left_hand_card.get("id", "[none]"))
+    print("Left Hand Before Potion Use: ", _card_id(potion_match_state.player_state.left_hand_card))
 
     var potion_result := resolution.use_left_hand_potion(potion_match_state)
     print("Potion used successfully?: ", potion_result)
     print("Player Health After Potion: ", potion_match_state.player_state.current_health, "/", potion_match_state.player_state.max_health)
-    print("Left Hand After Potion Use: ", potion_match_state.player_state.left_hand_card.get("id", "[none]"))
+    print("Left Hand After Potion Use: ", _card_id(potion_match_state.player_state.left_hand_card))
     print("Left Hand Exhausted After Potion Use?: ", potion_match_state.player_state.left_hand_exhausted)
 
     print("\n=== INVALID ACTION TESTS ===")
@@ -282,7 +282,7 @@ func _ready() -> void:
     ongoing_boss_state.setup("gravebound_warden", "Gravebound Warden", BOSS_STARTING_HEALTH)
 
     var ongoing_shared_deck := SharedDeckState.new()
-    ongoing_shared_deck.setup([loader.get_card("grave_thrall").duplicate(true)])
+    ongoing_shared_deck.setup([loader.get_card("banshee").duplicate(true)])
 
     var ongoing_match_state := MatchCombatState.new()
     ongoing_match_state.setup(ongoing_player_state, ongoing_boss_state, ongoing_board_state, ongoing_shared_deck, 1)
@@ -359,7 +359,7 @@ func _ready() -> void:
         loader.get_card("gold_10").duplicate(true)
     ])
 
-    controller_board_state.get_active_cards().append(loader.get_card("grave_thrall").duplicate(true))
+    controller_board_state.get_active_cards().append(loader.get_card("banshee").duplicate(true))
     controller_board_state.get_active_cards().append(loader.get_card("short_sword").duplicate(true))
 
     var controller_match_state := MatchCombatState.new()
@@ -397,7 +397,7 @@ func _ready() -> void:
 
     var controller_left_hand_result := combat_controller.move_player_card_to_left_hand(0)
     print("\nController moved player card to left hand?: ", controller_left_hand_result)
-    print("Left Hand After Controller Move: ", combat_controller.match_state.player_state.left_hand_card.get("id", "[none]"))
+    print("Left Hand After Controller Move: ", _card_id(combat_controller.match_state.player_state.left_hand_card))
     print("Board After Controller Left Hand Move:")
     _print_card_list(combat_controller.match_state.get_active_board_cards())
     print("Deck Remaining After Second Auto-Refill: ", combat_controller.match_state.shared_deck_state.remaining_count())
@@ -412,6 +412,10 @@ func _print_card_list(cards: Array) -> void:
         return
 
     for card in cards:
+        if card == null:
+            print("- [empty slot]")
+            continue
+
         if card is CardRuntimeState:
             print("- %s | family: %s | value: %s | zone: %s" % [
                 card.card_id,
@@ -431,3 +435,11 @@ func _print_card_list(cards: Array) -> void:
             print("- %s | family: %s | value: %s" % [card_id, family, value_text])
         else:
             print("- [unknown card type]")
+
+
+func _card_id(card) -> String:
+    if card is CardRuntimeState:
+        return card.card_id
+    if card is Dictionary:
+        return str(card.get("id", "[none]"))
+    return "[none]"

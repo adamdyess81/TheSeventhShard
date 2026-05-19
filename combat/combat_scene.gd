@@ -1,5 +1,17 @@
 extends Control
 
+const GAME_DATA_LOADER_SCRIPT = preload("res://core/GameDataLoader.gd")
+const PROGRESSION_SCRIPT = preload("res://core/Progression.gd")
+const CARD_RUNTIME_STATE_SCRIPT = preload("res://cards/CardRuntimeState.gd")
+const SHARED_DECK_STATE_SCRIPT = preload("res://combat/SharedDeckState.gd")
+const BOARD_STATE_SCRIPT = preload("res://combat/BoardState.gd")
+const PLAYER_COMBAT_STATE_SCRIPT = preload("res://combat/PlayerCombatState.gd")
+const BOSS_COMBAT_STATE_SCRIPT = preload("res://combat/BossCombatState.gd")
+const MATCH_COMBAT_STATE_SCRIPT = preload("res://combat/MatchCombatState.gd")
+const RESOLUTION_CONTROLLER_SCRIPT = preload("res://combat/ResolutionController.gd")
+const OUTCOME_CONTROLLER_SCRIPT = preload("res://combat/OutcomeController.gd")
+const COMBAT_CONTROLLER_SCRIPT = preload("res://combat/CombatController.gd")
+
 const DEFAULT_PLAYER_STARTING_HEALTH := 15
 const DEFAULT_PLAYER_MAX_DECK_SIZE := 15
 const BOSS_STARTING_HEALTH := 12
@@ -17,28 +29,24 @@ const CARD_BACK_TEXTURE = preload("res://art/ui/CardBack.png")
 const BOSS_CARD_TEXTURE = preload("res://art/cards/Gravebound Warden.png")
 const PLAYER_DAMAGE_SLASH_TEXTURE = preload("res://art/ui/DamageSlash50.png")
 const SWORD_DAMAGE_SLASH_TEXTURE = preload("res://art/ui/SwordDamageSlash.png")
-const BACKPACK_DROP_SFX = preload("res://audio/sound fx/backpack_drop.wav")
-const CRYPT_HOUND_SFX = preload("res://audio/sound fx/crypt_hound.wav")
-const DEAL_CARDS_SFX = preload("res://audio/sound fx/deal_cards.wav")
-const DISCARD_SFX = preload("res://audio/sound fx/discard.wav")
-const DRINK_POTION_SFX = preload("res://audio/sound fx/drink_potion.wav")
-const DROP_CARD_SFX = preload("res://audio/sound fx/drop_card.wav")
-const GAIN_COINS_SFX = preload("res://audio/sound fx/gain_coins.wav")
-const GRAVE_THRALL_SFX = preload("res://audio/sound fx/grave_thrall.wav")
-const GRAVEBOUND_WARDEN_HURT_SFX = preload("res://audio/sound fx/gravebound_warden_hurt.wav")
-const GRAVEBOUND_WARDEN_SPECIAL_SFX = preload("res://audio/sound fx/gravebound_warden_special.wav")
-const PLAYER_HURT_SFX := [
-	preload("res://audio/sound fx/player_hurt_001_male.wav"),
-	preload("res://audio/sound fx/player_hurt_002_male.wav"),
-	preload("res://audio/sound fx/player_hurt_003_male.wav"),
-	preload("res://audio/sound fx/player_hurt_004_male.wav"),
-	preload("res://audio/sound fx/player_hurt_005_male.wav")
+const BACKPACK_DROP_SFX_PATH := "res://audio/sound fx/backpack_drop.wav"
+const DEAL_CARDS_SFX_PATH := "res://audio/sound fx/deal_cards.wav"
+const DISCARD_SFX_PATH := "res://audio/sound fx/discard.wav"
+const DRINK_POTION_SFX_PATH := "res://audio/sound fx/drink_potion.wav"
+const DROP_CARD_SFX_PATH := "res://audio/sound fx/drop_card.wav"
+const GAIN_COINS_SFX_PATH := "res://audio/sound fx/gain_coins.wav"
+const GRAVEBOUND_WARDEN_HURT_SFX_PATH := "res://audio/sound fx/gravebound_warden_hurt.wav"
+const GRAVEBOUND_WARDEN_SPECIAL_SFX_PATH := "res://audio/sound fx/gravebound_warden_special.wav"
+const PLAYER_HURT_SFX_PATHS := [
+	"res://audio/sound fx/player_hurt_001_male.wav",
+	"res://audio/sound fx/player_hurt_002_male.wav",
+	"res://audio/sound fx/player_hurt_003_male.wav",
+	"res://audio/sound fx/player_hurt_004_male.wav",
+	"res://audio/sound fx/player_hurt_005_male.wav"
 ]
-const RISEN_BONES_SFX = preload("res://audio/sound fx/risen_bones.wav")
-const SEPULCHER_GUARD_SFX = preload("res://audio/sound fx/sepulcher_guard.wav")
-const SHIELD_DEFEND_SFX = preload("res://audio/sound fx/shield_defend.wav")
-const SWORD_SWING_SFX = preload("res://audio/sound fx/sword_swing.wav")
-const TREASURE_CHEST_SFX = preload("res://audio/sound fx/treasure_chest.wav")
+const SHIELD_DEFEND_SFX_PATH := "res://audio/sound fx/shield_defend.wav"
+const SWORD_SWING_SFX_PATH := "res://audio/sound fx/sword_swing.wav"
+const TREASURE_CHEST_SFX_PATH := "res://audio/sound fx/treasure_chest.wav"
 const EMPTY_BOARD_SLOT_SIZE = Vector2(220, 300)
 const HUD_TEXT = Color("f1e7d6")
 const HUD_MUTED = Color("c4b59a")
@@ -49,20 +57,6 @@ const INVALID_DROP_TINT = Color(1.0, 0.36, 0.36, 0.58)
 const PANEL_FILL = Color("130f0d")
 const PANEL_BORDER = Color("6a5542")
 const DISCARD_BORDER = Color("9d6b55")
-const CARD_ART_TEXTURES := {
-	"crypt_hound": preload("res://art/cards/Crypt Hound.png"),
-	"grave_thrall": preload("res://art/cards/Grave Thrall.png"),
-	"large_health_potion": preload("res://art/cards/Large Healing Potion.png"),
-	"gold_10": preload("res://art/cards/Coins.png"),
-	"gravebound_warden": preload("res://art/cards/Gravebound Warden.png"),
-	"risen_bones": preload("res://art/cards/Risen Bones.png"),
-	"sepulcher_guard": preload("res://art/cards/Sepulcher Guard.png"),
-	"short_sword": preload("res://art/cards/Short Sword.png"),
-	"small_chest": preload("res://art/cards/Small Chest.png"),
-	"small_health_potion": preload("res://art/cards/Small Healing Potion.png"),
-	"small_shield": preload("res://art/cards/Small Shield.png")
-}
-
 @onready var player_health_label = $RootLayout/StageCenter/Stage/TopBar/PlayerHealthLabel
 @onready var boss_health_label = $RootLayout/StageCenter/Stage/TopBar/BossHealthLabel
 @onready var round_label = $RootLayout/StageCenter/Stage/TopBar/RoundLabel
@@ -118,10 +112,10 @@ const CARD_ART_TEXTURES := {
 @onready var right_hand_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/RightHandLabel
 @onready var backpack_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/BackpackLabel
 
-var match_state: MatchCombatState
-var resolution_controller: ResolutionController
-var outcome_controller: OutcomeController
-var combat_controller: CombatController
+var match_state = null
+var resolution_controller = null
+var outcome_controller = null
+var combat_controller = null
 var restart_pending := false
 var left_hand_visual_card_id := ""
 var right_hand_visual_card_id := ""
@@ -132,6 +126,10 @@ var escape_was_pressed := false
 var root_layout_base_position := Vector2.ZERO
 var background_base_position := Vector2.ZERO
 var player_profile_data: Dictionary = {}
+var data_loader = GAME_DATA_LOADER_SCRIPT.new()
+var card_texture_cache: Dictionary = {}
+var card_sfx_cache: Dictionary = {}
+var common_sfx_cache: Dictionary = {}
 
 
 func _ready() -> void:
@@ -265,35 +263,29 @@ func _play_sfx(stream: AudioStream, volume_db: float = 0.0) -> void:
 
 
 func _play_random_player_hurt_sfx() -> void:
-    if PLAYER_HURT_SFX.is_empty():
+    if PLAYER_HURT_SFX_PATHS.is_empty():
         return
-    var sound: AudioStream = PLAYER_HURT_SFX[randi() % PLAYER_HURT_SFX.size()]
+    var sound = _load_common_sfx(PLAYER_HURT_SFX_PATHS[randi() % PLAYER_HURT_SFX_PATHS.size()])
     _play_sfx(sound)
 
 
 func _play_monster_attack_sfx(card) -> void:
-    match _get_card_name(card):
-        "crypt_hound":
-            _play_sfx(CRYPT_HOUND_SFX)
-        "grave_thrall":
-            _play_sfx(GRAVE_THRALL_SFX)
-        "risen_bones":
-            _play_sfx(RISEN_BONES_SFX)
-        "sepulcher_guard":
-            _play_sfx(SEPULCHER_GUARD_SFX)
+    var stream = _get_card_sfx(card)
+    if stream != null:
+        _play_sfx(stream)
 
 
 func _play_loot_drop_sfx(card, target_slot: String) -> void:
     if card == null:
         return
 
-    _play_sfx(DROP_CARD_SFX)
+    _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
 
     if target_slot == "backpack":
-        _play_sfx(BACKPACK_DROP_SFX)
+        _play_sfx(_load_common_sfx(BACKPACK_DROP_SFX_PATH))
 
     if _get_card_family(card) == "chest" and target_slot in ["left_hand", "right_hand", "backpack"]:
-        _play_sfx(TREASURE_CHEST_SFX)
+        _play_sfx(_load_common_sfx(TREASURE_CHEST_SFX_PATH))
 
 
 func _show_damage_slash_at_rect(target_rect: Rect2, texture: Texture2D) -> void:
@@ -357,9 +349,8 @@ func _build_battle_match_state() -> void:
     last_board_card_ids.clear()
     board_visuals_initialized = false
 
-    var loader = GameDataLoader.new()
-    loader.build_card_registry()
-    player_profile_data = loader.load_json(PLAYER_PROFILE_PATH)
+    data_loader.build_card_registry()
+    player_profile_data = data_loader.load_json(PLAYER_PROFILE_PATH)
     var player_level := int(player_profile_data.get("player_level", 1))
     var player_starting_health_base := int(player_profile_data.get(
         "starting_health_base",
@@ -369,11 +360,11 @@ func _build_battle_match_state() -> void:
         "max_deck_size_base",
         DEFAULT_PLAYER_MAX_DECK_SIZE
     ))
-    var player_starting_health := Progression.get_effective_max_health(
+    var player_starting_health := PROGRESSION_SCRIPT.get_effective_max_health(
         player_starting_health_base,
         player_level
     )
-    var player_max_deck_size := Progression.get_effective_max_deck_size(
+    var player_max_deck_size := PROGRESSION_SCRIPT.get_effective_max_deck_size(
         player_max_deck_size_base,
         player_level
     )
@@ -381,27 +372,27 @@ func _build_battle_match_state() -> void:
     var player_deck_counts := PROFILE_DECK_SCRIPT.get_selected_deck_card_counts(player_profile_data)
     var player_deck_entries := PROFILE_DECK_SCRIPT.build_deck_entries(player_deck_counts)
     var player_deck_data := {"cards": player_deck_entries}
-    var resolved_player_cards := loader.resolve_deck_cards(player_deck_data)
+    var resolved_player_cards := data_loader.resolve_deck_cards(player_deck_data)
 
-    var monster_deck := loader.load_deck("res://data/decks/ossara_baseline_monster_deck.json")
-    var resolved_monster_cards := loader.resolve_monster_deck(monster_deck)
+    var monster_deck := data_loader.load_deck("res://data/decks/ossara_baseline_monster_deck.json")
+    var resolved_monster_cards := data_loader.resolve_monster_deck(monster_deck)
 
-    var merged_cards := loader.build_shared_deck(resolved_player_cards, resolved_monster_cards)
+    var merged_cards := data_loader.build_shared_deck(resolved_player_cards, resolved_monster_cards)
 
-    var shared_deck := SharedDeckState.new()
+    var shared_deck = SHARED_DECK_STATE_SCRIPT.new()
     shared_deck.setup(merged_cards)
 
-    var board_state := BoardState.new()
+    var board_state = BOARD_STATE_SCRIPT.new()
     board_state.setup(ACTIVE_BOARD_CAP)
 
-    var player_state := PlayerCombatState.new()
+    var player_state = PLAYER_COMBAT_STATE_SCRIPT.new()
     player_state.setup(
         player_starting_health,
         STARTING_BACKPACK_CAPACITY,
         player_max_deck_size
     )
 
-    var boss_data := loader.load_json("res://data/bosses/gravebound_warden.json")
+    var boss_data := data_loader.load_json("res://data/bosses/gravebound_warden.json")
     var boss_rules = boss_data.get("special_rule_ids", [])
     if not (boss_rules is Array):
         boss_rules = []
@@ -411,11 +402,11 @@ func _build_battle_match_state() -> void:
     if boss_values.has("reanimation_card_id"):
         var reanimation_card_id := str(boss_values.get("reanimation_card_id", "")).strip_edges()
         if reanimation_card_id != "":
-            var reanimation_card_data := loader.get_card(reanimation_card_id)
+            var reanimation_card_data := data_loader.get_card(reanimation_card_id)
             if not reanimation_card_data.is_empty():
                 boss_values["reanimation_card_data"] = reanimation_card_data.duplicate(true)
 
-    var boss_state := BossCombatState.new()
+    var boss_state = BOSS_COMBAT_STATE_SCRIPT.new()
     boss_state.setup(
         str(boss_data.get("id", "gravebound_warden")),
         str(boss_data.get("name", "Gravebound Warden")),
@@ -424,12 +415,12 @@ func _build_battle_match_state() -> void:
         boss_values
     )
 
-    match_state = MatchCombatState.new()
+    match_state = MATCH_COMBAT_STATE_SCRIPT.new()
     match_state.setup(player_state, boss_state, board_state, shared_deck, 1)
-    resolution_controller = ResolutionController.new()
-    outcome_controller = OutcomeController.new()
+    resolution_controller = RESOLUTION_CONTROLLER_SCRIPT.new()
+    outcome_controller = OUTCOME_CONTROLLER_SCRIPT.new()
 
-    combat_controller = CombatController.new()
+    combat_controller = COMBAT_CONTROLLER_SCRIPT.new()
     combat_controller.setup(
         match_state,
         resolution_controller,
@@ -487,19 +478,19 @@ func _play_pending_round_events() -> void:
         var event_type := str(event.get("type", ""))
         if event_type == "boss_reanimation":
             _animate_boss_summon_to_deck(str(event.get("card_id", "")))
-            _play_sfx(GRAVEBOUND_WARDEN_SPECIAL_SFX)
+            _play_sfx(_load_common_sfx(GRAVEBOUND_WARDEN_SPECIAL_SFX_PATH))
         elif event_type == "boss_retaliation":
             _show_player_damage_slash()
             _play_damage_screen_shake()
             _play_random_player_hurt_sfx()
-            _play_sfx(GRAVEBOUND_WARDEN_SPECIAL_SFX)
+            _play_sfx(_load_common_sfx(GRAVEBOUND_WARDEN_SPECIAL_SFX_PATH))
 
 
 func _animate_boss_summon_to_deck(card_id: String) -> void:
     if boss_drop_zone == null or deck_card_texture == null:
         return
 
-    var summon_texture = CARD_ART_TEXTURES.get(card_id, CARD_BACK_TEXTURE)
+    var summon_texture = _get_card_texture(data_loader.get_card(card_id))
     if summon_texture == null:
         summon_texture = CARD_BACK_TEXTURE
 
@@ -521,7 +512,7 @@ func _animate_boss_summon_to_deck(card_id: String) -> void:
     summon_card.position = source_rect.position - global_position + ((source_rect.size - summon_size) * 0.5)
     add_child(summon_card)
 
-    _play_sfx(DEAL_CARDS_SFX, -2.0)
+    _play_sfx(_load_common_sfx(DEAL_CARDS_SFX_PATH), -2.0)
 
     var target_position := target_rect.position - global_position + ((target_rect.size - summon_size) * 0.5)
     var tween := create_tween()
@@ -659,11 +650,11 @@ func _get_single_card_label(card) -> String:
     if card == null:
         return "[empty]"
 
-    return _humanize_card_name(_get_card_name(card))
+    return _get_card_display_name(card)
 
 
 func _get_card_name(card) -> String:
-    if card is CardRuntimeState:
+    if _is_runtime_card(card):
         return card.card_id
 
     if card is Dictionary:
@@ -685,6 +676,77 @@ func _humanize_card_name(card_id: String) -> String:
         words[i] = word.substr(0, 1).to_upper() + word.substr(1)
 
     return " ".join(words)
+
+
+func _get_card_meta(card) -> Dictionary:
+    if _is_runtime_card(card):
+        return card.card_data
+
+    if card is Dictionary:
+        return card
+
+    return {}
+
+
+func _get_card_display_name(card) -> String:
+    var meta := _get_card_meta(card)
+    var display_name := str(meta.get("name", "")).strip_edges()
+    if display_name != "":
+        return display_name
+    return _humanize_card_name(_get_card_name(card))
+
+
+func _get_card_art_ref(card) -> String:
+    return str(_get_card_meta(card).get("art_ref", "")).strip_edges()
+
+
+func _get_card_sfx_ref(card) -> String:
+    return str(_get_card_meta(card).get("sfx_ref", "")).strip_edges()
+
+
+func _load_cached_texture(path: String):
+    if path == "":
+        return null
+
+    if card_texture_cache.has(path):
+        return card_texture_cache[path]
+
+    var texture = load(path)
+    if texture is Texture2D:
+        card_texture_cache[path] = texture
+        return texture
+
+    return null
+
+
+func _load_cached_sfx(path: String):
+    if path == "":
+        return null
+
+    if card_sfx_cache.has(path):
+        return card_sfx_cache[path]
+
+    var stream = load(path)
+    if stream is AudioStream:
+        card_sfx_cache[path] = stream
+        return stream
+
+    return null
+
+
+func _load_common_sfx(path: String):
+    if path == "":
+        return null
+
+    if common_sfx_cache.has(path):
+        return common_sfx_cache[path]
+
+    var stream = load(path)
+    if stream is AudioStream:
+        common_sfx_cache[path] = stream
+        return stream
+
+    return null
 
 
 func _build_boss_tooltip_text() -> String:
@@ -739,8 +801,14 @@ func _get_card_texture(card):
  if card == null:
   return null
 
- var card_id = _get_card_name(card)
- return CARD_ART_TEXTURES.get(card_id, null)
+ return _load_cached_texture(_get_card_art_ref(card))
+
+
+func _get_card_sfx(card):
+ if card == null:
+  return null
+
+ return _load_cached_sfx(_get_card_sfx_ref(card))
 
 
 func _get_board_card_view(board_index: int):
@@ -809,7 +877,7 @@ func _animate_new_board_cards(slot_indices: Array[int]) -> void:
   temp_card.position = source_rect.position - scene_origin
   temp_card.size = source_rect.size
   add_child(temp_card)
-  _play_sfx(DEAL_CARDS_SFX, -3.0)
+  _play_sfx(_load_common_sfx(DEAL_CARDS_SFX_PATH), -3.0)
 
   var target_rect: Rect2 = card_view.get_global_rect()
   var tween = create_tween()
@@ -849,7 +917,7 @@ func _apply_slot_text(name_label: Label, type_label: Label, value_label: Label, 
   _clear_slot_text(name_label, type_label, value_label)
   return
 
- name_label.text = _humanize_card_name(_get_card_name(card))
+ name_label.text = _get_card_display_name(card)
  type_label.text = _humanize_card_name(_get_card_family(card))
  value_label.text = str(_get_card_runtime_value(card))
 
@@ -861,7 +929,7 @@ func _clear_slot_text(name_label: Label, type_label: Label, value_label: Label) 
 
 
 func _get_card_runtime_value(card) -> int:
- if card is CardRuntimeState:
+ if _is_runtime_card(card):
   return card.current_value
 
  if card is Dictionary:
@@ -873,7 +941,7 @@ func _get_card_runtime_value(card) -> int:
 
 
 func _get_card_display_text(card) -> String:
-    if card is CardRuntimeState:
+    if _is_runtime_card(card):
         return "%s | %s | value: %d | zone: %s" % [
             card.card_id,
             card.get_family(),
@@ -965,7 +1033,7 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
 
     var source := String(data.get("source", "")).strip_edges()
     var family := String(data.get("card_family", "")).strip_edges()
-    var player_is_stunned := match_state.player_state.is_stunned()
+    var player_is_stunned = match_state.player_state.is_stunned()
 
     if source == "board":
         if target_slot == "left_hand":
@@ -1053,7 +1121,7 @@ func handle_slot_to_slot_drop(source_slot: String, target_slot: String) -> void:
 
     if moved:
         if target_slot == "discard":
-            _play_sfx(DISCARD_SFX)
+            _play_sfx(_load_common_sfx(DISCARD_SFX_PATH))
         elif target_slot == "backpack":
             _play_loot_drop_sfx(moved_card, "backpack")
         elif target_slot in ["left_hand", "right_hand"]:
@@ -1108,21 +1176,21 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
     if is_left_hand:
         if match_state.player_state.left_hand_exhausted or match_state.player_state.left_hand_card != null:
             match_state.player_state.backpack_cards.insert(0, card)
-            if card is CardRuntimeState:
+            if _is_runtime_card(card):
                 card.set_zone("backpack")
             elif card is Dictionary:
                 card["zone"] = "backpack"
             return false
         if family == "coin":
             match_state.player_state.add_temporary_gold(_get_card_runtime_value(card))
-            _play_sfx(GAIN_COINS_SFX)
+            _play_sfx(_load_common_sfx(GAIN_COINS_SFX_PATH))
             _mark_runtime_card_resolved(card)
             _mark_runtime_card_exhausted(card)
             _mark_runtime_card_destroyed(card)
             match_state.player_state.exhaust_left_hand()
             return true
         if family == "potion":
-            _play_sfx(DRINK_POTION_SFX)
+            _play_sfx(_load_common_sfx(DRINK_POTION_SFX_PATH))
             match_state.player_state.heal(_get_card_runtime_value(card))
             _mark_runtime_card_resolved(card)
             _mark_runtime_card_exhausted(card)
@@ -1132,21 +1200,21 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
     else:
         if match_state.player_state.right_hand_exhausted or match_state.player_state.right_hand_card != null:
             match_state.player_state.backpack_cards.insert(0, card)
-            if card is CardRuntimeState:
+            if _is_runtime_card(card):
                 card.set_zone("backpack")
             elif card is Dictionary:
                 card["zone"] = "backpack"
             return false
         if family == "coin":
             match_state.player_state.add_temporary_gold(_get_card_runtime_value(card))
-            _play_sfx(GAIN_COINS_SFX)
+            _play_sfx(_load_common_sfx(GAIN_COINS_SFX_PATH))
             _mark_runtime_card_resolved(card)
             _mark_runtime_card_exhausted(card)
             _mark_runtime_card_destroyed(card)
             match_state.player_state.exhaust_right_hand()
             return true
         if family == "potion":
-            _play_sfx(DRINK_POTION_SFX)
+            _play_sfx(_load_common_sfx(DRINK_POTION_SFX_PATH))
             match_state.player_state.heal(_get_card_runtime_value(card))
             _mark_runtime_card_resolved(card)
             _mark_runtime_card_exhausted(card)
@@ -1162,7 +1230,7 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
 
     if not success:
         match_state.player_state.backpack_cards.insert(0, card)
-        if card is CardRuntimeState:
+        if _is_runtime_card(card):
             card.set_zone("backpack")
         elif card is Dictionary:
             card["zone"] = "backpack"
@@ -1172,21 +1240,21 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
 
 
 func _mark_runtime_card_resolved(card) -> void:
-    if card is CardRuntimeState:
+    if _is_runtime_card(card):
         card.mark_resolved()
     elif card is Dictionary:
         card["is_resolved"] = true
 
 
 func _mark_runtime_card_exhausted(card) -> void:
-    if card is CardRuntimeState:
+    if _is_runtime_card(card):
         card.mark_exhausted()
     elif card is Dictionary:
         card["is_exhausted"] = true
 
 
 func _mark_runtime_card_destroyed(card) -> void:
-    if card is CardRuntimeState:
+    if _is_runtime_card(card):
         card.mark_destroyed()
     elif card is Dictionary:
         card["is_destroyed"] = true
@@ -1208,13 +1276,13 @@ func _move_hand_to_backpack(is_left_hand: bool) -> bool:
     if not match_state.player_state.add_to_backpack(card):
         if is_left_hand:
             match_state.player_state.left_hand_card = card
-            if card is CardRuntimeState:
+            if _is_runtime_card(card):
                 card.set_zone("left_hand")
             elif card is Dictionary:
                 card["zone"] = "left_hand"
         else:
             match_state.player_state.right_hand_card = card
-            if card is CardRuntimeState:
+            if _is_runtime_card(card):
                 card.set_zone("right_hand")
             elif card is Dictionary:
                 card["zone"] = "right_hand"
@@ -1225,15 +1293,15 @@ func _move_hand_to_backpack(is_left_hand: bool) -> bool:
 
 func _handle_monster_to_shield(board_index: int, is_left_hand: bool) -> void:
     var shield_before = get_slot_card("left_hand" if is_left_hand else "right_hand")
-    var shield_before_value := _get_card_runtime_value(shield_before)
+    var shield_before_value = _get_card_runtime_value(shield_before)
     var monster_before = null
     var active_cards = match_state.board_state.get_active_cards()
     if board_index >= 0 and board_index < active_cards.size():
         monster_before = active_cards[board_index]
-    var monster_value := _get_card_runtime_value(monster_before)
-    var health_before := match_state.player_state.current_health
+    var monster_value = _get_card_runtime_value(monster_before)
+    var health_before = match_state.player_state.current_health
 
-    var success := false
+    var success = false
     if is_left_hand:
         success = combat_controller.resolve_monster_into_left_hand_shield(board_index)
     else:
@@ -1247,9 +1315,9 @@ func _handle_monster_to_shield(board_index: int, is_left_hand: bool) -> void:
     await _animate_board_card_resolution(board_index)
 
     var shield_after = get_slot_card("left_hand" if is_left_hand else "right_hand")
-    var damage_taken := health_before - match_state.player_state.current_health
-    _play_sfx(DROP_CARD_SFX)
-    _play_sfx(SHIELD_DEFEND_SFX)
+    var damage_taken = health_before - match_state.player_state.current_health
+    _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
+    _play_sfx(_load_common_sfx(SHIELD_DEFEND_SFX_PATH))
     if shield_after != null:
         set_status("Shield blocked %d and remains at %d." % [monster_value, _get_card_runtime_value(shield_after)])
     elif damage_taken > 0:
@@ -1267,13 +1335,13 @@ func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
     if restart_pending:
         return
 
-    var before_count := match_state.board_state.active_count()
+    var before_count = match_state.board_state.active_count()
     var before_value := -1
     var before_cards = match_state.board_state.get_active_cards()
     if board_index >= 0 and board_index < before_cards.size():
         before_value = _get_card_runtime_value(before_cards[board_index])
 
-    var success := false
+    var success = false
     if source_hand == "left_hand":
         success = combat_controller.use_left_hand_weapon_on_monster(board_index)
     elif source_hand == "right_hand":
@@ -1284,9 +1352,9 @@ func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
         _refresh_ui()
         return
 
-    var after_count := match_state.board_state.active_count()
-    _play_sfx(DROP_CARD_SFX)
-    _play_sfx(SWORD_SWING_SFX)
+    var after_count = match_state.board_state.active_count()
+    _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
+    _play_sfx(_load_common_sfx(SWORD_SWING_SFX_PATH))
     if after_count < before_count:
         _show_board_card_damage_slash(board_index)
         await _animate_board_card_resolution(board_index)
@@ -1306,9 +1374,9 @@ func handle_weapon_drop_on_boss(source_hand: String) -> void:
     if restart_pending:
         return
 
-    var before_health := match_state.boss_state.current_health
-    var player_health_before := match_state.player_state.current_health
-    var success := false
+    var before_health = match_state.boss_state.current_health
+    var player_health_before = match_state.player_state.current_health
+    var success = false
     if source_hand == "left_hand":
         success = combat_controller.use_left_hand_weapon_on_boss()
     elif source_hand == "right_hand":
@@ -1319,12 +1387,12 @@ func handle_weapon_drop_on_boss(source_hand: String) -> void:
         _refresh_ui()
         return
 
-    var after_health := match_state.boss_state.current_health
-    var player_health_after := match_state.player_state.current_health
+    var after_health = match_state.boss_state.current_health
+    var player_health_after = match_state.player_state.current_health
     var retaliation_damage: int = maxi(player_health_before - player_health_after, 0)
-    _play_sfx(DROP_CARD_SFX)
-    _play_sfx(SWORD_SWING_SFX)
-    _play_sfx(GRAVEBOUND_WARDEN_HURT_SFX)
+    _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
+    _play_sfx(_load_common_sfx(SWORD_SWING_SFX_PATH))
+    _play_sfx(_load_common_sfx(GRAVEBOUND_WARDEN_HURT_SFX_PATH))
     if after_health <= 0:
         _show_boss_damage_slash()
         if retaliation_damage > 0:
@@ -1535,7 +1603,7 @@ func _queue_restart_if_finished() -> void:
     if outcome_controller == null or match_state == null:
         return
 
-    var outcome := outcome_controller.check_outcome(match_state)
+    var outcome = outcome_controller.check_outcome(match_state)
     if outcome not in ["failure", "victory", "survival"]:
         return
 
@@ -1543,10 +1611,10 @@ func _queue_restart_if_finished() -> void:
     call_deferred("_show_battle_end_modal", outcome)
 
 func _show_battle_end_modal(outcome: String) -> void:
-    var xp_gained := _apply_battle_xp_rewards(outcome)
-    var xp_base := match_state.battle_xp_earned
-    var xp_multiplier := match_state.battle_xp_multiplier
-    var gold_delta := match_state.player_state.temporary_gold
+    var xp_gained = _apply_battle_xp_rewards(outcome)
+    var xp_base = match_state.battle_xp_earned
+    var xp_multiplier = match_state.battle_xp_multiplier
+    var gold_delta = match_state.player_state.temporary_gold
     var gold_text := "Gold Gained: %d" % gold_delta
     var xp_text := "XP Gained: %d" % xp_gained
     if xp_multiplier > 1:
@@ -1597,7 +1665,7 @@ func _apply_battle_xp_rewards(outcome: String) -> int:
     if match_state == null:
         return 0
 
-    var xp_gained := match_state.finalize_battle_xp(outcome)
+    var xp_gained = match_state.finalize_battle_xp(outcome)
     if match_state.battle_xp_persisted:
         return xp_gained
 
@@ -1605,9 +1673,9 @@ func _apply_battle_xp_rewards(outcome: String) -> int:
         return xp_gained
 
     var starting_total_xp := int(player_profile_data.get("total_xp", 0))
-    var updated_total_xp := starting_total_xp + xp_gained
+    var updated_total_xp = starting_total_xp + xp_gained
     player_profile_data["total_xp"] = updated_total_xp
-    player_profile_data["player_level"] = Progression.calculate_level_from_total_xp(updated_total_xp)
+    player_profile_data["player_level"] = PROGRESSION_SCRIPT.calculate_level_from_total_xp(updated_total_xp)
     _save_player_profile()
     match_state.battle_xp_persisted = true
     return xp_gained
@@ -1664,7 +1732,7 @@ func _on_take_first_monster_pressed() -> void:
  for i in range(board_cards.size()):
   var card = board_cards[i]
   if _get_card_family(card) == "monster":
-   var success := combat_controller.resolve_enemy_to_player(i)
+   var success = combat_controller.resolve_enemy_to_player(i)
    if success:
     await _animate_board_card_resolution(i)
     set_status("First monster resolved against player.")
@@ -1685,7 +1753,7 @@ func _on_move_first_to_left_hand_pressed() -> void:
  for i in range(board_cards.size()):
   var card = board_cards[i]
   if _is_player_usable_card(card):
-   var success := combat_controller.move_player_card_to_left_hand(i)
+   var success = combat_controller.move_player_card_to_left_hand(i)
    if success:
     await _animate_board_card_resolution(i)
     set_status("Moved first usable card to left hand.")
@@ -1707,7 +1775,7 @@ func _on_move_first_to_backpack_pressed() -> void:
  for i in range(board_cards.size()):
   var card = board_cards[i]
   if _is_player_usable_card(card):
-   var success := combat_controller.move_player_card_to_backpack(i)
+   var success = combat_controller.move_player_card_to_backpack(i)
    if success:
     await _animate_board_card_resolution(i)
     set_status("Moved first usable card to backpack.")
@@ -1720,7 +1788,7 @@ func _on_move_first_to_backpack_pressed() -> void:
 
 
 func _get_card_family(card) -> String:
-    if card is CardRuntimeState:
+    if _is_runtime_card(card):
         return card.get_family()
 
     if card is Dictionary:
@@ -1750,7 +1818,7 @@ func handle_drop_to_left_hand(board_index: int) -> void:
  var before_left_hand = match_state.player_state.left_hand_card
  print("before move, left hand: ", before_left_hand)
 
- var success := combat_controller.move_player_card_to_left_hand(board_index)
+ var success = combat_controller.move_player_card_to_left_hand(board_index)
 
  var after_left_hand = match_state.player_state.left_hand_card
  print("after move, left hand: ", after_left_hand)
@@ -1758,9 +1826,9 @@ func handle_drop_to_left_hand(board_index: int) -> void:
  if success:
   _play_loot_drop_sfx(board_card, "left_hand")
   if board_card != null and _get_card_family(board_card) == "coin":
-   _play_sfx(GAIN_COINS_SFX)
+   _play_sfx(_load_common_sfx(GAIN_COINS_SFX_PATH))
   elif board_card != null and _get_card_family(board_card) == "potion":
-   _play_sfx(DRINK_POTION_SFX)
+   _play_sfx(_load_common_sfx(DRINK_POTION_SFX_PATH))
   await _animate_board_card_resolution(board_index)
   set_status("Dropped card into left hand.")
  else:
@@ -1784,7 +1852,7 @@ func handle_drop_to_right_hand(board_index: int) -> void:
  var before_right_hand = match_state.player_state.right_hand_card
  print("before move, right hand: ", before_right_hand)
 
- var success := combat_controller.move_player_card_to_right_hand(board_index)
+ var success = combat_controller.move_player_card_to_right_hand(board_index)
 
  var after_right_hand = match_state.player_state.right_hand_card
  print("after move, right hand: ", after_right_hand)
@@ -1792,9 +1860,9 @@ func handle_drop_to_right_hand(board_index: int) -> void:
  if success:
   _play_loot_drop_sfx(board_card, "right_hand")
   if board_card != null and _get_card_family(board_card) == "coin":
-   _play_sfx(GAIN_COINS_SFX)
+   _play_sfx(_load_common_sfx(GAIN_COINS_SFX_PATH))
   elif board_card != null and _get_card_family(board_card) == "potion":
-   _play_sfx(DRINK_POTION_SFX)
+   _play_sfx(_load_common_sfx(DRINK_POTION_SFX_PATH))
   await _animate_board_card_resolution(board_index)
   set_status("Dropped card into right hand.")
  else:
@@ -1816,7 +1884,7 @@ func handle_drop_to_backpack(board_index: int) -> void:
  var before_backpack = match_state.player_state.backpack_cards.size()
  print("before move, backpack size: ", before_backpack)
 
- var success := combat_controller.move_player_card_to_backpack(board_index)
+ var success = combat_controller.move_player_card_to_backpack(board_index)
 
  var after_backpack = match_state.player_state.backpack_cards.size()
  print("after move, backpack size: ", after_backpack)
@@ -1844,13 +1912,13 @@ func handle_drop_to_player_avatar(board_index: int) -> void:
  var before_health = match_state.player_state.current_health
  print("before resolve, player health: ", before_health)
 
- var success := combat_controller.resolve_enemy_to_player(board_index)
+ var success = combat_controller.resolve_enemy_to_player(board_index)
 
  var after_health = match_state.player_state.current_health
  print("after resolve, player health: ", after_health)
 
  if success:
-  _play_sfx(DROP_CARD_SFX)
+  _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
   _play_monster_attack_sfx(board_card)
   await _animate_board_card_resolution(board_index)
   if after_health < before_health:
@@ -1873,11 +1941,11 @@ func handle_drop_to_discard(board_index: int) -> void:
 
  print("handle_drop_to_discard called with index: ", board_index)
 
- var success := combat_controller.trash_player_card_from_board(board_index)
+ var success = combat_controller.trash_player_card_from_board(board_index)
 
  if success:
-  _play_sfx(DROP_CARD_SFX)
-  _play_sfx(DISCARD_SFX)
+  _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
+  _play_sfx(_load_common_sfx(DISCARD_SFX_PATH))
   await _animate_board_card_resolution(board_index)
   set_status("Discarded card without benefit.")
  else:
@@ -1887,10 +1955,14 @@ func handle_drop_to_discard(board_index: int) -> void:
 
 
 func _get_card_unique_key(card) -> String:
- if card is CardRuntimeState:
+ if _is_runtime_card(card):
   return card.instance_id
 
  if card is Dictionary:
   return str(card.get("instance_id", card.get("id", "")))
 
  return ""
+
+
+func _is_runtime_card(value) -> bool:
+    return value != null and value.get_script() == CARD_RUNTIME_STATE_SCRIPT

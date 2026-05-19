@@ -1,17 +1,8 @@
 extends PanelContainer
 
-const CARD_ART_PATHS := {
-	"crypt_hound": "res://art/cards/Crypt Hound.png",
-	"grave_thrall": "res://art/cards/Grave Thrall.png",
-	"large_health_potion": "res://art/cards/Large Healing Potion.png",
-	"gold_10": "res://art/cards/Coins.png",
-	"risen_bones": "res://art/cards/Risen Bones.png",
-	"sepulcher_guard": "res://art/cards/Sepulcher Guard.png",
-	"short_sword": "res://art/cards/Short Sword.png",
-	"small_chest": "res://art/cards/Small Chest.png",
-	"small_health_potion": "res://art/cards/Small Healing Potion.png",
-	"small_shield": "res://art/cards/Small Shield.png"
-}
+const CARD_RUNTIME_STATE_SCRIPT = preload("res://cards/CardRuntimeState.gd")
+
+static var art_cache: Dictionary = {}
 
 var card_data
 var board_index: int = -1
@@ -28,11 +19,16 @@ func setup(card, index: int) -> void:
 
 	_apply_visual_theme()
 	_apply_card_art()
+	var meta := _get_card_meta()
 
-	if card_data is CardRuntimeState:
-		name_label.text = _humanize_token(card_data.card_id)
+	if _is_runtime_card(card_data):
+		name_label.text = _get_card_display_name(meta, _humanize_token(card_data.card_id))
 		family_label.text = _humanize_token(str(card_data.get_family()))
 		value_label.text = str(card_data.current_value)
+	elif card_data is Dictionary:
+		name_label.text = _get_card_display_name(meta, "Unknown")
+		family_label.text = _humanize_token(str(card_data.get("family", "")))
+		value_label.text = str(card_data.get("current_value", card_data.get("base_value", "?")))
 	else:
 		name_label.text = "Unknown"
 		family_label.text = "Unknown"
@@ -94,18 +90,27 @@ func _drop_data(_at_position, data) -> void:
 
 
 func _apply_card_art() -> void:
-	var card_id := _get_card_id()
-	var art_path = CARD_ART_PATHS.get(card_id, "")
+	var art_path := String(_get_card_meta().get("art_ref", "")).strip_edges()
 
 	if art_path == "":
 		art_rect.texture = null
 		return
 
-	art_rect.texture = load(art_path)
+	if art_cache.has(art_path):
+		art_rect.texture = art_cache[art_path]
+		return
+
+	var texture = load(art_path)
+	if texture is Texture2D:
+		art_cache[art_path] = texture
+		art_rect.texture = texture
+		return
+
+	art_rect.texture = null
 
 
 func _get_card_id() -> String:
-	if card_data is CardRuntimeState:
+	if _is_runtime_card(card_data):
 		return String(card_data.card_id)
 
 	if card_data is Dictionary:
@@ -115,7 +120,7 @@ func _get_card_id() -> String:
 
 
 func _get_card_family() -> String:
-	if card_data is CardRuntimeState:
+	if _is_runtime_card(card_data):
 		return String(card_data.get_family())
 
 	if card_data is Dictionary:
@@ -209,13 +214,24 @@ func _build_tooltip_text() -> String:
 
 
 func _get_card_meta() -> Dictionary:
-	if card_data is CardRuntimeState:
+	if _is_runtime_card(card_data):
 		return card_data.card_data
 
 	if card_data is Dictionary:
 		return card_data
 
 	return {}
+
+
+func _get_card_display_name(meta: Dictionary, fallback: String) -> String:
+	var display_name := String(meta.get("name", "")).strip_edges()
+	if display_name != "":
+		return display_name
+	return fallback
+
+
+func _is_runtime_card(value) -> bool:
+	return value != null and value.get_script() == CARD_RUNTIME_STATE_SCRIPT
 
 
 func _format_specials(meta: Dictionary) -> String:

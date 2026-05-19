@@ -5,7 +5,7 @@
   "theme_tags": ["ossara", "undead", "baseline", "prototype"],
   "entries": [
 	{ "card_id": "risen_bones", "quantity": 15, "role": "weak_basic", "include_in_shuffle": true },
-	{ "card_id": "grave_thrall", "quantity": 7, "role": "standard_pressure", "include_in_shuffle": true },
+	{ "card_id": "banshee", "quantity": 7, "role": "standard_pressure", "include_in_shuffle": true },
 	{ "card_id": "crypt_hound", "quantity": 6, "role": "aggressive_medium", "include_in_shuffle": true },
 	{ "card_id": "sepulcher_guard", "quantity": 2, "role": "elite", "include_in_shuffle": true },
 	{ "card_id": "gold_10", "quantity": 5, "role": "reward", "include_in_shuffle": true },

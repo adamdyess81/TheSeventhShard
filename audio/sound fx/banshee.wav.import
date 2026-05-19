@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://dl3g4yfaciypp"
-path="res://.godot/imported/grave_thrall.wav-d6c316bbd62646dc6d766d581ddb36e2.sample"
+path="res://.godot/imported/banshee.wav-b0252d861d64f42d039bf476f9a6d4b1.sample"
 
 [deps]
 
-source_file="res://audio/sound fx/grave_thrall.wav"
-dest_files=["res://.godot/imported/grave_thrall.wav-d6c316bbd62646dc6d766d581ddb36e2.sample"]
+source_file="res://audio/sound fx/banshee.wav"
+dest_files=["res://.godot/imported/banshee.wav-b0252d861d64f42d039bf476f9a6d4b1.sample"]
 
 [params]
 

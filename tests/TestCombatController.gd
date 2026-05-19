@@ -3,6 +3,7 @@ extends Node
 const DEFAULT_PLAYER_STARTING_HEALTH := 15
 const DEFAULT_PLAYER_MAX_DECK_SIZE := 15
 const BOSS_STARTING_HEALTH := 12
+const ACTIVE_BOARD_CAP := 4
 const STARTING_BACKPACK_CAPACITY := 1
 const PLAYER_PROFILE_PATH := "res://profiles/player_main.json"
 
@@ -34,7 +35,7 @@ func _ready() -> void:
         loader.get_card("gold_10").duplicate(true)
     ])
 
-    controller_board_state.get_active_cards().append(loader.get_card("grave_thrall").duplicate(true))
+    controller_board_state.get_active_cards().append(loader.get_card("banshee").duplicate(true))
     controller_board_state.get_active_cards().append(loader.get_card("short_sword").duplicate(true))
 
     var controller_match_state := MatchCombatState.new()
@@ -468,7 +469,7 @@ func _ready() -> void:
     print("\n=== BOSS RETALIATION TEST ===")
 
     var retaliation_player_state := PlayerCombatState.new()
-    retaliation_player_state.setup(PLAYER_STARTING_HEALTH, 1, 20)
+    retaliation_player_state.setup(DEFAULT_PLAYER_STARTING_HEALTH, 1, 20)
 
     var retaliation_boss_state := BossCombatState.new()
     retaliation_boss_state.setup(
@@ -602,7 +603,7 @@ func _ready() -> void:
     var gap_board_state := BoardState.new()
     gap_board_state.setup(4)
     gap_board_state.get_active_cards()[0] = loader.get_card("crypt_hound").duplicate(true)
-    gap_board_state.get_active_cards()[1] = loader.get_card("grave_thrall").duplicate(true)
+    gap_board_state.get_active_cards()[1] = loader.get_card("banshee").duplicate(true)
     gap_board_state.get_active_cards()[2] = loader.get_card("risen_bones").duplicate(true)
     gap_board_state.get_active_cards()[3] = loader.get_card("sepulcher_guard").duplicate(true)
 
@@ -623,6 +624,10 @@ func _print_card_list(cards: Array) -> void:
         return
 
     for card in cards:
+        if card == null:
+            print("- [empty slot]")
+            continue
+
         if card is CardRuntimeState:
             print("- %s | family: %s | value: %s | zone: %s" % [
                 card.card_id,
@@ -642,3 +647,11 @@ func _print_card_list(cards: Array) -> void:
             print("- %s | family: %s | value: %s" % [card_id, family, value_text])
         else:
             print("- [unknown card type]")
+
+
+func _card_id(card) -> String:
+    if card is CardRuntimeState:
+        return card.card_id
+    if card is Dictionary:
+        return str(card.get("id", "[none]"))
+    return "[none]"
