@@ -2026,4 +2026,4 @@ func _get_card_unique_key(card) -> String:
 
 
 func _is_runtime_card(value) -> bool:
-    return value != null and value.get_script() == CARD_RUNTIME_STATE_SCRIPT
+    return value is Object and value.get_script() == CARD_RUNTIME_STATE_SCRIPT
