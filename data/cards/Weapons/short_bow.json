@@ -5,7 +5,7 @@
   "subtype": "ranged",
   "rarity": "common",
   "base_value": 2,
-  "description": "Deal 2 ranged damage. Split: spend this value 1 point at a time across legal targets of your choice.",
+  "description": "Deals ranged damage. Split: spend this value 1 point at a time across legal targets of your choice.",
   "tags": ["weapon", "ranged", "split", "two hands"],
   "keywords": [],
   "target_rules": ["enemy_card", "hand_slot"],
@@ -18,6 +18,6 @@
   "can_be_used_from_backpack": false,
   "requires_hand_to_use": true,
   "occupies_two_hands": true,
-  "art_ref": null,
+  "art_ref": "res://art/cards/Short Bow.png",
   "icon_ref": null
 }

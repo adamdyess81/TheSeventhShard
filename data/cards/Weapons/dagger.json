@@ -5,7 +5,7 @@
   "subtype": "melee",
   "rarity": "common",
   "base_value": 1,
-  "description": "Deal 1 melee damage. Second Strike: return this card to the hand it came from and do not exhaust that hand.",
+  "description": "Deals fast melee damage. Second Strike: return this card to the hand it came from and do not exhaust that hand.",
   "tags": ["weapon", "melee", "tempo"],
   "keywords": [],
   "target_rules": ["enemy_card", "hand_slot"],
@@ -18,6 +18,6 @@
   "can_be_used_from_backpack": false,
   "requires_hand_to_use": true,
   "occupies_two_hands": false,
-  "art_ref": null,
+  "art_ref": "res://art/cards/Dagger.png",
   "icon_ref": null
 }

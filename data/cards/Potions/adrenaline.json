@@ -1,5 +1,5 @@
 {
-  "id": "adrenaline",
+  "id": "adrenaline_potion",
   "name": "Adrenaline",
   "family": "potion",
   "subtype": "battle_buff",
@@ -21,6 +21,6 @@
   "can_be_used_from_backpack": false,
   "requires_hand_to_use": true,
   "occupies_two_hands": false,
-  "art_ref": null,
+  "art_ref": "res://art/cards/Adrenaline Potion.png",
   "icon_ref": null
 }

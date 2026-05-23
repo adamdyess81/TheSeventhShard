@@ -2,7 +2,7 @@
   "id": "defense_potion",
   "name": "Defense",
   "family": "potion",
-  "subtype": "buff",
+  "subtype": "battle_buff",
   "rarity": "common",
   "base_value": 1,
   "description": "Auto-resolve in hand. During the next round, your shields gain +1 value.",
@@ -21,6 +21,6 @@
   "can_be_used_from_backpack": false,
   "requires_hand_to_use": true,
   "occupies_two_hands": false,
-  "art_ref": null,
+  "art_ref": "res://art/cards/Defense Potion.png",
   "icon_ref": null
 }
