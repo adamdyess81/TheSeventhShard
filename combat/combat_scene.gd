@@ -11,6 +11,7 @@ const MATCH_COMBAT_STATE_SCRIPT = preload("res://combat/MatchCombatState.gd")
 const RESOLUTION_CONTROLLER_SCRIPT = preload("res://combat/ResolutionController.gd")
 const OUTCOME_CONTROLLER_SCRIPT = preload("res://combat/OutcomeController.gd")
 const COMBAT_CONTROLLER_SCRIPT = preload("res://combat/CombatController.gd")
+const RUN_CONTEXT_SCRIPT = preload("res://core/RunContext.gd")
 
 const DEFAULT_PLAYER_STARTING_HEALTH := 15
 const DEFAULT_PLAYER_MAX_DECK_SIZE := 15
@@ -381,14 +382,17 @@ func _build_battle_match_state() -> void:
     var resolved_player_cards := data_loader.resolve_deck_cards(player_deck_data)
 
     var match_config := data_loader.load_json(DEFAULT_MATCH_PATH)
-    var boss_id := str(match_config.get("boss_id", DEFAULT_BOSS_ID)).strip_edges()
+    var selected_battle: Dictionary = RUN_CONTEXT_SCRIPT.get_battle_selection()
+    var boss_id := str(selected_battle.get("boss_id", match_config.get("boss_id", DEFAULT_BOSS_ID))).strip_edges()
     var boss_data := _load_boss_data(boss_id)
-    var monster_deck_id := str(
-        boss_data.get(
-            "monster_deck_id",
-            match_config.get("monster_deck_id", DEFAULT_MONSTER_DECK_ID)
-        )
-    ).strip_edges()
+    var monster_deck_id := str(selected_battle.get("monster_deck_id", "")).strip_edges()
+    if monster_deck_id == "":
+        monster_deck_id = str(
+            boss_data.get(
+                "monster_deck_id",
+                match_config.get("monster_deck_id", DEFAULT_MONSTER_DECK_ID)
+            )
+        ).strip_edges()
     var monster_deck := _load_monster_deck(monster_deck_id)
     var resolved_monster_cards := data_loader.resolve_monster_deck(monster_deck)
 

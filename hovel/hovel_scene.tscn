@@ -144,6 +144,22 @@ layout_mode = 2
 text = "Base Camp"
 horizontal_alignment = 1
 
+[node name="OpponentSection" type="VBoxContainer" parent="Root/Content/ActionPanel/ActionContent" unique_id=121100331]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="OpponentLabel" type="Label" parent="Root/Content/ActionPanel/ActionContent/OpponentSection" unique_id=161382991]
+layout_mode = 2
+text = "Choose Opponent"
+
+[node name="OpponentSelector" type="OptionButton" parent="Root/Content/ActionPanel/ActionContent/OpponentSection" unique_id=177732310]
+layout_mode = 2
+
+[node name="OpponentDetailsLabel" type="Label" parent="Root/Content/ActionPanel/ActionContent/OpponentSection" unique_id=203100431]
+layout_mode = 2
+text = "No opponent selected."
+autowrap_mode = 3
+
 [node name="ActionButtons" type="VBoxContainer" parent="Root/Content/ActionPanel/ActionContent" unique_id=1098993176]
 layout_mode = 2
 theme_override_constants/separation = 12

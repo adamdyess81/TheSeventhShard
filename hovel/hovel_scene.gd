@@ -5,9 +5,12 @@ const COMBAT_SCENE_PATH := "res://combat/combat_scene.tscn"
 const CARD_INVENTORY_SCENE_PATH := "res://inventory/card_inventory_scene.tscn"
 const DEFAULT_STARTING_HEALTH := 15
 const DEFAULT_MAX_DECK_SIZE := 15
+const BOSS_DIRECTORY_PATH := "res://data/bosses"
+const DECK_DIRECTORY_PATH := "res://data/decks"
 const GAME_DATA_LOADER_SCRIPT = preload("res://core/GameDataLoader.gd")
 const PROGRESSION_SCRIPT = preload("res://core/Progression.gd")
 const PROFILE_DECK_SCRIPT = preload("res://core/ProfileDeck.gd")
+const RUN_CONTEXT_SCRIPT = preload("res://core/RunContext.gd")
 const MINIMUM_DECK_SIZE := 15
 
 @onready var health_value = $Root/Content/StatsPanel/StatsContent/StatsRows/HealthRow/Value
@@ -15,19 +18,25 @@ const MINIMUM_DECK_SIZE := 15
 @onready var xp_value = $Root/Content/StatsPanel/StatsContent/StatsRows/ExperienceRow/Value
 @onready var level_value = $Root/Content/StatsPanel/StatsContent/StatsRows/LevelRow/Value
 @onready var deck_size_value = $Root/Content/StatsPanel/StatsContent/StatsRows/DeckSizeRow/Value
+@onready var opponent_selector = $Root/Content/ActionPanel/ActionContent/OpponentSection/OpponentSelector
+@onready var opponent_details_label = $Root/Content/ActionPanel/ActionContent/OpponentSection/OpponentDetailsLabel
 @onready var status_label = $Root/Content/ActionPanel/ActionContent/StatusLabel
 @onready var inventory_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/CardInventoryButton
 @onready var go_fight_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/GoFightButton
 @onready var exit_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/ExitGameButton
 
 var player_profile_data: Dictionary = {}
+var available_encounters: Array[Dictionary] = []
 
 
 func _ready() -> void:
 	_load_player_profile()
+	_load_available_encounters()
 	_refresh_stats()
+	_update_selected_encounter_details()
 	status_label.text = "The Hovel stands ready."
 	inventory_button.pressed.connect(_on_card_inventory_pressed)
+	opponent_selector.item_selected.connect(_on_opponent_selected)
 	go_fight_button.pressed.connect(_on_go_fight_pressed)
 	exit_button.pressed.connect(_on_exit_game_pressed)
 
@@ -56,6 +65,113 @@ func _refresh_stats() -> void:
 	]
 	level_value.text = str(int(progress.get("level", 1)))
 	deck_size_value.text = str(max_deck_size)
+
+
+func _load_available_encounters() -> void:
+	available_encounters.clear()
+	opponent_selector.clear()
+
+	var dir := DirAccess.open(DECK_DIRECTORY_PATH)
+	if dir == null:
+		status_label.text = "Could not open deck directory."
+		return
+
+	var loader = GAME_DATA_LOADER_SCRIPT.new()
+	var deck_paths: Array[String] = []
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with("_deck.json"):
+			deck_paths.append("%s/%s" % [DECK_DIRECTORY_PATH, file_name])
+		file_name = dir.get_next()
+	dir.list_dir_end()
+	deck_paths.sort()
+
+	for deck_path in deck_paths:
+		var deck_data := loader.load_deck(deck_path)
+		if deck_data.is_empty():
+			continue
+
+		var boss_data_path := str(deck_data.get("boss_data_path", "")).strip_edges()
+		if boss_data_path == "":
+			continue
+
+		var boss_data := loader.load_json(boss_data_path)
+		if boss_data.is_empty():
+			continue
+
+		available_encounters.append({
+			"boss_id": str(boss_data.get("id", "")).strip_edges(),
+			"boss_name": str(boss_data.get("name", "Unknown Opponent")).strip_edges(),
+			"boss_health": int(boss_data.get("base_health", DEFAULT_STARTING_HEALTH)),
+			"deck_id": str(deck_data.get("id", "")).strip_edges(),
+			"deck_name": str(deck_data.get("name", "Unknown Deck")).strip_edges(),
+			"card_count": _count_deck_entries(deck_data)
+		})
+
+	available_encounters.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return str(a.get("boss_name", "")) < str(b.get("boss_name", ""))
+	)
+
+	for encounter in available_encounters:
+		opponent_selector.add_item(str(encounter.get("boss_name", "Unknown Opponent")))
+
+	if available_encounters.is_empty():
+		opponent_details_label.text = "No boss decks found."
+		go_fight_button.disabled = true
+		return
+
+	go_fight_button.disabled = false
+	var selected_index: int = _find_default_encounter_index()
+	opponent_selector.select(selected_index)
+
+
+func _count_deck_entries(deck_data: Dictionary) -> int:
+	var total := 0
+	var entries = deck_data.get("entries", [])
+	if entries is Array:
+		for entry in entries:
+			if entry is Dictionary:
+				total += int(entry.get("quantity", 0))
+	return total
+
+
+func _find_default_encounter_index() -> int:
+	var current_selection: Dictionary = RUN_CONTEXT_SCRIPT.get_battle_selection()
+	var selected_boss_id := str(current_selection.get("boss_id", "")).strip_edges()
+	var selected_deck_id := str(current_selection.get("monster_deck_id", "")).strip_edges()
+
+	for index in available_encounters.size():
+		var encounter := available_encounters[index]
+		if str(encounter.get("boss_id", "")) == selected_boss_id and str(encounter.get("deck_id", "")) == selected_deck_id:
+			return index
+
+	return 0
+
+
+func _update_selected_encounter_details() -> void:
+	var encounter := _get_selected_encounter()
+	if encounter.is_empty():
+		opponent_details_label.text = "No opponent selected."
+		return
+
+	opponent_details_label.text = "%s HP | %s cards in the encounter deck" % [
+		str(encounter.get("boss_health", 0)),
+		str(encounter.get("card_count", 0))
+	]
+
+
+func _get_selected_encounter() -> Dictionary:
+	var selected_index: int = opponent_selector.get_selected()
+	if selected_index < 0 or selected_index >= available_encounters.size():
+		return {}
+	return available_encounters[selected_index]
+
+
+func _on_opponent_selected(_index: int) -> void:
+	_update_selected_encounter_details()
+
+
 func _on_card_inventory_pressed() -> void:
 	get_tree().change_scene_to_file(CARD_INVENTORY_SCENE_PATH)
 
@@ -69,6 +185,15 @@ func _on_go_fight_pressed() -> void:
 		status_label.text = "Deck invalid. Open Card Inventory and build a deck between %d and %d cards." % [MINIMUM_DECK_SIZE, max_deck_size]
 		return
 
+	var encounter := _get_selected_encounter()
+	if encounter.is_empty():
+		status_label.text = "Choose an opponent before leaving the Hovel."
+		return
+
+	RUN_CONTEXT_SCRIPT.set_battle_selection(
+		str(encounter.get("boss_id", "")),
+		str(encounter.get("deck_id", ""))
+	)
 	get_tree().change_scene_to_file(COMBAT_SCENE_PATH)
 
 
