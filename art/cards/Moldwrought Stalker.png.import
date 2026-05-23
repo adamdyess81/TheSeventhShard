@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfhep67ypjxv8"
-path="res://.godot/imported/Ossaran Lich.png-87295a3e9f0c9c3a11b0ee759d8f3d8b.ctex"
+uid="uid://d26q5e860uy3m"
+path="res://.godot/imported/Moldwrought Stalker.png-83997cb4618a9c48f65a2d34adb99678.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/cards/Ossaran Lich.png"
-dest_files=["res://.godot/imported/Ossaran Lich.png-87295a3e9f0c9c3a11b0ee759d8f3d8b.ctex"]
+source_file="res://art/cards/Moldwrought Stalker.png"
+dest_files=["res://.godot/imported/Moldwrought Stalker.png-83997cb4618a9c48f65a2d34adb99678.ctex"]
 
 [params]
 

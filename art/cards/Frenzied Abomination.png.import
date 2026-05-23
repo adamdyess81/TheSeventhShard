@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfhep67ypjxv8"
-path="res://.godot/imported/Ossaran Lich.png-87295a3e9f0c9c3a11b0ee759d8f3d8b.ctex"
+uid="uid://1u2n0lcuult5"
+path="res://.godot/imported/Frenzied Abomination.png-02d92a4964198e3e76735d1a9fb5f544.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/cards/Ossaran Lich.png"
-dest_files=["res://.godot/imported/Ossaran Lich.png-87295a3e9f0c9c3a11b0ee759d8f3d8b.ctex"]
+source_file="res://art/cards/Frenzied Abomination.png"
+dest_files=["res://.godot/imported/Frenzied Abomination.png-02d92a4964198e3e76735d1a9fb5f544.ctex"]
 
 [params]
 

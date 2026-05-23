@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfhep67ypjxv8"
-path="res://.godot/imported/Ossaran Lich.png-87295a3e9f0c9c3a11b0ee759d8f3d8b.ctex"
+uid="uid://vinmom8iap6t"
+path="res://.godot/imported/Devourer.png-257d6175d7786042cd29a426b90c0694.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/cards/Ossaran Lich.png"
-dest_files=["res://.godot/imported/Ossaran Lich.png-87295a3e9f0c9c3a11b0ee759d8f3d8b.ctex"]
+source_file="res://art/cards/Devourer.png"
+dest_files=["res://.godot/imported/Devourer.png-257d6175d7786042cd29a426b90c0694.ctex"]
 
 [params]
 

@@ -21,6 +21,6 @@
   "can_be_used_from_backpack": false,
   "requires_hand_to_use": false,
   "occupies_two_hands": false,
-  "art_ref": null,
+  "art_ref": "res://art/cards/Frenzied Abomination.png",
   "icon_ref": null
 }

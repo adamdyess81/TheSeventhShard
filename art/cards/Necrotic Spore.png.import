@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfhep67ypjxv8"
-path="res://.godot/imported/Ossaran Lich.png-87295a3e9f0c9c3a11b0ee759d8f3d8b.ctex"
+uid="uid://3hjnbhe8jhjl"
+path="res://.godot/imported/Necrotic Spore.png-85edcfac0aa12e7bfba114216120abb2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/cards/Ossaran Lich.png"
-dest_files=["res://.godot/imported/Ossaran Lich.png-87295a3e9f0c9c3a11b0ee759d8f3d8b.ctex"]
+source_file="res://art/cards/Necrotic Spore.png"
+dest_files=["res://.godot/imported/Necrotic Spore.png-85edcfac0aa12e7bfba114216120abb2.ctex"]
 
 [params]
 

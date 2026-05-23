@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cfhep67ypjxv8"
-path="res://.godot/imported/Ossaran Lich.png-87295a3e9f0c9c3a11b0ee759d8f3d8b.ctex"
+uid="uid://cx43dgtwwmu11"
+path="res://.godot/imported/Flagellant Thrall.png-9713e3e192a7bc3edf05497f58894088.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/cards/Ossaran Lich.png"
-dest_files=["res://.godot/imported/Ossaran Lich.png-87295a3e9f0c9c3a11b0ee759d8f3d8b.ctex"]
+source_file="res://art/cards/Flagellant Thrall.png"
+dest_files=["res://.godot/imported/Flagellant Thrall.png-9713e3e192a7bc3edf05497f58894088.ctex"]
 
 [params]
 
