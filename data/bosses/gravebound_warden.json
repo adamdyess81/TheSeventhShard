@@ -14,6 +14,7 @@
   "global_rule_ids": [],
   "board_cap_modifier": 0,
   "unresolved_card_cap_modifier": 0,
-  "art_ref": null,
+  "art_ref": "res://art/cards/Gravebound Warden.png",
+  "monster_deck_id": "ossara_baseline_monster_deck",
   "notes": "Baseline Ossara boss. Whenever the player damages Gravebound Warden, he retaliates for 3 damage."
 }

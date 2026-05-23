@@ -4,7 +4,7 @@
   "branch_id": "ossara",
   "theme_tags": ["ossara", "undead", "baseline", "prototype"],
   "player_starting_health_override": null,
-  "boss_id": "gravebound_warden",
+  "boss_id": "ossaran_lich",
   "boss_starting_health_override": 12,
   "player_deck_id": "starter_knight_deck",
   "monster_deck_id": "ossara_baseline_monster_deck",

@@ -26,7 +26,6 @@ const RIGHT_HAND_PLACEHOLDER = preload("res://art/ui/RightHand Placement Card.pn
 const BACKPACK_PLACEHOLDER = preload("res://art/ui/Backpack Placement Card.png")
 const BACKGROUND_TEXTURE = preload("res://art/backgrounds/Ossara-Titled-Arena-blured.png")
 const CARD_BACK_TEXTURE = preload("res://art/ui/CardBack.png")
-const BOSS_CARD_TEXTURE = preload("res://art/cards/Gravebound Warden.png")
 const PLAYER_DAMAGE_SLASH_TEXTURE = preload("res://art/ui/DamageSlash50.png")
 const SWORD_DAMAGE_SLASH_TEXTURE = preload("res://art/ui/SwordDamageSlash.png")
 const BACKPACK_DROP_SFX_PATH := "res://audio/sound fx/backpack_drop.wav"
@@ -57,6 +56,12 @@ const INVALID_DROP_TINT = Color(1.0, 0.36, 0.36, 0.58)
 const PANEL_FILL = Color("130f0d")
 const PANEL_BORDER = Color("6a5542")
 const DISCARD_BORDER = Color("9d6b55")
+const DEFAULT_MATCH_PATH := "res://data/matches/ossara_baseline_match_01.json"
+const DEFAULT_BOSS_ID := "ossaran_lich"
+const DEFAULT_BOSS_NAME := "Ossaran Lich"
+const DEFAULT_MONSTER_DECK_ID := "ossara_baseline_monster_deck"
+const BOSS_DIRECTORY_PATH := "res://data/bosses"
+const DECK_DIRECTORY_PATH := "res://data/decks"
 @onready var player_health_label = $RootLayout/StageCenter/Stage/TopBar/PlayerHealthLabel
 @onready var boss_health_label = $RootLayout/StageCenter/Stage/TopBar/BossHealthLabel
 @onready var round_label = $RootLayout/StageCenter/Stage/TopBar/RoundLabel
@@ -126,6 +131,7 @@ var escape_was_pressed := false
 var root_layout_base_position := Vector2.ZERO
 var background_base_position := Vector2.ZERO
 var player_profile_data: Dictionary = {}
+var current_boss_texture: Texture2D = null
 var data_loader = GAME_DATA_LOADER_SCRIPT.new()
 var card_texture_cache: Dictionary = {}
 var card_sfx_cache: Dictionary = {}
@@ -374,7 +380,16 @@ func _build_battle_match_state() -> void:
     var player_deck_data := {"cards": player_deck_entries}
     var resolved_player_cards := data_loader.resolve_deck_cards(player_deck_data)
 
-    var monster_deck := data_loader.load_deck("res://data/decks/ossara_baseline_monster_deck.json")
+    var match_config := data_loader.load_json(DEFAULT_MATCH_PATH)
+    var boss_id := str(match_config.get("boss_id", DEFAULT_BOSS_ID)).strip_edges()
+    var boss_data := _load_boss_data(boss_id)
+    var monster_deck_id := str(
+        boss_data.get(
+            "monster_deck_id",
+            match_config.get("monster_deck_id", DEFAULT_MONSTER_DECK_ID)
+        )
+    ).strip_edges()
+    var monster_deck := _load_monster_deck(monster_deck_id)
     var resolved_monster_cards := data_loader.resolve_monster_deck(monster_deck)
 
     var merged_cards := data_loader.build_shared_deck(resolved_player_cards, resolved_monster_cards)
@@ -392,7 +407,6 @@ func _build_battle_match_state() -> void:
         player_max_deck_size
     )
 
-    var boss_data := data_loader.load_json("res://data/bosses/gravebound_warden.json")
     var boss_rules = boss_data.get("special_rule_ids", [])
     if not (boss_rules is Array):
         boss_rules = []
@@ -408,8 +422,8 @@ func _build_battle_match_state() -> void:
 
     var boss_state = BOSS_COMBAT_STATE_SCRIPT.new()
     boss_state.setup(
-        str(boss_data.get("id", "gravebound_warden")),
-        str(boss_data.get("name", "Gravebound Warden")),
+        str(boss_data.get("id", DEFAULT_BOSS_ID)),
+        str(boss_data.get("name", DEFAULT_BOSS_NAME)),
         int(boss_data.get("base_health", BOSS_STARTING_HEALTH)),
         boss_rules,
         boss_values
@@ -526,7 +540,7 @@ func _animate_boss_summon_to_deck(card_id: String) -> void:
 
 
 func _refresh_boss_panel() -> void:
-    boss_art_texture.texture = BOSS_CARD_TEXTURE
+    boss_art_texture.texture = current_boss_texture
     boss_title_label.text = match_state.boss_state.boss_name
     boss_life_label.text = "%d/%d" % [
         match_state.boss_state.current_health,
@@ -788,6 +802,52 @@ func _build_boss_special_lines(special_rules: Array, special_values: Dictionary)
         lines.append(label)
 
     return lines
+
+
+func _load_boss_data(boss_id: String) -> Dictionary:
+    var normalized_boss_id := boss_id.strip_edges()
+    if normalized_boss_id == "":
+        normalized_boss_id = DEFAULT_BOSS_ID
+
+    var boss_path := "%s/%s.json" % [BOSS_DIRECTORY_PATH, normalized_boss_id]
+    var boss_data := data_loader.load_json(boss_path)
+    if boss_data.is_empty():
+        push_warning("Falling back to default boss data for id: " + normalized_boss_id)
+        boss_data = data_loader.load_json("%s/%s.json" % [BOSS_DIRECTORY_PATH, DEFAULT_BOSS_ID])
+
+    current_boss_texture = _load_boss_texture(boss_data)
+    return boss_data
+
+
+func _load_monster_deck(deck_id: String) -> Dictionary:
+    var normalized_deck_id := deck_id.strip_edges()
+    if normalized_deck_id == "":
+        normalized_deck_id = DEFAULT_MONSTER_DECK_ID
+
+    var deck_path := "%s/%s.json" % [DECK_DIRECTORY_PATH, normalized_deck_id]
+    var deck_data := data_loader.load_deck(deck_path)
+    if deck_data.is_empty():
+        push_warning("Falling back to default monster deck for id: " + normalized_deck_id)
+        deck_data = data_loader.load_deck("%s/%s.json" % [DECK_DIRECTORY_PATH, DEFAULT_MONSTER_DECK_ID])
+
+    return deck_data
+
+
+func _load_boss_texture(boss_data: Dictionary) -> Texture2D:
+    var art_ref := str(boss_data.get("art_ref", "")).strip_edges()
+    if art_ref != "":
+        var configured_texture := load(art_ref)
+        if configured_texture is Texture2D:
+            return configured_texture
+
+    var boss_name := str(boss_data.get("name", "")).strip_edges()
+    if boss_name != "":
+        var fallback_path := "res://art/cards/%s.png" % boss_name
+        var fallback_texture := load(fallback_path)
+        if fallback_texture is Texture2D:
+            return fallback_texture
+
+    return null
 
 
 func _get_card_texture_or_placeholder(card, placeholder):
@@ -1393,12 +1453,13 @@ func handle_weapon_drop_on_boss(source_hand: String) -> void:
     _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
     _play_sfx(_load_common_sfx(SWORD_SWING_SFX_PATH))
     _play_sfx(_load_common_sfx(GRAVEBOUND_WARDEN_HURT_SFX_PATH))
+    var boss_name := match_state.boss_state.boss_name
     if after_health <= 0:
         _show_boss_damage_slash()
         if retaliation_damage > 0:
-            set_status("Gravebound Warden defeated. Retaliation dealt %d damage." % retaliation_damage)
+            set_status("%s defeated. Retaliation dealt %d damage." % [boss_name, retaliation_damage])
         else:
-            set_status("Gravebound Warden defeated.")
+            set_status("%s defeated." % boss_name)
     else:
         _show_boss_damage_slash()
         if retaliation_damage > 0:
