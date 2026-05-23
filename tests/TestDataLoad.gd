@@ -11,7 +11,7 @@ func _ready() -> void:
  print("\nRESOLVED STARTER DECK CARD COUNT:")
  print(resolved_player_cards.size())
 
- var monster_deck = loader.load_deck("res://data/decks/ossara_baseline_monster_deck.json")
+ var monster_deck = loader.load_deck("res://data/decks/ossaran_lich_deck.json")
  var resolved_monster_cards = loader.resolve_monster_deck(monster_deck)
 
  print("\nRESOLVED MONSTER DECK CARD COUNT:")

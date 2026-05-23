@@ -23,7 +23,7 @@ func _ready() -> void:
     var starter_deck := loader.load_deck("res://data/decks/starter_knight_deck.json")
     var resolved_player_cards := loader.resolve_deck_cards(starter_deck)
 
-    var monster_deck := loader.load_deck("res://data/decks/ossara_baseline_monster_deck.json")
+    var monster_deck := loader.load_deck("res://data/decks/ossaran_lich_deck.json")
     var resolved_monster_cards := loader.resolve_monster_deck(monster_deck)
 
     var merged_cards := loader.build_shared_deck(resolved_player_cards, resolved_monster_cards)

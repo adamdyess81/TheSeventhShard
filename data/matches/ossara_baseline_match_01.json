@@ -7,7 +7,7 @@
   "boss_id": "ossaran_lich",
   "boss_starting_health_override": 12,
   "player_deck_id": "starter_knight_deck",
-  "monster_deck_id": "ossara_baseline_monster_deck",
+  "monster_deck_id": "ossaran_lich_deck",
   "starting_board_cap": 4,
   "unresolved_card_cap": 1,
   "starting_backpack_slots": 1,
