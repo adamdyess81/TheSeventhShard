@@ -17,7 +17,7 @@
   "global_rule_ids": [],
   "board_cap_modifier": 0,
   "unresolved_card_cap_modifier": 0,
-  "art_ref": null,
+  "art_ref": "res://art/cards/Ossaran Lich.png",
   "monster_deck_id": "ossara_baseline_monster_deck",
   "notes": "Ossaran lich boss. Reanimation triggers on kill and inserts the reanimated monster into the deck at a random position."
 }

@@ -1459,7 +1459,7 @@ func handle_weapon_drop_on_boss(source_hand: String) -> void:
         if retaliation_damage > 0:
             set_status("%s defeated. Retaliation dealt %d damage." % [boss_name, retaliation_damage])
         else:
-            set_status("%s defeated." % boss_name)
+            set_status("%s defeated." % [boss_name])
     else:
         _show_boss_damage_slash()
         if retaliation_damage > 0:
