@@ -1107,6 +1107,8 @@ func can_use_slot_weapon_on_monster(slot_name: String) -> bool:
     var card = get_slot_card(slot_name)
     if card == null or _get_card_family(card) != "weapon":
         return false
+    if _get_card_runtime_value(card) <= 0:
+        return false
 
     if slot_name == "left_hand":
         return not match_state.player_state.left_hand_exhausted
@@ -1378,9 +1380,24 @@ func _mark_runtime_card_destroyed(card) -> void:
 
 
 func _apply_runtime_potion_effect(card) -> void:
-    var heal_amount := _get_card_runtime_value(card)
-    if heal_amount > 0:
-        match_state.player_state.heal(heal_amount)
+    var handled_special := false
+
+    if _has_special_rule(card, "adrenaline"):
+        match_state.player_state.boost_max_health(_get_special_rule_value(card, "adrenaline", 1))
+        handled_special = true
+
+    if _has_special_rule(card, "defense"):
+        match_state.player_state.queue_shield_bonus(_get_special_rule_value(card, "defense", 1))
+        handled_special = true
+
+    if _has_special_rule(card, "power"):
+        match_state.player_state.queue_weapon_bonus(_get_special_rule_value(card, "power", 1))
+        handled_special = true
+
+    if not handled_special:
+        var heal_amount := _get_card_runtime_value(card)
+        if heal_amount > 0:
+            match_state.player_state.heal(heal_amount)
 
     if _has_special_rule(card, "cure"):
         match_state.player_state.clear_poison()

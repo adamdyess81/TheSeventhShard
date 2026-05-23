@@ -35,17 +35,21 @@ func setup(
 
 func advance_round() -> void:
  _process_end_of_round_effects()
+ _remove_active_round_buffs_from_cards()
  round_number += 1
  player_state.reset_hand_exhaustion()
  player_state.clear_stun()
+ player_state.advance_round_buffs()
  shared_deck_state.advance_round_specials()
  _trigger_round_start_boss_specials()
+ _apply_active_round_buffs_to_cards()
 
 
 func refill_board_if_allowed() -> bool:
  if board_state.can_refill():
   advance_round()
   board_state.refill_from_deck(shared_deck_state)
+  _apply_active_round_buffs_to_cards()
   return true
 
  return false
@@ -236,3 +240,110 @@ func _get_source_card_id(source_card) -> String:
  if source_card is Dictionary:
   return str(source_card.get("id", ""))
  return ""
+
+
+func _apply_active_round_buffs_to_cards() -> void:
+ if player_state == null:
+  return
+
+ for card in _get_player_owned_cards():
+  _apply_round_bonus_to_card(card, "weapon", player_state.active_weapon_bonus, "weapon_round_bonus")
+  _apply_round_bonus_to_card(card, "shield", player_state.active_shield_bonus, "shield_round_bonus")
+
+
+func _remove_active_round_buffs_from_cards() -> void:
+ if player_state == null:
+  return
+
+ for card in _get_player_owned_cards():
+  _clear_round_bonus_from_card(card, "weapon_round_bonus")
+  _clear_round_bonus_from_card(card, "shield_round_bonus")
+
+
+func _get_player_owned_cards() -> Array:
+ var cards: Array = []
+ if player_state.left_hand_card != null:
+  cards.append(player_state.left_hand_card)
+ if player_state.right_hand_card != null:
+  cards.append(player_state.right_hand_card)
+ for backpack_card in player_state.backpack_cards:
+  if backpack_card != null:
+   cards.append(backpack_card)
+ if board_state != null:
+  for board_card in board_state.get_active_cards():
+   if board_card != null and _is_player_owned_card(board_card):
+    cards.append(board_card)
+ return cards
+
+
+func _apply_round_bonus_to_card(card, family: String, bonus: int, state_key: String) -> void:
+ if bonus <= 0:
+  return
+ if _get_card_family(card) != family:
+  return
+ if not _is_player_owned_card(card):
+  return
+
+ var existing_bonus := _get_round_bonus_state(card, state_key)
+ if existing_bonus == bonus:
+  return
+
+ _adjust_card_runtime_value(card, bonus - existing_bonus)
+ _set_round_bonus_state(card, state_key, bonus)
+
+
+func _clear_round_bonus_from_card(card, state_key: String) -> void:
+ var existing_bonus := _get_round_bonus_state(card, state_key)
+ if existing_bonus == 0:
+  return
+
+ _adjust_card_runtime_value(card, -existing_bonus)
+ _set_round_bonus_state(card, state_key, 0)
+
+
+func _get_round_bonus_state(card, state_key: String) -> int:
+ if card is CardRuntimeState:
+  return int(card.get_special_state(state_key, 0))
+ if card is Dictionary:
+  return int(card.get(state_key, 0))
+ return 0
+
+
+func _set_round_bonus_state(card, state_key: String, value: int) -> void:
+ if card is CardRuntimeState:
+  if value == 0:
+   card.special_state.erase(state_key)
+  else:
+   card.set_special_state(state_key, value)
+ elif card is Dictionary:
+  if value == 0:
+   card.erase(state_key)
+  else:
+   card[state_key] = value
+
+
+func _adjust_card_runtime_value(card, delta: int) -> void:
+ if delta == 0:
+  return
+ if card is CardRuntimeState:
+  card.current_value += delta
+ elif card is Dictionary:
+  var current_value := int(card.get("current_value", card.get("base_value", 0)))
+  card["current_value"] = current_value + delta
+
+
+func _get_card_family(card) -> String:
+ if card is CardRuntimeState:
+  return card.get_family()
+ if card is Dictionary:
+  return str(card.get("family", ""))
+ return ""
+
+
+func _is_player_owned_card(card) -> bool:
+ if card is CardRuntimeState:
+  return card.owner_source == "player_deck"
+ if card is Dictionary:
+  var family := str(card.get("family", ""))
+  return family not in ["monster", "coin", "chest"]
+ return false

@@ -19,6 +19,10 @@ var backpack_exhausted: bool = false
 var stunned_until_round_end: bool = false
 var poison_counters: int = 0
 var disease_counters: int = 0
+var pending_weapon_bonus: int = 0
+var active_weapon_bonus: int = 0
+var pending_shield_bonus: int = 0
+var active_shield_bonus: int = 0
 
 var backpack_capacity: int = 1
 
@@ -46,6 +50,10 @@ func setup(
     stunned_until_round_end = false
     poison_counters = 0
     disease_counters = 0
+    pending_weapon_bonus = 0
+    active_weapon_bonus = 0
+    pending_shield_bonus = 0
+    active_shield_bonus = 0
 
     backpack_capacity = starting_backpack_capacity
 
@@ -169,6 +177,34 @@ func process_end_of_round_poison() -> int:
     poison_counters -= 1
     take_damage(1)
     return 1
+
+
+func queue_weapon_bonus(amount: int) -> void:
+    if amount <= 0:
+        return
+    pending_weapon_bonus += amount
+
+
+func queue_shield_bonus(amount: int) -> void:
+    if amount <= 0:
+        return
+    pending_shield_bonus += amount
+
+
+func advance_round_buffs() -> void:
+    active_weapon_bonus = pending_weapon_bonus
+    active_shield_bonus = pending_shield_bonus
+    pending_weapon_bonus = 0
+    pending_shield_bonus = 0
+
+
+func boost_max_health(amount: int, heal_added_capacity: bool = true) -> void:
+    if amount <= 0:
+        return
+    base_max_health += amount
+    max_health += amount
+    if heal_added_capacity:
+        current_health = min(current_health + amount, max_health)
 
 
 func add_to_backpack(card) -> bool:
