@@ -1427,9 +1427,9 @@ func _handle_monster_to_shield(board_index: int, is_left_hand: bool) -> void:
         monster_before = active_cards[board_index]
     var monster_value = _get_card_runtime_value(monster_before)
     var health_before = match_state.player_state.current_health
-    var left_exhausted_before := match_state.player_state.left_hand_exhausted
-    var right_exhausted_before := match_state.player_state.right_hand_exhausted
-    var backpack_exhausted_before := match_state.player_state.backpack_exhausted
+    var left_exhausted_before: bool = match_state.player_state.left_hand_exhausted
+    var right_exhausted_before: bool = match_state.player_state.right_hand_exhausted
+    var backpack_exhausted_before: bool = match_state.player_state.backpack_exhausted
 
     var success = false
     if is_left_hand:
