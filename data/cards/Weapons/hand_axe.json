@@ -1,12 +1,12 @@
 {
-  "id": "hand_axe",
-  "name": "Hand Axe",
+  "id": "axe",
+  "name": "Axe",
   "family": "weapon",
   "subtype": "melee",
   "rarity": "common",
   "base_value": 1,
   "description": "Deal 1 melee damage to a target enemy. Sweep 1: also deal 1 damage to adjacent monsters. Sweep has no effect on bosses.",
-  "tags": ["weapon", "melee", "sweep"],
+  "tags": ["weapon", "melee", "sweep","two hands"],
   "keywords": [],
   "target_rules": ["enemy_card", "hand_slot"],
   "special_rules": ["sweep"],
@@ -20,7 +20,7 @@
   "can_go_to_backpack": true,
   "can_be_used_from_backpack": false,
   "requires_hand_to_use": true,
-  "occupies_two_hands": false,
+  "occupies_two_hands": true,
   "art_ref": null,
   "icon_ref": null
 }

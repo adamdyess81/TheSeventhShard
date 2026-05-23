@@ -1,6 +1,6 @@
 {
-  "id": "velmoran_lich",
-  "name": "Velmoran Lich",
+  "id": "ossaran_lich",
+  "name": "Ossaran Lich",
   "branch_id": "ossara",
   "guardian_id": "velmora",
   "boss_type": "baseline",
@@ -18,5 +18,5 @@
   "board_cap_modifier": 0,
   "unresolved_card_cap_modifier": 0,
   "art_ref": null,
-  "notes": "Ossara lich boss. Reanimation triggers on kill and inserts the reanimated monster into the deck at a random position."
+  "notes": "Ossaran lich boss. Reanimation triggers on kill and inserts the reanimated monster into the deck at a random position."
 }
