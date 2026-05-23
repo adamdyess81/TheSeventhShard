@@ -749,6 +749,17 @@ func _has_special_rule(card, special_rule: String) -> bool:
     return false
 
 
+func _get_special_rule_value(card, special_rule: String, default_value: int = 0) -> int:
+    if not _has_special_rule(card, special_rule):
+        return default_value
+
+    var meta := _get_card_meta(card)
+    var special_values = meta.get("special_values", {})
+    if special_values is Dictionary and special_values.has(special_rule):
+        return int(special_values.get(special_rule, default_value))
+    return default_value
+
+
 func _get_card_display_name(card) -> String:
     var meta := _get_card_meta(card)
     var display_name := str(meta.get("name", "")).strip_edges()
