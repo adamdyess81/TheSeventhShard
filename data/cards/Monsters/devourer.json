@@ -1,6 +1,6 @@
 {
-  "id": "pain_bearer",
-  "name": "Pain Bearer",
+  "id": "devourer",
+  "name": "Devourer",
   "family": "monster",
   "subtype": "tormented",
   "rarity": "common",
@@ -22,5 +22,6 @@
   "requires_hand_to_use": false,
   "occupies_two_hands": false,
   "art_ref": "res://art/cards/Devourer.png",
+  "sfx_ref": "res://audio/sound fx/crypt_hound.wav",
   "icon_ref": null
 }

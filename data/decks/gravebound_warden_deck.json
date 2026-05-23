@@ -1,0 +1,17 @@
+{
+  "id": "gravebound_warden_deck",
+  "name": "Gravebound Warden Deck",
+  "branch_id": "ossara",
+  "theme_tags": ["ossara", "undead", "baseline", "prototype"],
+  "boss_data_path": "res://data/bosses/gravebound_warden.json",
+  "entries": [
+	{ "card_id": "flagellant_thrall", "quantity": 15, "role": "weak_basic", "include_in_shuffle": true },
+	{ "card_id": "chained_servant", "quantity": 7, "role": "standard_pressure", "include_in_shuffle": true },
+	{ "card_id": "devourer", "quantity": 6, "role": "aggressive_medium", "include_in_shuffle": true },
+	{ "card_id": "frenzied_abomination", "quantity": 2, "role": "elite", "include_in_shuffle": true },
+	{ "card_id": "gold_10", "quantity": 5, "role": "reward", "include_in_shuffle": true },
+	{ "card_id": "small_chest", "quantity": 1, "role": "reward", "include_in_shuffle": true }
+  ],
+  "boss_included_in_deck": false,
+  "notes": "Baseline monster/reward deck for the Ossaran Lich test fight. The boss is a separate persistent combat entity and is not shuffled into the deck."
+}
