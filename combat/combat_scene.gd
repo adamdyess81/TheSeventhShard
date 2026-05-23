@@ -1502,7 +1502,7 @@ func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
         _show_board_card_damage_slash(board_index)
         await _animate_board_card_resolution(board_index)
         var kill_message := "Weapon resolved the monster."
-        var player_damage_taken := before_player_health - match_state.player_state.current_health
+        var player_damage_taken: int = before_player_health - match_state.player_state.current_health
         if match_state.shared_deck_state.remaining_count() > before_deck_count:
             kill_message += " Boss special triggered."
         if player_damage_taken > 0:
