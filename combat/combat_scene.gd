@@ -423,6 +423,12 @@ func _build_battle_match_state() -> void:
             var reanimation_card_data := data_loader.get_card(reanimation_card_id)
             if not reanimation_card_data.is_empty():
                 boss_values["reanimation_card_data"] = reanimation_card_data.duplicate(true)
+    if boss_values.has("blight_card_id"):
+        var blight_card_id := str(boss_values.get("blight_card_id", "")).strip_edges()
+        if blight_card_id != "":
+            var blight_card_data := data_loader.get_card(blight_card_id)
+            if not blight_card_data.is_empty():
+                boss_values["blight_card_data"] = blight_card_data.duplicate(true)
 
     var boss_state = BOSS_COMBAT_STATE_SCRIPT.new()
     boss_state.setup(
@@ -461,11 +467,7 @@ func set_status(message: String) -> void:
 func _refresh_ui() -> void:
     _play_pending_round_events()
 
-    player_health_label.text = "Player HP: %d/%d" % [
-        match_state.player_state.current_health,
-        match_state.player_state.max_health
-    ]
-
+    player_health_label.text = _build_player_health_text()
     boss_health_label.text = "Boss HP: %d/%d" % [
         match_state.boss_state.current_health,
         match_state.boss_state.max_health
@@ -474,10 +476,7 @@ func _refresh_ui() -> void:
     round_label.text = "Round: %d" % match_state.round_number
     gold_label.text = "Gold: %d" % match_state.player_state.temporary_gold
     deck_count_label.text = "Deck: %d" % match_state.shared_deck_state.remaining_count()
-    player_life_label.text = "%d/%d" % [
-        match_state.player_state.current_health,
-        match_state.player_state.max_health
-    ]
+    player_life_label.text = _build_player_life_text()
 
     _refresh_boss_panel()
     _refresh_board_cards()
@@ -497,11 +496,44 @@ func _play_pending_round_events() -> void:
         if event_type == "boss_reanimation":
             _animate_boss_summon_to_deck(str(event.get("card_id", "")))
             _play_sfx(_load_common_sfx(GRAVEBOUND_WARDEN_SPECIAL_SFX_PATH))
+        elif event_type == "boss_blight":
+            _animate_boss_summon_to_deck(str(event.get("card_id", "")))
         elif event_type == "boss_retaliation":
             _show_player_damage_slash()
             _play_damage_screen_shake()
             _play_random_player_hurt_sfx()
             _play_sfx(_load_common_sfx(GRAVEBOUND_WARDEN_SPECIAL_SFX_PATH))
+        elif event_type == "poison_tick":
+            _show_player_damage_slash()
+            _play_damage_screen_shake()
+            _play_random_player_hurt_sfx()
+
+
+func _build_player_health_text() -> String:
+    var text := "Player HP: %d/%d" % [
+        match_state.player_state.current_health,
+        match_state.player_state.max_health
+    ]
+    var conditions: Array[String] = []
+    if match_state.player_state.poison_counters > 0:
+        conditions.append("Poison %d" % match_state.player_state.poison_counters)
+    if match_state.player_state.disease_counters > 0:
+        conditions.append("Disease %d" % match_state.player_state.disease_counters)
+    if not conditions.is_empty():
+        text += " | " + " | ".join(conditions)
+    return text
+
+
+func _build_player_life_text() -> String:
+    var text := "%d/%d" % [
+        match_state.player_state.current_health,
+        match_state.player_state.max_health
+    ]
+    if match_state.player_state.poison_counters > 0:
+        text += " | P:%d" % match_state.player_state.poison_counters
+    if match_state.player_state.disease_counters > 0:
+        text += " | D:%d" % match_state.player_state.disease_counters
+    return text
 
 
 func _animate_boss_summon_to_deck(card_id: String) -> void:
@@ -641,6 +673,9 @@ func _refresh_equipment_labels() -> void:
     var right_hand_status := "ready"
     if match_state.player_state.right_hand_exhausted:
         right_hand_status = "exhausted"
+    var backpack_status := "ready"
+    if match_state.player_state.backpack_exhausted:
+        backpack_status = "exhausted"
 
     left_hand_label.text = "Left Hand: %s [%s]" % [
         _get_single_card_label(match_state.player_state.left_hand_card),
@@ -658,9 +693,9 @@ func _refresh_equipment_labels() -> void:
         for card in match_state.player_state.backpack_cards:
             backpack_names.append(_humanize_card_name(_get_card_name(card)))
 
-        backpack_label.text = "Backpack: %s" % ", ".join(backpack_names)
+        backpack_label.text = "Backpack: %s [%s]" % [", ".join(backpack_names), backpack_status]
     else:
-        backpack_label.text = "Backpack: [empty]"
+        backpack_label.text = "Backpack: [empty] [%s]" % backpack_status
 
 
 
@@ -704,6 +739,14 @@ func _get_card_meta(card) -> Dictionary:
         return card
 
     return {}
+
+
+func _has_special_rule(card, special_rule: String) -> bool:
+    var meta := _get_card_meta(card)
+    var special_rules = meta.get("special_rules", [])
+    if special_rules is Array:
+        return special_rule in special_rules
+    return false
 
 
 func _get_card_display_name(card) -> String:
@@ -1119,6 +1162,8 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
         elif target_slot == "backpack":
             if player_is_stunned:
                 return false
+            if match_state.player_state.backpack_exhausted:
+                return false
             if match_state.player_state.backpack_cards.size() >= match_state.player_state.backpack_capacity:
                 return false
             return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
@@ -1132,6 +1177,8 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
     if source == "backpack" and target_slot in ["left_hand", "right_hand"]:
         if player_is_stunned:
             return false
+        if match_state.player_state.backpack_exhausted:
+            return false
         if family == "":
             return false
         if target_slot == "left_hand":
@@ -1141,6 +1188,8 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
     if source == "backpack" and target_slot == "discard":
         if player_is_stunned:
             return false
+        if match_state.player_state.backpack_exhausted:
+            return false
         return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
 
     if source in ["left_hand", "right_hand"] and target_slot == "boss":
@@ -1148,6 +1197,8 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
 
     if source in ["left_hand", "right_hand"] and target_slot == "backpack":
         if player_is_stunned:
+            return false
+        if match_state.player_state.backpack_exhausted:
             return false
         if family == "":
             return false
@@ -1231,6 +1282,8 @@ func _discard_hand_card(is_left_hand: bool) -> bool:
 func _move_backpack_to_hand(is_left_hand: bool) -> bool:
     if match_state.player_state.backpack_cards.is_empty():
         return false
+    if match_state.player_state.backpack_exhausted:
+        return false
 
     var card = match_state.player_state.remove_backpack_card_at(0)
     if card == null:
@@ -1255,7 +1308,7 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
             return true
         if family == "potion":
             _play_sfx(_load_common_sfx(DRINK_POTION_SFX_PATH))
-            match_state.player_state.heal(_get_card_runtime_value(card))
+            _apply_runtime_potion_effect(card)
             _mark_runtime_card_resolved(card)
             _mark_runtime_card_exhausted(card)
             _mark_runtime_card_destroyed(card)
@@ -1279,7 +1332,7 @@ func _move_backpack_to_hand(is_left_hand: bool) -> bool:
             return true
         if family == "potion":
             _play_sfx(_load_common_sfx(DRINK_POTION_SFX_PATH))
-            match_state.player_state.heal(_get_card_runtime_value(card))
+            _apply_runtime_potion_effect(card)
             _mark_runtime_card_resolved(card)
             _mark_runtime_card_exhausted(card)
             _mark_runtime_card_destroyed(card)
@@ -1324,6 +1377,16 @@ func _mark_runtime_card_destroyed(card) -> void:
         card["is_destroyed"] = true
 
 
+func _apply_runtime_potion_effect(card) -> void:
+    var heal_amount := _get_card_runtime_value(card)
+    if heal_amount > 0:
+        match_state.player_state.heal(heal_amount)
+
+    if _has_special_rule(card, "cure"):
+        match_state.player_state.clear_poison()
+        match_state.player_state.clear_disease()
+
+
 func _move_hand_to_backpack(is_left_hand: bool) -> bool:
     if match_state.player_state.backpack_cards.size() >= match_state.player_state.backpack_capacity:
         return false
@@ -1364,6 +1427,9 @@ func _handle_monster_to_shield(board_index: int, is_left_hand: bool) -> void:
         monster_before = active_cards[board_index]
     var monster_value = _get_card_runtime_value(monster_before)
     var health_before = match_state.player_state.current_health
+    var left_exhausted_before := match_state.player_state.left_hand_exhausted
+    var right_exhausted_before := match_state.player_state.right_hand_exhausted
+    var backpack_exhausted_before := match_state.player_state.backpack_exhausted
 
     var success = false
     if is_left_hand:
@@ -1383,14 +1449,25 @@ func _handle_monster_to_shield(board_index: int, is_left_hand: bool) -> void:
     _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
     _play_sfx(_load_common_sfx(SHIELD_DEFEND_SFX_PATH))
     if shield_after != null:
-        set_status("Shield blocked %d and remains at %d." % [monster_value, _get_card_runtime_value(shield_after)])
+        var blocked_message := "Shield blocked %d and remains at %d." % [monster_value, _get_card_runtime_value(shield_after)]
+        if (not left_exhausted_before and match_state.player_state.left_hand_exhausted and not is_left_hand) or (not right_exhausted_before and match_state.player_state.right_hand_exhausted and is_left_hand) or (not backpack_exhausted_before and match_state.player_state.backpack_exhausted):
+            blocked_message += " Entangle exhausted your loadout."
+        if damage_taken > 0:
+            blocked_message += " Spite dealt %d damage." % damage_taken
+        set_status(blocked_message)
     elif damage_taken > 0:
         _show_player_damage_slash()
         _play_damage_screen_shake()
         _play_random_player_hurt_sfx()
-        set_status("Shield broke. Player took %d damage." % damage_taken)
+        var broken_message := "Shield broke. Player took %d damage." % damage_taken
+        if not backpack_exhausted_before and match_state.player_state.backpack_exhausted:
+            broken_message += " Entangle exhausted your loadout."
+        set_status(broken_message)
     else:
-        set_status("Shield broke after blocking %d." % shield_before_value)
+        var exhaust_message := "Shield broke after blocking %d." % shield_before_value
+        if not backpack_exhausted_before and match_state.player_state.backpack_exhausted:
+            exhaust_message += " Entangle exhausted your loadout."
+        set_status(exhaust_message)
 
     _refresh_ui()
 
@@ -1400,6 +1477,8 @@ func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
         return
 
     var before_count = match_state.board_state.active_count()
+    var before_deck_count = match_state.shared_deck_state.remaining_count()
+    var before_player_health = match_state.player_state.current_health
     var before_value := -1
     var before_cards = match_state.board_state.get_active_cards()
     if board_index >= 0 and board_index < before_cards.size():
@@ -1422,7 +1501,13 @@ func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
     if after_count < before_count:
         _show_board_card_damage_slash(board_index)
         await _animate_board_card_resolution(board_index)
-        set_status("Weapon resolved the monster.")
+        var kill_message := "Weapon resolved the monster."
+        var player_damage_taken := before_player_health - match_state.player_state.current_health
+        if match_state.shared_deck_state.remaining_count() > before_deck_count:
+            kill_message += " Boss special triggered."
+        if player_damage_taken > 0:
+            kill_message += " Player took %d damage." % player_damage_taken
+        set_status(kill_message)
     else:
         var after_cards = match_state.board_state.get_active_cards()
         var remaining_value := -1
@@ -1567,6 +1652,8 @@ func _refresh_slot_state_visuals() -> void:
 
     if match_state.player_state.right_hand_exhausted:
         _apply_exhausted_slot_visual(right_hand_drop_zone, right_hand_texture)
+    if match_state.player_state.backpack_exhausted:
+        _apply_exhausted_slot_visual(backpack_drop_zone, backpack_texture)
 
 
 func _reset_slot_visual_state(panel: PanelContainer, texture_rect: TextureRect, border_color: Color) -> void:
@@ -1975,6 +2062,9 @@ func handle_drop_to_player_avatar(board_index: int) -> void:
   board_card = active_cards[board_index]
 
  var before_health = match_state.player_state.current_health
+ var poison_before = match_state.player_state.poison_counters
+ var disease_before = match_state.player_state.disease_counters
+ var boss_health_before = match_state.boss_state.current_health
  print("before resolve, player health: ", before_health)
 
  var success = combat_controller.resolve_enemy_to_player(board_index)
@@ -1990,10 +2080,16 @@ func handle_drop_to_player_avatar(board_index: int) -> void:
    _show_player_damage_slash()
    _play_damage_screen_shake()
    _play_random_player_hurt_sfx()
+  var result_message := "Dropped monster onto player."
   if match_state.player_state.is_stunned():
-   set_status("Dropped monster onto player. You are stunned until round end.")
-  else:
-   set_status("Dropped monster onto player.")
+   result_message += " You are stunned until round end."
+  if match_state.player_state.poison_counters > poison_before:
+   result_message += " Poison +%d." % (match_state.player_state.poison_counters - poison_before)
+  if match_state.player_state.disease_counters > disease_before:
+   result_message += " Disease +%d." % (match_state.player_state.disease_counters - disease_before)
+  if match_state.boss_state.current_health > boss_health_before:
+   result_message += " Boss healed %d." % (match_state.boss_state.current_health - boss_health_before)
+  set_status(result_message)
  else:
   set_status("Only monsters can be dropped onto the player.")
 

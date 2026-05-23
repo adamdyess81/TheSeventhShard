@@ -12,10 +12,9 @@ func resolve_enemy_to_player(match_state: MatchCombatState, board_index: int) ->
     if _get_card_family(card) != "monster":
         return false
 
-    var damage := _get_card_runtime_value(card)
+    var damage := _get_effective_monster_value(match_state, card)
     match_state.player_state.take_damage(damage)
-    if _has_special_rule(card, "stun"):
-        match_state.player_state.apply_stun()
+    _apply_monster_unblocked_specials(match_state, card)
     _mark_card_resolved(card)
     match_state.board_state.remove_card_at(board_index)
 
@@ -74,8 +73,7 @@ func move_player_card_to_left_hand(match_state: MatchCombatState, board_index: i
         return true
 
     if family == "potion":
-        var heal_amount := _get_card_runtime_value(card)
-        match_state.player_state.heal(heal_amount)
+        _apply_potion_to_player(match_state, card)
         _mark_card_resolved(card)
         _mark_card_exhausted(card)
         _mark_card_destroyed(card)
@@ -124,8 +122,7 @@ func move_player_card_to_right_hand(match_state: MatchCombatState, board_index: 
         return true
 
     if family == "potion":
-        var heal_amount := _get_card_runtime_value(card)
-        match_state.player_state.heal(heal_amount)
+        _apply_potion_to_player(match_state, card)
         _mark_card_resolved(card)
         _mark_card_exhausted(card)
         _mark_card_destroyed(card)
@@ -273,8 +270,7 @@ func use_left_hand_potion(match_state: MatchCombatState) -> bool:
     if match_state.player_state.left_hand_exhausted:
         return false
 
-    var heal_amount := _get_card_runtime_value(potion)
-    match_state.player_state.heal(heal_amount)
+    _apply_potion_to_player(match_state, potion)
     _mark_card_resolved(potion)
     _mark_card_exhausted(potion)
     _mark_card_destroyed(potion)
@@ -297,8 +293,7 @@ func use_right_hand_potion(match_state: MatchCombatState) -> bool:
     if match_state.player_state.right_hand_exhausted:
         return false
 
-    var heal_amount := _get_card_runtime_value(potion)
-    match_state.player_state.heal(heal_amount)
+    _apply_potion_to_player(match_state, potion)
     _mark_card_resolved(potion)
     _mark_card_exhausted(potion)
     _mark_card_destroyed(potion)
@@ -320,14 +315,16 @@ func _use_weapon_on_monster(match_state: MatchCombatState, board_index: int, wea
         return false
 
     var weapon_value := _get_card_runtime_value(weapon)
-    var monster_value := _get_card_runtime_value(monster)
+    var monster_value := _get_effective_monster_value(match_state, monster)
     var armor_value := _get_special_rule_value(monster, "armored", 0)
     var remaining_monster := (monster_value + armor_value) - weapon_value
 
     if remaining_monster <= 0:
         _mark_card_resolved(monster)
         match_state.board_state.remove_card_at(board_index)
-        match_state.trigger_boss_on_player_monster_kill()
+        match_state.trigger_boss_on_player_monster_kill(monster)
+        if _has_special_rule(monster, "martyrdom"):
+            match_state.trigger_boss_special("martyrdom", monster)
     else:
         _set_card_runtime_value(monster, remaining_monster)
 
@@ -362,10 +359,11 @@ func _resolve_monster_into_shield(match_state: MatchCombatState, board_index: in
         shield = match_state.player_state.right_hand_card
 
     var shield_value := _get_card_runtime_value(shield)
-    var monster_value := _get_card_runtime_value(monster)
+    var monster_value := _get_effective_monster_value(match_state, monster, true)
 
     _mark_card_resolved(monster)
     match_state.board_state.remove_card_at(board_index)
+    _apply_monster_blocked_specials(match_state, monster)
 
     var remaining_shield := shield_value - monster_value
 
@@ -425,6 +423,73 @@ func _get_card_id(card) -> String:
         return str(card.get("id", ""))
 
     return ""
+
+
+func _apply_potion_to_player(match_state: MatchCombatState, potion) -> void:
+    var heal_amount := _get_card_runtime_value(potion)
+    if heal_amount > 0:
+        match_state.player_state.heal(heal_amount)
+
+    if _has_special_rule(potion, "cure"):
+        match_state.player_state.clear_poison()
+        match_state.player_state.clear_disease()
+
+
+func _get_effective_monster_value(match_state: MatchCombatState, monster, blocked_by_shield: bool = false) -> int:
+    var value := _get_card_runtime_value(monster)
+
+    if match_state != null and match_state.player_state != null and _has_special_rule(monster, "predation"):
+        if match_state.player_state.has_poison_or_disease():
+            value += _get_special_rule_value(monster, "predation", 1)
+
+    if blocked_by_shield and _has_special_rule(monster, "corrosion"):
+        value *= 2
+
+    return maxi(value, 0)
+
+
+func _apply_monster_unblocked_specials(match_state: MatchCombatState, monster) -> void:
+    if _has_special_rule(monster, "stun"):
+        match_state.player_state.apply_stun()
+
+    if _has_special_rule(monster, "agony"):
+        var agony_heal := _get_special_rule_value(monster, "agony", 1)
+        match_state.boss_state.heal(agony_heal)
+        match_state.queue_event("boss_heal", {
+            "amount": agony_heal,
+            "reason": "agony",
+            "source_card_id": _get_card_id(monster)
+        })
+
+    if _has_special_rule(monster, "spite"):
+        match_state.player_state.take_damage(_get_special_rule_value(monster, "spite", 1))
+
+    if _has_special_rule(monster, "poison"):
+        var poison_amount := _get_special_rule_value(monster, "poison", 1)
+        match_state.player_state.add_poison_counters(poison_amount)
+        match_state.queue_event("player_poisoned", {
+            "amount": poison_amount,
+            "source_card_id": _get_card_id(monster)
+        })
+
+    if _has_special_rule(monster, "disease"):
+        var disease_amount := _get_special_rule_value(monster, "disease", 1)
+        match_state.player_state.add_disease_counters(disease_amount)
+        match_state.queue_event("player_diseased", {
+            "amount": disease_amount,
+            "source_card_id": _get_card_id(monster)
+        })
+
+
+func _apply_monster_blocked_specials(match_state: MatchCombatState, monster) -> void:
+    if _has_special_rule(monster, "spite"):
+        match_state.player_state.take_damage(_get_special_rule_value(monster, "spite", 1))
+
+    if _has_special_rule(monster, "entangle"):
+        match_state.player_state.exhaust_all_loadout_slots()
+        match_state.queue_event("player_entangled", {
+            "source_card_id": _get_card_id(monster)
+        })
 
 
 func _get_card_family(card) -> String:

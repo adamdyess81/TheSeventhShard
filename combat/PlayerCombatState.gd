@@ -2,6 +2,7 @@ extends RefCounted
 class_name PlayerCombatState
 
 var max_health: int = 0
+var base_max_health: int = 0
 var current_health: int = 0
 var max_deck_size: int = 0
 var temporary_gold: int = 0
@@ -14,7 +15,10 @@ var backpack_cards: Array = []
 
 var left_hand_exhausted: bool = false
 var right_hand_exhausted: bool = false
+var backpack_exhausted: bool = false
 var stunned_until_round_end: bool = false
+var poison_counters: int = 0
+var disease_counters: int = 0
 
 var backpack_capacity: int = 1
 
@@ -24,6 +28,7 @@ func setup(
     starting_backpack_capacity: int = 1,
     starting_max_deck_size: int = 0
 ) -> void:
+    base_max_health = starting_health
     max_health = starting_health
     current_health = starting_health
     max_deck_size = starting_max_deck_size
@@ -37,7 +42,10 @@ func setup(
 
     left_hand_exhausted = false
     right_hand_exhausted = false
+    backpack_exhausted = false
     stunned_until_round_end = false
+    poison_counters = 0
+    disease_counters = 0
 
     backpack_capacity = starting_backpack_capacity
 
@@ -92,9 +100,20 @@ func exhaust_right_hand() -> void:
     right_hand_exhausted = true
 
 
+func exhaust_backpack() -> void:
+    backpack_exhausted = true
+
+
+func exhaust_all_loadout_slots() -> void:
+    left_hand_exhausted = true
+    right_hand_exhausted = true
+    backpack_exhausted = true
+
+
 func reset_hand_exhaustion() -> void:
     left_hand_exhausted = false
     right_hand_exhausted = false
+    backpack_exhausted = false
 
 
 func apply_stun() -> void:
@@ -109,7 +128,52 @@ func is_stunned() -> bool:
     return stunned_until_round_end
 
 
+func add_poison_counters(amount: int) -> void:
+    if amount <= 0:
+        return
+    poison_counters += amount
+
+
+func clear_poison() -> void:
+    poison_counters = 0
+
+
+func has_poison() -> bool:
+    return poison_counters > 0
+
+
+func add_disease_counters(amount: int) -> void:
+    if amount <= 0:
+        return
+    disease_counters += amount
+    _refresh_max_health_from_disease()
+
+
+func clear_disease() -> void:
+    disease_counters = 0
+    _refresh_max_health_from_disease()
+
+
+func has_disease() -> bool:
+    return disease_counters > 0
+
+
+func has_poison_or_disease() -> bool:
+    return has_poison() or has_disease()
+
+
+func process_end_of_round_poison() -> int:
+    if poison_counters <= 0:
+        return 0
+
+    poison_counters -= 1
+    take_damage(1)
+    return 1
+
+
 func add_to_backpack(card) -> bool:
+    if backpack_exhausted:
+        return false
     if backpack_cards.size() >= backpack_capacity:
         return false
 
@@ -127,6 +191,11 @@ func remove_backpack_card_at(index: int):
 
 func is_dead() -> bool:
     return current_health <= 0
+
+
+func _refresh_max_health_from_disease() -> void:
+    max_health = maxi(base_max_health - disease_counters, 1)
+    current_health = mini(current_health, max_health)
 
 
 func _set_card_zone(card, new_zone: String) -> void:

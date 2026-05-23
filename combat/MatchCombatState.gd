@@ -34,11 +34,12 @@ func setup(
 
 
 func advance_round() -> void:
+ _process_end_of_round_effects()
  round_number += 1
- pending_round_events.clear()
  player_state.reset_hand_exhaustion()
  player_state.clear_stun()
  shared_deck_state.advance_round_specials()
+ _trigger_round_start_boss_specials()
 
 
 func refill_board_if_allowed() -> bool:
@@ -72,6 +73,12 @@ func consume_pending_round_events() -> Array:
  return events
 
 
+func queue_event(event_type: String, payload: Dictionary = {}) -> void:
+ var event := payload.duplicate(true)
+ event["type"] = event_type
+ pending_round_events.append(event)
+
+
 func add_battle_xp(amount: int) -> void:
  if amount <= 0:
   return
@@ -94,13 +101,32 @@ func finalize_battle_xp(outcome: String) -> int:
  return battle_xp_awarded
 
 
-func trigger_boss_on_player_monster_kill() -> void:
+func trigger_boss_on_player_monster_kill(killed_monster = null) -> void:
  if boss_state == null or shared_deck_state == null:
   return
 
  if not boss_state.has_special_rule("reanimation"):
   return
 
+ _trigger_boss_reanimation("player_monster_kill", killed_monster)
+
+
+func trigger_boss_special(trigger_reason: String = "", source_card = null) -> void:
+ if boss_state == null:
+  return
+
+ for special_rule in boss_state.special_rules:
+  var key := str(special_rule).strip_edges().to_lower()
+  match key:
+   "reanimation":
+    _trigger_boss_reanimation(trigger_reason, source_card)
+   "retaliation":
+    _trigger_boss_retaliation(trigger_reason)
+   "blight":
+    _trigger_boss_blight(trigger_reason, source_card)
+
+
+func _trigger_boss_reanimation(trigger_reason: String = "", source_card = null) -> void:
  var reanimation_card_data = boss_state.get_special_value("reanimation_card_data", null)
  if not (reanimation_card_data is Dictionary):
   return
@@ -129,14 +155,19 @@ func trigger_boss_on_player_monster_kill() -> void:
   reanimation_data["special_values"] = special_values
 
  var reanimated_card = shared_deck_state.insert_card_at_random(reanimation_data)
- pending_round_events.append({
-  "type": "boss_reanimation",
+ queue_event("boss_reanimation", {
   "boss_id": boss_state.boss_id,
-  "card_id": reanimated_card.card_id
+  "card_id": reanimated_card.card_id,
+  "reason": trigger_reason,
+  "source_card_id": _get_source_card_id(source_card)
  })
 
 
 func trigger_boss_retaliation_on_player_attack() -> int:
+ return _trigger_boss_retaliation("player_attacked_boss")
+
+
+func _trigger_boss_retaliation(trigger_reason: String = "") -> int:
  if boss_state == null or player_state == null:
   return 0
 
@@ -148,9 +179,60 @@ func trigger_boss_retaliation_on_player_attack() -> int:
   return 0
 
  player_state.take_damage(retaliation_damage)
- pending_round_events.append({
-  "type": "boss_retaliation",
+ queue_event("boss_retaliation", {
   "boss_id": boss_state.boss_id,
-  "damage": retaliation_damage
+  "damage": retaliation_damage,
+  "reason": trigger_reason
  })
  return retaliation_damage
+
+
+func _trigger_boss_blight(trigger_reason: String = "", source_card = null) -> void:
+ if boss_state == null or shared_deck_state == null:
+  return
+
+ var blight_card_data = boss_state.get_special_value("blight_card_data", null)
+ if not (blight_card_data is Dictionary):
+  return
+
+ var blight_data = blight_card_data.duplicate(true)
+ if blight_data.is_empty():
+  return
+
+ var inserted_card = shared_deck_state.insert_card_at_random(blight_data)
+ queue_event("boss_blight", {
+  "boss_id": boss_state.boss_id,
+  "card_id": inserted_card.card_id,
+  "reason": trigger_reason,
+  "source_card_id": _get_source_card_id(source_card)
+ })
+
+
+func _process_end_of_round_effects() -> void:
+ if player_state == null:
+  return
+
+ var poison_damage := player_state.process_end_of_round_poison()
+ if poison_damage > 0:
+  queue_event("poison_tick", {
+   "damage": poison_damage,
+   "remaining_poison": player_state.poison_counters
+  })
+
+
+func _trigger_round_start_boss_specials() -> void:
+ if boss_state == null:
+  return
+
+ if boss_state.has_special_rule("blight"):
+  var blight_interval := int(boss_state.get_special_value("blight_interval", 0))
+  if blight_interval > 0 and round_number % blight_interval == 0:
+   _trigger_boss_blight("round_start")
+
+
+func _get_source_card_id(source_card) -> String:
+ if source_card is CardRuntimeState:
+  return source_card.card_id
+ if source_card is Dictionary:
+  return str(source_card.get("id", ""))
+ return ""
