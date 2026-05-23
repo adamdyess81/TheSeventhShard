@@ -1453,7 +1453,7 @@ func handle_weapon_drop_on_boss(source_hand: String) -> void:
     _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
     _play_sfx(_load_common_sfx(SWORD_SWING_SFX_PATH))
     _play_sfx(_load_common_sfx(GRAVEBOUND_WARDEN_HURT_SFX_PATH))
-    var boss_name := match_state.boss_state.boss_name
+    var boss_name: String = match_state.boss_state.boss_name
     if after_health <= 0:
         _show_boss_damage_slash()
         if retaliation_damage > 0:
