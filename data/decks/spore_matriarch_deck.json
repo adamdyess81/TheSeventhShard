@@ -1,0 +1,17 @@
+{
+  "id": "spore_matriarch_deck",
+  "name": "Spore Matriarch Deck",
+  "branch_id": "ossara",
+  "theme_tags": ["ossara", "undead", "baseline", "prototype"],
+  "boss_data_path": "res://data/bosses/spore_matriarch.json",
+  "entries": [
+	{ "card_id": "necrotic_spore", "quantity": 15, "role": "weak_basic", "include_in_shuffle": true },
+	{ "card_id": "rotcap_forager", "quantity": 7, "role": "standard_pressure", "include_in_shuffle": true },
+	{ "card_id": "blight_husk", "quantity": 6, "role": "aggressive_medium", "include_in_shuffle": true },
+	{ "card_id": "moldwrought_stalker", "quantity": 2, "role": "elite", "include_in_shuffle": true },
+	{ "card_id": "gold_10", "quantity": 5, "role": "reward", "include_in_shuffle": true },
+	{ "card_id": "small_chest", "quantity": 1, "role": "reward", "include_in_shuffle": true }
+  ],
+  "boss_included_in_deck": false,
+  "notes": "Baseline monster/reward deck for the Ossaran Lich test fight. The boss is a separate persistent combat entity and is not shuffled into the deck."
+}
