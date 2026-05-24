@@ -121,6 +121,65 @@ text = "Try again?"
 layout_mode = 2
 text = "Quit"
 
+[node name="ShiftFateModalOverlay" type="ColorRect" parent="." unique_id=271828192]
+visible = false
+z_index = 190
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.72)
+
+[node name="ShiftFateModalCenter" type="CenterContainer" parent="ShiftFateModalOverlay" unique_id=271828193]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ShiftFateModal" type="PanelContainer" parent="ShiftFateModalOverlay/ShiftFateModalCenter" unique_id=271828194]
+custom_minimum_size = Vector2(920, 780)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ShiftFateContent" type="VBoxContainer" parent="ShiftFateModalOverlay/ShiftFateModalCenter/ShiftFateModal" unique_id=271828195]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="ShiftFateTitle" type="Label" parent="ShiftFateModalOverlay/ShiftFateModalCenter/ShiftFateModal/ShiftFateContent" unique_id=271828196]
+layout_mode = 2
+text = "Choose the next 3 cards to be drawn"
+horizontal_alignment = 1
+
+[node name="ShiftFateSubtitle" type="Label" parent="ShiftFateModalOverlay/ShiftFateModalCenter/ShiftFateModal/ShiftFateContent" unique_id=271828197]
+layout_mode = 2
+text = "Click 3 cards in the order you want them drawn."
+horizontal_alignment = 1
+
+[node name="ShiftFatePreviewGrid" type="GridContainer" parent="ShiftFateModalOverlay/ShiftFateModalCenter/ShiftFateModal/ShiftFateContent" unique_id=271828198]
+custom_minimum_size = Vector2(760, 620)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 3
+
+[node name="ShiftFateFooter" type="HBoxContainer" parent="ShiftFateModalOverlay/ShiftFateModalCenter/ShiftFateModal/ShiftFateContent" unique_id=271828199]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="ShiftFateDoneButton" type="Button" parent="ShiftFateModalOverlay/ShiftFateModalCenter/ShiftFateModal/ShiftFateContent/ShiftFateFooter" unique_id=271828200]
+layout_mode = 2
+disabled = true
+text = "Done"
+
 [node name="RootLayout" type="VBoxContainer" parent="." unique_id=247386464]
 layout_mode = 1
 anchors_preset = 15

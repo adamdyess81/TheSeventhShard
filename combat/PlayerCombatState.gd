@@ -23,6 +23,7 @@ var pending_weapon_bonus: int = 0
 var active_weapon_bonus: int = 0
 var pending_shield_bonus: int = 0
 var active_shield_bonus: int = 0
+var damage_ward: int = 0
 
 var backpack_capacity: int = 1
 
@@ -54,11 +55,23 @@ func setup(
     active_weapon_bonus = 0
     pending_shield_bonus = 0
     active_shield_bonus = 0
+    damage_ward = 0
 
     backpack_capacity = starting_backpack_capacity
 
 
 func take_damage(amount: int) -> void:
+    if amount <= 0:
+        return
+
+    if damage_ward > 0:
+        var prevented := mini(amount, damage_ward)
+        damage_ward -= prevented
+        amount -= prevented
+
+    if amount <= 0:
+        return
+
     current_health = max(current_health - amount, 0)
 
 
@@ -196,6 +209,13 @@ func advance_round_buffs() -> void:
     active_shield_bonus = pending_shield_bonus
     pending_weapon_bonus = 0
     pending_shield_bonus = 0
+
+
+func add_damage_ward(amount: int) -> void:
+    if amount <= 0:
+        return
+
+    damage_ward += amount
 
 
 func boost_max_health(amount: int, heal_added_capacity: bool = true) -> void:

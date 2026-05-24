@@ -41,6 +41,15 @@ func _run_tests() -> void:
 	_test_sweep_hits_adjacent_monsters()
 	_test_split_spends_weapon_value_one_point_at_a_time()
 	_test_pierce_carries_over_to_second_target()
+	_test_ward_of_ash_prevents_damage_until_spent()
+	_test_stasis_hex_only_lowers_current_round_threshold()
+	_test_fire_bolt_hits_monster_and_consumes_spell()
+	_test_energy_burst_hits_board_and_boss()
+	_test_recall_returns_monster_to_deck()
+	_test_banishing_sigil_removes_matching_monster_from_deck()
+	_test_battle_focus_refreshes_hands()
+	_test_shift_fate_consumes_spell_on_player_use()
+	_test_shift_fate_selected_cards_move_to_top_in_order()
 
 
 func _build_match_state() -> MatchCombatState:
@@ -247,3 +256,137 @@ func _test_pierce_carries_over_to_second_target() -> void:
 	_expect(match_state.boss_state.current_health == BOSS_STARTING_HEALTH - 2, "Pierce overflow should damage the second target.")
 	_expect(match_state.player_state.left_hand_card == null, "Pierce weapon should be consumed after the follow-up attack.")
 	_expect(match_state.player_state.left_hand_exhausted, "Pierce weapon should exhaust the hand after the follow-up attack.")
+
+
+func _test_ward_of_ash_prevents_damage_until_spent() -> void:
+	var match_state := _build_match_state()
+	match_state.player_state.set_left_hand_card(_card("ward_of_ash"))
+
+	var used := _resolution.use_left_hand_spell_on_player(match_state)
+
+	_expect(used, "Ward of Ash should be castable on the player.")
+	_expect(match_state.player_state.damage_ward == 2, "Ward of Ash should add its prevention value as ward.")
+	match_state.player_state.take_damage(1)
+	_expect(match_state.player_state.current_health == PLAYER_STARTING_HEALTH, "Ward of Ash should prevent incoming damage while ward remains.")
+	_expect(match_state.player_state.damage_ward == 1, "Ward of Ash should spend only the damage it prevented.")
+	match_state.player_state.take_damage(2)
+	_expect(match_state.player_state.current_health == PLAYER_STARTING_HEALTH - 1, "Ward of Ash should allow overflow damage through after the ward is spent.")
+	_expect(match_state.player_state.damage_ward == 0, "Ward of Ash should fully deplete after absorbing its full value.")
+
+
+func _test_stasis_hex_only_lowers_current_round_threshold() -> void:
+	var match_state := _build_match_state()
+	_place_on_board(match_state, [_card("risen_bones"), _card("gold_10"), null, null])
+	match_state.player_state.set_left_hand_card(_card("stasis_hex"))
+
+	var used := _resolution.use_left_hand_spell_on_player(match_state)
+
+	_expect(used, "Stasis Hex should be castable on the player.")
+	_expect(match_state.board_state.get_current_resolve_threshold() == 2, "Stasis Hex should lower the current round threshold by 1.")
+	_expect(match_state.board_state.can_refill(), "Stasis Hex should immediately make the board eligible for the next round when the reduced threshold is met.")
+	match_state.advance_round()
+	_expect(match_state.board_state.get_current_resolve_threshold() == 3, "Stasis Hex should reset after the round advances.")
+
+
+func _test_fire_bolt_hits_monster_and_consumes_spell() -> void:
+	var match_state := _build_match_state()
+	match_state.player_state.set_left_hand_card(_card("fire_bolt"))
+	_place_on_board(match_state, [_card("risen_bones")])
+
+	var used := _resolution.use_left_hand_spell_on_monster(match_state, 0)
+
+	_expect(used, "Fire Bolt should cast on a monster.")
+	_expect(match_state.board_state.active_count() == 0, "Fire Bolt should remove a monster it kills.")
+	_expect(match_state.player_state.left_hand_card == null, "Fire Bolt should be consumed after casting.")
+	_expect(match_state.player_state.left_hand_exhausted, "Fire Bolt should exhaust the casting hand.")
+
+
+func _test_energy_burst_hits_board_and_boss() -> void:
+	var match_state := _build_match_state()
+	match_state.player_state.set_left_hand_card(_card("energy_burst"))
+	_place_on_board(match_state, [_card("risen_bones"), _card("risen_bones")])
+
+	var used := _resolution.use_left_hand_spell_on_boss(match_state)
+
+	_expect(used, "Energy Burst should be castable at an enemy target.")
+	_expect(match_state.board_state.active_count() == 0, "Energy Burst should hit every monster on the board.")
+	_expect(match_state.boss_state.current_health == BOSS_STARTING_HEALTH - 1, "Energy Burst should also damage the boss.")
+	_expect(match_state.player_state.current_health == PLAYER_STARTING_HEALTH, "Energy Burst should not deal player damage unless the current boss actually has retaliation.")
+
+
+func _test_recall_returns_monster_to_deck() -> void:
+	var match_state := _build_match_state()
+	match_state.player_state.set_left_hand_card(_card("recall"))
+	_place_on_board(match_state, [_card("risen_bones")])
+
+	var used := _resolution.use_left_hand_spell_on_monster(match_state, 0)
+
+	_expect(used, "Recall should cast on a monster.")
+	_expect(match_state.board_state.active_count() == 0, "Recall should remove the target from the board.")
+	_expect(match_state.shared_deck_state.remaining_count() == 1, "Recall should place the target back into the deck.")
+
+
+func _test_banishing_sigil_removes_matching_monster_from_deck() -> void:
+	var match_state := _build_match_state()
+	match_state.shared_deck_state.setup([
+		_card("risen_bones"),
+		_card("crypt_hound")
+	])
+	match_state.player_state.set_left_hand_card(_card("banishing_sigil"))
+	_place_on_board(match_state, [_card("risen_bones")])
+
+	var used := _resolution.use_left_hand_spell_on_monster(match_state, 0)
+
+	_expect(used, "Banishing Sigil should cast on a monster.")
+	_expect(match_state.shared_deck_state.remaining_count() == 1, "Banishing Sigil should remove one matching copy from the deck.")
+	var remaining = match_state.shared_deck_state.draw_card()
+	_expect(remaining != null and remaining.card_id == "crypt_hound", "Banishing Sigil should remove the matching monster copy, not a random card.")
+	_expect(match_state.board_state.active_count() == 1, "Banishing Sigil should leave the targeted monster on the board.")
+
+
+func _test_battle_focus_refreshes_hands() -> void:
+	var match_state := _build_match_state()
+	match_state.player_state.set_left_hand_card(_card("battle_focus"))
+	match_state.player_state.right_hand_exhausted = true
+
+	var used := _resolution.use_left_hand_spell_on_player(match_state)
+
+	_expect(used, "Battle Focus should be castable on the player.")
+	_expect(not match_state.player_state.left_hand_exhausted, "Battle Focus should refresh the left hand.")
+	_expect(not match_state.player_state.right_hand_exhausted, "Battle Focus should refresh the right hand.")
+	_expect(match_state.player_state.left_hand_card == null, "Battle Focus should still consume the spell.")
+
+
+func _test_shift_fate_consumes_spell_on_player_use() -> void:
+	var match_state := _build_match_state()
+	match_state.player_state.set_left_hand_card(_card("shift_fate"))
+
+	var used := _resolution.use_left_hand_spell_on_player(match_state)
+
+	_expect(used, "Shift Fate should resolve as a castable player spell.")
+	_expect(match_state.player_state.left_hand_card == null, "Shift Fate should consume itself on cast.")
+	_expect(match_state.player_state.left_hand_exhausted, "Shift Fate should exhaust the casting hand.")
+
+
+func _test_shift_fate_selected_cards_move_to_top_in_order() -> void:
+	var shared_deck := SHARED_DECK_STATE_SCRIPT.new()
+	shared_deck.setup([
+		_card("risen_bones"),
+		_card("crypt_hound"),
+		_card("gold_10"),
+		_card("banshee"),
+		_card("small_chest"),
+		_card("short_sword")
+	])
+
+	var preview := shared_deck.peek(6)
+	var selected := [preview[4], preview[1], preview[5]]
+	var reordered_count := shared_deck.reorder_with_selected_top(selected)
+
+	_expect(reordered_count == 3, "Shift Fate deck reorder should keep all selected cards.")
+	var first = shared_deck.draw_card()
+	var second = shared_deck.draw_card()
+	var third = shared_deck.draw_card()
+	_expect(first == selected[0], "Shift Fate should place the first clicked card on top.")
+	_expect(second == selected[1], "Shift Fate should place the second clicked card next.")
+	_expect(third == selected[2], "Shift Fate should place the third clicked card third.")

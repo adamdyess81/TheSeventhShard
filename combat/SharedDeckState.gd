@@ -41,6 +41,38 @@ func peek(count: int) -> Array:
     return result
 
 
+func reorder_with_selected_top(selected_cards: Array) -> int:
+    var selected_runtime_cards: Array = []
+
+    for candidate in selected_cards:
+        if not (candidate is CardRuntimeState):
+            continue
+        if candidate not in _cards:
+            continue
+        if candidate in selected_runtime_cards:
+            continue
+        selected_runtime_cards.append(candidate)
+
+    var remaining_cards: Array = []
+    for card in _cards:
+        if card in selected_runtime_cards:
+            continue
+        remaining_cards.append(card)
+
+    remaining_cards.shuffle()
+
+    _cards = []
+    for card in selected_runtime_cards:
+        card.set_zone("deck")
+        _cards.append(card)
+    for card in remaining_cards:
+        if card is CardRuntimeState:
+            card.set_zone("deck")
+        _cards.append(card)
+
+    return selected_runtime_cards.size()
+
+
 func remaining_count() -> int:
     return _cards.size()
 
@@ -51,6 +83,7 @@ func is_empty() -> bool:
 
 func insert_card_at_random(card_data: Dictionary) -> CardRuntimeState:
     var runtime_card := _build_runtime_card(card_data)
+    runtime_card.set_zone("deck")
     var insert_index := 0
 
     if _cards.size() > 0:
@@ -58,6 +91,41 @@ func insert_card_at_random(card_data: Dictionary) -> CardRuntimeState:
 
     _cards.insert(insert_index, runtime_card)
     return runtime_card
+
+
+func insert_runtime_card_at_random(card) -> bool:
+    if card == null:
+        return false
+
+    if card is CardRuntimeState:
+        card.set_zone("deck")
+        var insert_index := 0
+        if _cards.size() > 0:
+            insert_index = randi_range(0, _cards.size())
+        _cards.insert(insert_index, card)
+        return true
+
+    if card is Dictionary:
+        insert_card_at_random(card)
+        return true
+
+    return false
+
+
+func remove_first_card_by_id(card_id: String):
+    var normalized_id := card_id.strip_edges()
+    if normalized_id == "":
+        return null
+
+    for i in range(_cards.size()):
+        var card = _cards[i]
+        if not (card is CardRuntimeState):
+            continue
+        if card.card_id != normalized_id:
+            continue
+        return _cards.pop_at(i)
+
+    return null
 
 
 func advance_round_specials() -> void:

@@ -12,6 +12,8 @@ const RESOLUTION_CONTROLLER_SCRIPT = preload("res://combat/ResolutionController.
 const OUTCOME_CONTROLLER_SCRIPT = preload("res://combat/OutcomeController.gd")
 const COMBAT_CONTROLLER_SCRIPT = preload("res://combat/CombatController.gd")
 const RUN_CONTEXT_SCRIPT = preload("res://core/RunContext.gd")
+const SHIFT_FATE_PREVIEW_COUNT := 6
+const SHIFT_FATE_SELECTION_COUNT := 3
 
 const DEFAULT_PLAYER_STARTING_HEALTH := 15
 const DEFAULT_PLAYER_MAX_DECK_SIZE := 15
@@ -90,6 +92,12 @@ const DECK_DIRECTORY_PATH := "res://data/decks"
 @onready var end_modal_stats = $EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalStats
 @onready var retry_button = $EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalButtons/RetryButton
 @onready var quit_button = $EndModalOverlay/EndModalCenter/EndModal/EndModalContent/EndModalButtons/QuitButton
+@onready var shift_fate_modal_overlay = $ShiftFateModalOverlay
+@onready var shift_fate_modal = $ShiftFateModalOverlay/ShiftFateModalCenter/ShiftFateModal
+@onready var shift_fate_title = $ShiftFateModalOverlay/ShiftFateModalCenter/ShiftFateModal/ShiftFateContent/ShiftFateTitle
+@onready var shift_fate_subtitle = $ShiftFateModalOverlay/ShiftFateModalCenter/ShiftFateModal/ShiftFateContent/ShiftFateSubtitle
+@onready var shift_fate_preview_grid = $ShiftFateModalOverlay/ShiftFateModalCenter/ShiftFateModal/ShiftFateContent/ShiftFatePreviewGrid
+@onready var shift_fate_done_button = $ShiftFateModalOverlay/ShiftFateModalCenter/ShiftFateModal/ShiftFateContent/ShiftFateFooter/ShiftFateDoneButton
 @onready var root_layout = $RootLayout
 
 @onready var left_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas/PlacementTexture
@@ -137,6 +145,11 @@ var data_loader = GAME_DATA_LOADER_SCRIPT.new()
 var card_texture_cache: Dictionary = {}
 var card_sfx_cache: Dictionary = {}
 var common_sfx_cache: Dictionary = {}
+var shift_fate_selected_slot := ""
+var shift_fate_preview_cards: Array = []
+var shift_fate_selected_cards: Array = []
+var shift_fate_preview_entries: Array = []
+var shift_fate_required_selection_count := SHIFT_FATE_SELECTION_COUNT
 
 
 func _ready() -> void:
@@ -149,6 +162,7 @@ func _ready() -> void:
     background_base_position = background_texture.position
     retry_button.pressed.connect(_on_retry_battle_pressed)
     quit_button.pressed.connect(_on_quit_battle_pressed)
+    shift_fate_done_button.pressed.connect(_on_shift_fate_done_pressed)
     set_status("Battle ready.")
     _refresh_ui()
     call_deferred("_play_battle_intro")
@@ -1152,6 +1166,48 @@ func can_use_slot_weapon_on_monster(slot_name: String) -> bool:
     return false
 
 
+func can_use_slot_spell_on_monster(slot_name: String) -> bool:
+    if restart_pending:
+        return false
+
+    if match_state.player_state.is_stunned():
+        return false
+
+    var card = get_slot_card(slot_name)
+    if card == null or _get_card_family(card) != "spell":
+        return false
+
+    return _card_targets(card, "enemy_card") and not _is_slot_exhausted(slot_name)
+
+
+func can_use_slot_spell_on_boss(slot_name: String) -> bool:
+    if restart_pending:
+        return false
+
+    if match_state.player_state.is_stunned():
+        return false
+
+    var card = get_slot_card(slot_name)
+    if card == null or _get_card_family(card) != "spell":
+        return false
+
+    return _card_targets(card, "boss") and not _is_slot_exhausted(slot_name)
+
+
+func can_use_slot_spell_on_player(slot_name: String) -> bool:
+    if restart_pending:
+        return false
+
+    if match_state.player_state.is_stunned():
+        return false
+
+    var card = get_slot_card(slot_name)
+    if card == null or _get_card_family(card) != "spell":
+        return false
+
+    return _card_targets(card, "player_avatar") and not _is_slot_exhausted(slot_name)
+
+
 func can_resolve_monster_into_shield(slot_name: String) -> bool:
     if restart_pending:
         return false
@@ -1228,7 +1284,14 @@ func can_drop_on_slot(target_slot: String, data: Dictionary) -> bool:
         return family in ["weapon", "shield", "potion", "spell", "artifact", "coin", "chest"]
 
     if source in ["left_hand", "right_hand"] and target_slot == "boss":
-        return family == "weapon" and can_use_slot_weapon_on_monster(source)
+        if family == "weapon":
+            return can_use_slot_weapon_on_monster(source)
+        if family == "spell":
+            return can_use_slot_spell_on_boss(source)
+        return false
+
+    if source in ["left_hand", "right_hand"] and target_slot == "player_avatar":
+        return family == "spell" and can_use_slot_spell_on_player(source)
 
     if source in ["left_hand", "right_hand"] and target_slot == "backpack":
         if player_is_stunned:
@@ -1270,6 +1333,11 @@ func handle_slot_to_slot_drop(source_slot: String, target_slot: String) -> void:
         moved = _discard_hand_card(false)
 
     if moved:
+        if target_slot in ["left_hand", "right_hand"] and _is_shift_fate_card(get_slot_card(target_slot)):
+            set_status("Shift Fate awaits your choice.")
+            _refresh_ui()
+            _open_shift_fate_modal(target_slot)
+            return
         if target_slot == "discard":
             _play_sfx(_load_common_sfx(DISCARD_SFX_PATH))
         elif target_slot == "backpack":
@@ -1522,6 +1590,76 @@ func _handle_monster_to_shield(board_index: int, is_left_hand: bool) -> void:
     _refresh_ui()
 
 
+func handle_slot_card_drop_on_board(source_hand: String, board_index: int) -> void:
+    if restart_pending:
+        return
+
+    var slot_card = get_slot_card(source_hand)
+    var family := _get_card_family(slot_card)
+    var active_cards := match_state.board_state.get_active_cards()
+    var target_before = null
+    if board_index >= 0 and board_index < active_cards.size():
+        target_before = active_cards[board_index]
+
+    if family == "weapon":
+        handle_weapon_drop_on_board(source_hand, board_index)
+        return
+
+    if family != "spell":
+        set_status("That card cannot target a monster.")
+        _refresh_ui()
+        return
+
+    var success := false
+    if source_hand == "left_hand":
+        success = combat_controller.use_left_hand_spell_on_monster(board_index)
+    elif source_hand == "right_hand":
+        success = combat_controller.use_right_hand_spell_on_monster(board_index)
+
+    if not success:
+        set_status("Could not cast spell on monster.")
+        _refresh_ui()
+        return
+
+    _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
+    var target_after = null
+    if board_index >= 0 and board_index < active_cards.size():
+        target_after = active_cards[board_index]
+    if target_before != null and target_after == null:
+        _show_board_card_damage_slash(board_index)
+        await _animate_board_card_resolution(board_index)
+    elif target_before != null and target_after != target_before:
+        _show_board_card_damage_slash(board_index)
+    set_status("Spell cast on monster.")
+    _refresh_ui()
+
+
+func handle_slot_card_drop_on_player_avatar(source_hand: String) -> void:
+    if restart_pending:
+        return
+
+    var slot_card = get_slot_card(source_hand)
+    if _get_card_family(slot_card) != "spell":
+        set_status("Only spells can be cast on the player.")
+        _refresh_ui()
+        return
+
+    var success := false
+    if source_hand == "left_hand":
+        success = combat_controller.use_left_hand_spell_on_player()
+    elif source_hand == "right_hand":
+        success = combat_controller.use_right_hand_spell_on_player()
+
+    if not success:
+        set_status("Could not cast spell on player.")
+        _refresh_ui()
+        return
+
+    _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
+    set_status("Spell cast on player.")
+    _refresh_ui()
+
+
 func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
     if restart_pending:
         return
@@ -1615,6 +1753,43 @@ func handle_weapon_drop_on_boss(source_hand: String) -> void:
     _refresh_ui()
 
 
+func handle_slot_card_drop_on_boss(source_hand: String) -> void:
+    var slot_card = get_slot_card(source_hand)
+    var family := _get_card_family(slot_card)
+
+    if family == "weapon":
+        handle_weapon_drop_on_boss(source_hand)
+        return
+
+    if family != "spell":
+        set_status("That card cannot target the boss.")
+        _refresh_ui()
+        return
+
+    var before_health = match_state.boss_state.current_health
+    var player_health_before = match_state.player_state.current_health
+    var success := false
+    if source_hand == "left_hand":
+        success = combat_controller.use_left_hand_spell_on_boss()
+    elif source_hand == "right_hand":
+        success = combat_controller.use_right_hand_spell_on_boss()
+
+    if not success:
+        set_status("Could not cast spell on boss.")
+        _refresh_ui()
+        return
+
+    var after_health = match_state.boss_state.current_health
+    var retaliation_damage: int = maxi(player_health_before - match_state.player_state.current_health, 0)
+    _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
+    _show_boss_damage_slash()
+    if retaliation_damage > 0:
+        set_status("Spell hit the boss. %d to %d. Retaliation dealt %d damage." % [before_health, after_health, retaliation_damage])
+    else:
+        set_status("Spell hit the boss. %d to %d." % [before_health, after_health])
+    _refresh_ui()
+
+
 func _apply_visual_theme() -> void:
     player_health_label.add_theme_color_override("font_color", HUD_TEXT)
     boss_health_label.add_theme_color_override("font_color", HUD_TEXT)
@@ -1638,6 +1813,7 @@ func _apply_visual_theme() -> void:
     _style_loadout_label(right_hand_label)
     _style_loadout_label(backpack_label)
     _style_end_modal()
+    _style_shift_fate_modal()
     _style_slot_text(left_hand_name_label, left_hand_type_label, left_hand_value_label)
     _style_slot_text(right_hand_name_label, right_hand_type_label, right_hand_value_label)
     _style_slot_text(backpack_name_label, backpack_type_label, backpack_value_label)
@@ -1804,6 +1980,37 @@ func _style_end_modal() -> void:
     quit_button.add_theme_font_size_override("font_size", 16)
 
 
+func _style_shift_fate_modal() -> void:
+    if shift_fate_modal == null:
+        return
+
+    var panel_style := StyleBoxFlat.new()
+    panel_style.bg_color = Color("1b1410")
+    panel_style.border_color = Color("8a6651")
+    panel_style.border_width_left = 2
+    panel_style.border_width_top = 2
+    panel_style.border_width_right = 2
+    panel_style.border_width_bottom = 2
+    panel_style.corner_radius_top_left = 18
+    panel_style.corner_radius_top_right = 18
+    panel_style.corner_radius_bottom_right = 18
+    panel_style.corner_radius_bottom_left = 18
+    shift_fate_modal.add_theme_stylebox_override("panel", panel_style)
+
+    shift_fate_title.add_theme_color_override("font_color", Color("f7ead7"))
+    shift_fate_title.add_theme_font_size_override("font_size", 26)
+    shift_fate_subtitle.add_theme_color_override("font_color", HUD_TEXT)
+    shift_fate_subtitle.add_theme_font_size_override("font_size", 16)
+    shift_fate_done_button.add_theme_font_size_override("font_size", 16)
+    shift_fate_modal_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+    shift_fate_modal.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    shift_fate_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    shift_fate_subtitle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    shift_fate_preview_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    shift_fate_done_button.mouse_filter = Control.MOUSE_FILTER_STOP
+    shift_fate_done_button.focus_mode = Control.FOCUS_ALL
+
+
 func _queue_restart_if_finished() -> void:
     if restart_pending:
         return
@@ -1869,6 +2076,22 @@ func _hide_end_modal() -> void:
     escape_was_pressed = false
 
 
+func _hide_shift_fate_modal() -> void:
+    if shift_fate_modal_overlay != null:
+        shift_fate_modal_overlay.visible = false
+    shift_fate_selected_slot = ""
+    shift_fate_preview_cards.clear()
+    shift_fate_selected_cards.clear()
+    shift_fate_required_selection_count = SHIFT_FATE_SELECTION_COUNT
+    for entry in shift_fate_preview_entries:
+        var wrapper = entry.get("wrapper", null)
+        if wrapper is Node:
+            wrapper.queue_free()
+    shift_fate_preview_entries.clear()
+    if shift_fate_done_button != null:
+        shift_fate_done_button.disabled = true
+
+
 func _apply_battle_xp_rewards(outcome: String) -> int:
     if match_state == null:
         return 0
@@ -1900,7 +2123,10 @@ func _save_player_profile() -> void:
 
 
 func is_modal_open() -> bool:
-    return end_modal_overlay != null and end_modal_overlay.visible
+    return (
+        (end_modal_overlay != null and end_modal_overlay.visible)
+        or (shift_fate_modal_overlay != null and shift_fate_modal_overlay.visible)
+    )
 
 
 func _restart_battle() -> void:
@@ -1922,7 +2148,7 @@ func _on_quit_battle_pressed() -> void:
 
 
 func _process(_delta: float) -> void:
-    if not is_modal_open():
+    if end_modal_overlay == null or not end_modal_overlay.visible:
         escape_was_pressed = false
         return
 
@@ -2026,7 +2252,11 @@ func handle_drop_to_left_hand(board_index: int) -> void:
  var before_left_hand = match_state.player_state.left_hand_card
  print("before move, left hand: ", before_left_hand)
 
- var success = combat_controller.move_player_card_to_left_hand(board_index)
+ var success = false
+ if board_card != null and _is_shift_fate_card(board_card):
+  success = combat_controller.move_player_card_to_left_hand(board_index, true)
+ else:
+  success = combat_controller.move_player_card_to_left_hand(board_index)
 
  var after_left_hand = match_state.player_state.left_hand_card
  print("after move, left hand: ", after_left_hand)
@@ -2038,6 +2268,11 @@ func handle_drop_to_left_hand(board_index: int) -> void:
   elif board_card != null and _get_card_family(board_card) == "potion":
    _play_sfx(_load_common_sfx(DRINK_POTION_SFX_PATH))
   await _animate_board_card_resolution(board_index)
+  if _is_shift_fate_card(match_state.player_state.left_hand_card):
+   set_status("Shift Fate awaits your choice.")
+   _refresh_ui()
+   _open_shift_fate_modal("left_hand")
+   return
   set_status("Dropped card into left hand.")
  else:
   set_status("Could not drop card into left hand.")
@@ -2060,7 +2295,11 @@ func handle_drop_to_right_hand(board_index: int) -> void:
  var before_right_hand = match_state.player_state.right_hand_card
  print("before move, right hand: ", before_right_hand)
 
- var success = combat_controller.move_player_card_to_right_hand(board_index)
+ var success = false
+ if board_card != null and _is_shift_fate_card(board_card):
+  success = combat_controller.move_player_card_to_right_hand(board_index, true)
+ else:
+  success = combat_controller.move_player_card_to_right_hand(board_index)
 
  var after_right_hand = match_state.player_state.right_hand_card
  print("after move, right hand: ", after_right_hand)
@@ -2072,6 +2311,11 @@ func handle_drop_to_right_hand(board_index: int) -> void:
   elif board_card != null and _get_card_family(board_card) == "potion":
    _play_sfx(_load_common_sfx(DRINK_POTION_SFX_PATH))
   await _animate_board_card_resolution(board_index)
+  if _is_shift_fate_card(match_state.player_state.right_hand_card):
+   set_status("Shift Fate awaits your choice.")
+   _refresh_ui()
+   _open_shift_fate_modal("right_hand")
+   return
   set_status("Dropped card into right hand.")
  else:
   set_status("Could not drop card into right hand.")
@@ -2183,3 +2427,169 @@ func _get_card_unique_key(card) -> String:
 
 func _is_runtime_card(value) -> bool:
     return value is Object and value.get_script() == CARD_RUNTIME_STATE_SCRIPT
+
+
+func _is_slot_exhausted(slot_name: String) -> bool:
+    if slot_name == "left_hand":
+        return match_state.player_state.left_hand_exhausted
+    if slot_name == "right_hand":
+        return match_state.player_state.right_hand_exhausted
+    if slot_name == "backpack":
+        return match_state.player_state.backpack_exhausted
+    return false
+
+
+func _card_targets(card, target_rule: String) -> bool:
+    if _is_runtime_card(card):
+        var target_rules = card.card_data.get("target_rules", [])
+        return target_rules is Array and target_rule in target_rules
+    if card is Dictionary:
+        var target_rules = card.get("target_rules", [])
+        return target_rules is Array and target_rule in target_rules
+    return false
+
+
+func _is_shift_fate_card(card) -> bool:
+    return _has_special_rule(card, "shift_fate")
+
+
+func _open_shift_fate_modal(slot_name: String) -> void:
+    var spell = get_slot_card(slot_name)
+    if not _is_shift_fate_card(spell):
+        return
+
+    _hide_shift_fate_modal()
+    shift_fate_selected_slot = slot_name
+    shift_fate_preview_cards = match_state.shared_deck_state.peek(SHIFT_FATE_PREVIEW_COUNT)
+    shift_fate_required_selection_count = mini(SHIFT_FATE_SELECTION_COUNT, shift_fate_preview_cards.size())
+
+    if shift_fate_required_selection_count <= 0:
+        _finalize_shift_fate_choice()
+        return
+
+    for card in shift_fate_preview_cards:
+        var wrapper := PanelContainer.new()
+        wrapper.custom_minimum_size = Vector2(220, 300)
+        wrapper.mouse_filter = Control.MOUSE_FILTER_STOP
+
+        var style := StyleBoxFlat.new()
+        style.bg_color = Color("130f0d")
+        style.border_color = PANEL_BORDER
+        style.border_width_left = 2
+        style.border_width_top = 2
+        style.border_width_right = 2
+        style.border_width_bottom = 2
+        style.corner_radius_top_left = 14
+        style.corner_radius_top_right = 14
+        style.corner_radius_bottom_right = 14
+        style.corner_radius_bottom_left = 14
+        wrapper.add_theme_stylebox_override("panel", style)
+
+        var preview_card = CARD_VIEW_SCENE.instantiate()
+        preview_card.setup(card, -1)
+        preview_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        preview_card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+        wrapper.add_child(preview_card)
+
+        var order_label := Label.new()
+        order_label.visible = false
+        order_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+        order_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+        order_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+        order_label.position = Vector2(12, 12)
+        order_label.size = Vector2(36, 36)
+        order_label.add_theme_color_override("font_color", Color("1b1410"))
+        order_label.add_theme_font_size_override("font_size", 20)
+        wrapper.add_child(order_label)
+
+        wrapper.gui_input.connect(_on_shift_fate_preview_gui_input.bind(card))
+        shift_fate_preview_grid.add_child(wrapper)
+        shift_fate_preview_entries.append({
+            "card": card,
+            "wrapper": wrapper,
+            "order_label": order_label
+        })
+
+    shift_fate_done_button.disabled = true
+    move_child(shift_fate_modal_overlay, get_child_count() - 1)
+    shift_fate_modal_overlay.visible = true
+    _refresh_shift_fate_preview_state()
+
+
+func _on_shift_fate_preview_gui_input(event: InputEvent, card) -> void:
+    if not (event is InputEventMouseButton):
+        return
+
+    var mouse_event := event as InputEventMouseButton
+    if mouse_event.button_index != MOUSE_BUTTON_LEFT or not mouse_event.pressed:
+        return
+
+    if card in shift_fate_selected_cards:
+        shift_fate_selected_cards.erase(card)
+    elif shift_fate_selected_cards.size() < shift_fate_required_selection_count:
+        shift_fate_selected_cards.append(card)
+
+    _refresh_shift_fate_preview_state()
+
+
+func _refresh_shift_fate_preview_state() -> void:
+    for entry in shift_fate_preview_entries:
+        var card = entry.get("card", null)
+        var wrapper = entry.get("wrapper", null)
+        var order_label = entry.get("order_label", null)
+        if wrapper == null or order_label == null:
+            continue
+
+        var order_index := shift_fate_selected_cards.find(card)
+        var style := StyleBoxFlat.new()
+        style.bg_color = Color("130f0d")
+        style.border_width_left = 2
+        style.border_width_top = 2
+        style.border_width_right = 2
+        style.border_width_bottom = 2
+        style.corner_radius_top_left = 14
+        style.corner_radius_top_right = 14
+        style.corner_radius_bottom_right = 14
+        style.corner_radius_bottom_left = 14
+
+        if order_index >= 0:
+            style.border_color = SUCCESS_TEXT
+            order_label.visible = true
+            order_label.text = str(order_index + 1)
+        else:
+            style.border_color = PANEL_BORDER
+            order_label.visible = false
+            order_label.text = ""
+
+        wrapper.add_theme_stylebox_override("panel", style)
+
+    shift_fate_done_button.disabled = shift_fate_selected_cards.size() != shift_fate_required_selection_count
+
+
+func _on_shift_fate_done_pressed() -> void:
+    if shift_fate_selected_cards.size() != shift_fate_required_selection_count:
+        return
+
+    _finalize_shift_fate_choice()
+
+
+func _finalize_shift_fate_choice() -> void:
+    var selected_cards = shift_fate_selected_cards.duplicate()
+    match_state.shared_deck_state.reorder_with_selected_top(selected_cards)
+
+    var consumed := false
+    if shift_fate_selected_slot == "left_hand":
+        consumed = resolution_controller.use_left_hand_spell_on_player(match_state)
+    elif shift_fate_selected_slot == "right_hand":
+        consumed = resolution_controller.use_right_hand_spell_on_player(match_state)
+
+    _hide_shift_fate_modal()
+
+    if consumed:
+        _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
+        combat_controller.finalize_post_action()
+        set_status("Shift Fate set the next draws.")
+    else:
+        set_status("Shift Fate could not resolve.")
+
+    _refresh_ui()

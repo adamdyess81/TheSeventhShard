@@ -304,6 +304,36 @@ func use_right_hand_potion(match_state: MatchCombatState) -> bool:
     return true
 
 
+func use_left_hand_spell_on_monster(match_state: MatchCombatState, board_index: int) -> bool:
+    var spell = match_state.player_state.left_hand_card
+    return _use_spell_on_monster(match_state, board_index, spell, true)
+
+
+func use_right_hand_spell_on_monster(match_state: MatchCombatState, board_index: int) -> bool:
+    var spell = match_state.player_state.right_hand_card
+    return _use_spell_on_monster(match_state, board_index, spell, false)
+
+
+func use_left_hand_spell_on_boss(match_state: MatchCombatState) -> bool:
+    var spell = match_state.player_state.left_hand_card
+    return _use_spell_on_boss(match_state, spell, true)
+
+
+func use_right_hand_spell_on_boss(match_state: MatchCombatState) -> bool:
+    var spell = match_state.player_state.right_hand_card
+    return _use_spell_on_boss(match_state, spell, false)
+
+
+func use_left_hand_spell_on_player(match_state: MatchCombatState) -> bool:
+    var spell = match_state.player_state.left_hand_card
+    return _use_spell_on_player(match_state, spell, true)
+
+
+func use_right_hand_spell_on_player(match_state: MatchCombatState) -> bool:
+    var spell = match_state.player_state.right_hand_card
+    return _use_spell_on_player(match_state, spell, false)
+
+
 func _use_weapon_on_monster(match_state: MatchCombatState, board_index: int, weapon, is_left_hand: bool) -> bool:
     var active_cards := match_state.board_state.get_active_cards()
 
@@ -328,6 +358,155 @@ func _use_weapon_on_monster(match_state: MatchCombatState, board_index: int, wea
 
     _finalize_weapon_after_attack(match_state, weapon, is_left_hand, attack_result, false)
     return true
+
+
+func _use_spell_on_monster(match_state: MatchCombatState, board_index: int, spell, is_left_hand: bool) -> bool:
+    if not _can_use_hand_spell(match_state, spell, is_left_hand):
+        return false
+    if not _spell_targets(spell, "enemy_card"):
+        return false
+
+    var active_cards := match_state.board_state.get_active_cards()
+    if board_index < 0 or board_index >= active_cards.size():
+        return false
+
+    var target = active_cards[board_index]
+    if _get_card_family(target) != "monster":
+        return false
+
+    var consumed := false
+
+    if _has_special_rule(spell, "fire_damage"):
+        var damage := _get_card_runtime_value(spell)
+        _deal_damage_to_monster(match_state, target, damage)
+        consumed = true
+    elif _has_special_rule(spell, "board_burst"):
+        _apply_board_burst_spell(match_state, spell)
+        consumed = true
+    elif _has_special_rule(spell, "recall"):
+        match_state.board_state.remove_card_at(board_index)
+        match_state.shared_deck_state.insert_runtime_card_at_random(target)
+        consumed = true
+    elif _has_special_rule(spell, "banishing_sigil"):
+        match_state.shared_deck_state.remove_first_card_by_id(_get_card_id(target))
+        consumed = true
+
+    if not consumed:
+        return false
+
+    _consume_spell(match_state, spell, is_left_hand)
+    return true
+
+
+func _use_spell_on_boss(match_state: MatchCombatState, spell, is_left_hand: bool) -> bool:
+    if not _can_use_hand_spell(match_state, spell, is_left_hand):
+        return false
+    if not _spell_targets(spell, "boss"):
+        return false
+
+    var consumed := false
+
+    if _has_special_rule(spell, "fire_damage"):
+        var damage := _get_card_runtime_value(spell)
+        var boss_health_before := match_state.boss_state.current_health
+        match_state.boss_state.take_damage(damage)
+        if boss_health_before > match_state.boss_state.current_health:
+            match_state.trigger_boss_retaliation_on_player_attack()
+        consumed = true
+    elif _has_special_rule(spell, "board_burst"):
+        _apply_board_burst_spell(match_state, spell)
+        consumed = true
+
+    if not consumed:
+        return false
+
+    _consume_spell(match_state, spell, is_left_hand)
+    return true
+
+
+func _use_spell_on_player(match_state: MatchCombatState, spell, is_left_hand: bool) -> bool:
+    if not _can_use_hand_spell(match_state, spell, is_left_hand):
+        return false
+    if not _spell_targets(spell, "player_avatar"):
+        return false
+
+    var consumed := false
+
+    if _has_special_rule(spell, "ward_of_ash"):
+        match_state.player_state.add_damage_ward(_get_special_rule_value(spell, "ward_of_ash", _get_card_runtime_value(spell)))
+        consumed = true
+        _consume_spell(match_state, spell, is_left_hand)
+    elif _has_special_rule(spell, "stasis_hex"):
+        match_state.board_state.reduce_round_resolve_threshold(_get_card_runtime_value(spell))
+        consumed = true
+        _consume_spell(match_state, spell, is_left_hand)
+    elif _has_special_rule(spell, "battle_focus"):
+        consumed = true
+        _consume_spell(match_state, spell, is_left_hand, false)
+        match_state.player_state.left_hand_exhausted = false
+        match_state.player_state.right_hand_exhausted = false
+    elif _has_special_rule(spell, "shift_fate"):
+        consumed = true
+        _consume_spell(match_state, spell, is_left_hand)
+
+    return consumed
+ 
+
+func _apply_board_burst_spell(match_state: MatchCombatState, spell) -> void:
+    var damage := _get_card_runtime_value(spell)
+    if damage <= 0:
+        return
+
+    var active_cards := match_state.board_state.get_active_cards()
+    var targets: Array = []
+    for card in active_cards:
+        if card != null and _get_card_family(card) == "monster":
+            targets.append(card)
+
+    for target in targets:
+        _deal_damage_to_monster(match_state, target, damage)
+
+    var boss_health_before := match_state.boss_state.current_health
+    match_state.boss_state.take_damage(damage)
+    if boss_health_before > match_state.boss_state.current_health:
+        match_state.trigger_boss_retaliation_on_player_attack()
+
+
+func _can_use_hand_spell(match_state: MatchCombatState, spell, is_left_hand: bool) -> bool:
+    if spell == null:
+        return false
+    if match_state.player_state.is_stunned():
+        return false
+    if _get_card_family(spell) != "spell":
+        return false
+    if is_left_hand:
+        return not match_state.player_state.left_hand_exhausted
+    return not match_state.player_state.right_hand_exhausted
+
+
+func _consume_spell(match_state: MatchCombatState, spell, is_left_hand: bool, should_exhaust_hand: bool = true) -> void:
+    _mark_card_resolved(spell)
+    _mark_card_exhausted(spell)
+    _mark_card_destroyed(spell)
+
+    if is_left_hand:
+        match_state.player_state.clear_left_hand_card()
+        if should_exhaust_hand:
+            match_state.player_state.exhaust_left_hand()
+    else:
+        match_state.player_state.clear_right_hand_card()
+        if should_exhaust_hand:
+            match_state.player_state.exhaust_right_hand()
+
+
+func _spell_targets(spell, target_rule: String) -> bool:
+    if spell is CardRuntimeState:
+        var target_rules = spell.card_data.get("target_rules", [])
+        return target_rules is Array and target_rule in target_rules
+    if spell is Dictionary:
+        var target_rules = spell.get("target_rules", [])
+        return target_rules is Array and target_rule in target_rules
+    return false
 
 
 func _resolve_monster_into_shield(match_state: MatchCombatState, board_index: int, is_left_hand: bool) -> bool:
