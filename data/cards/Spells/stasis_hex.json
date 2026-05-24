@@ -4,8 +4,8 @@
   "family": "spell",
   "subtype": "effect",
   "rarity": "common",
-  "base_value": 0,
-  "description": "Cast onto the player avatar. Reduce this round's resolve threshold by 1.",
+  "base_value": 1,
+  "description": "Cast onto the player avatar. Reduce this round's resolve threshold by value.",
   "tags": ["spell", "effect", "round"],
   "keywords": [],
   "target_rules": ["player_avatar", "hand_slot"],
@@ -18,6 +18,6 @@
   "can_be_used_from_backpack": false,
   "requires_hand_to_use": true,
   "occupies_two_hands": false,
-  "art_ref": null,
+  "art_ref": "res://art/cards/Stasis Hex.png",
   "icon_ref": null
 }

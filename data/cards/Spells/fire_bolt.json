@@ -4,7 +4,7 @@
   "family": "spell",
   "subtype": "damage",
   "rarity": "common",
-  "base_value": 1,
+  "base_value": 3,
   "description": "Cast from a hand onto a monster or boss. Deal Fire damage equal to this card's value to a single target.",
   "tags": ["spell", "damage", "fire"],
   "keywords": [],
@@ -18,6 +18,6 @@
   "can_be_used_from_backpack": false,
   "requires_hand_to_use": true,
   "occupies_two_hands": false,
-  "art_ref": null,
+  "art_ref": "res://art/cards/Fire Bolt.png",
   "icon_ref": null
 }

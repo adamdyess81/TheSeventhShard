@@ -5,7 +5,7 @@
   "subtype": "damage",
   "rarity": "common",
   "base_value": 1,
-  "description": "Cast from a hand. Deal Magic damage equal to this card's value to all monsters on the board.",
+  "description": "Cast from a hand. Deal Magic damage equal to this card's value to all monsters on the board, plus the boss",
   "tags": ["spell", "damage", "magic", "board"],
   "keywords": [],
   "target_rules": ["enemy_card", "boss", "hand_slot"],
@@ -18,6 +18,6 @@
   "can_be_used_from_backpack": false,
   "requires_hand_to_use": true,
   "occupies_two_hands": false,
-  "art_ref": null,
+  "art_ref": "res://art/cards/Energy Burst.png",
   "icon_ref": null
 }
