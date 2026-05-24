@@ -6,6 +6,7 @@ static var art_cache: Dictionary = {}
 
 var card_data
 var board_index: int = -1
+var _is_setup_ready: bool = false
 
 @onready var card_canvas: Control = %CardCanvas
 @onready var art_rect: TextureRect = %ArtRect
@@ -13,10 +14,21 @@ var board_index: int = -1
 @onready var family_label: Label = %FamilyLabel
 @onready var value_label: Label = %ValueLabel
 
+func _ready() -> void:
+	_is_setup_ready = true
+	if card_data != null:
+		_apply_setup()
+
+
 func setup(card, index: int) -> void:
 	card_data = card
 	board_index = index
+	if not _is_setup_ready:
+		return
+	_apply_setup()
 
+
+func _apply_setup() -> void:
 	_apply_visual_theme()
 	_apply_card_art()
 	var meta := _get_card_meta()

@@ -1596,7 +1596,7 @@ func handle_slot_card_drop_on_board(source_hand: String, board_index: int) -> vo
 
     var slot_card = get_slot_card(source_hand)
     var family := _get_card_family(slot_card)
-    var active_cards := match_state.board_state.get_active_cards()
+    var active_cards: Array = match_state.board_state.get_active_cards()
     var target_before = null
     if board_index >= 0 and board_index < active_cards.size():
         target_before = active_cards[board_index]
