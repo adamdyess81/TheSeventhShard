@@ -36,6 +36,7 @@ func setup(
 func advance_round() -> void:
  _process_end_of_round_effects()
  _remove_active_round_buffs_from_cards()
+ board_state.clear_round_resolve_threshold_modifiers()
  round_number += 1
  player_state.reset_hand_exhaustion()
  player_state.clear_stun()

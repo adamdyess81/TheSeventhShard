@@ -40,17 +40,19 @@ func resolve_gold_to_temporary_gold(board_index: int) -> bool:
     return success
 
 
-func move_player_card_to_left_hand(board_index: int) -> bool:
+func move_player_card_to_left_hand(board_index: int, defer_post_action: bool = false) -> bool:
     var success := resolution_controller.move_player_card_to_left_hand(match_state, board_index)
     _award_action_xp(success)
-    _post_action_update()
+    if not defer_post_action:
+        _post_action_update()
     return success
 
 
-func move_player_card_to_right_hand(board_index: int) -> bool:
+func move_player_card_to_right_hand(board_index: int, defer_post_action: bool = false) -> bool:
     var success := resolution_controller.move_player_card_to_right_hand(match_state, board_index)
     _award_action_xp(success)
-    _post_action_update()
+    if not defer_post_action:
+        _post_action_update()
     return success
 
 
@@ -122,6 +124,52 @@ func use_right_hand_potion() -> bool:
     _award_action_xp(success)
     _post_action_update()
     return success
+
+
+func use_left_hand_spell_on_monster(board_index: int) -> bool:
+    var success := resolution_controller.use_left_hand_spell_on_monster(match_state, board_index)
+    _award_action_xp(success)
+    _post_action_update()
+    return success
+
+
+func use_right_hand_spell_on_monster(board_index: int) -> bool:
+    var success := resolution_controller.use_right_hand_spell_on_monster(match_state, board_index)
+    _award_action_xp(success)
+    _post_action_update()
+    return success
+
+
+func use_left_hand_spell_on_boss() -> bool:
+    var success := resolution_controller.use_left_hand_spell_on_boss(match_state)
+    _award_action_xp(success)
+    _post_action_update()
+    return success
+
+
+func use_right_hand_spell_on_boss() -> bool:
+    var success := resolution_controller.use_right_hand_spell_on_boss(match_state)
+    _award_action_xp(success)
+    _post_action_update()
+    return success
+
+
+func use_left_hand_spell_on_player() -> bool:
+    var success := resolution_controller.use_left_hand_spell_on_player(match_state)
+    _award_action_xp(success)
+    _post_action_update()
+    return success
+
+
+func use_right_hand_spell_on_player() -> bool:
+    var success := resolution_controller.use_right_hand_spell_on_player(match_state)
+    _award_action_xp(success)
+    _post_action_update()
+    return success
+
+
+func finalize_post_action() -> void:
+    _post_action_update()
 
 
 func _post_action_update() -> void:

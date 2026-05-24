@@ -64,7 +64,7 @@ func _can_drop_data(_at_position, data) -> bool:
 	if source not in ["left_hand", "right_hand"]:
 		return false
 
-	if dragged_family != "weapon" or _get_card_family() != "monster":
+	if _get_card_family() != "monster":
 		return false
 
 	var combat_scene = get_tree().get_first_node_in_group("combat_scene")
@@ -74,7 +74,11 @@ func _can_drop_data(_at_position, data) -> bool:
 	if combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
 		return false
 
-	return combat_scene.can_use_slot_weapon_on_monster(source)
+	if dragged_family == "weapon":
+		return combat_scene.can_use_slot_weapon_on_monster(source)
+	if dragged_family == "spell":
+		return combat_scene.can_use_slot_spell_on_monster(source)
+	return false
 
 
 func _drop_data(_at_position, data) -> void:
@@ -86,7 +90,7 @@ func _drop_data(_at_position, data) -> void:
 		return
 
 	var source := String(data.get("source", "")).strip_edges()
-	combat_scene.handle_weapon_drop_on_board(source, board_index)
+	combat_scene.handle_slot_card_drop_on_board(source, board_index)
 
 
 func _apply_card_art() -> void:
