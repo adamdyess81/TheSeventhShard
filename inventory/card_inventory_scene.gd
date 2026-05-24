@@ -8,10 +8,21 @@ const DEFAULT_MAX_DECK_SIZE := 15
 const GAME_DATA_LOADER_SCRIPT = preload("res://core/GameDataLoader.gd")
 const PROFILE_DECK_SCRIPT = preload("res://core/ProfileDeck.gd")
 const PROGRESSION_SCRIPT = preload("res://core/Progression.gd")
+const CARD_BACK_TEXTURE = preload("res://art/ui/CardBack.png")
+const PANEL_FILL = Color("18110d")
+const PANEL_BORDER = Color("75563c")
+const TEXT_PRIMARY = Color("f1e7d6")
+const TEXT_MUTED = Color("c7b79f")
+const TEXT_SUCCESS = Color("d6c583")
+const TEXT_ERROR = Color("d38a80")
+const TILE_WIDTH := 220.0
+const TILE_ART_HEIGHT := 250.0
 
 @onready var deck_summary_label = $Root/Content/Header/DeckSummary
 @onready var status_label = $Root/Content/Header/StatusLabel
-@onready var card_list = $Root/Content/Body/Scroll/Rows
+@onready var body_panel = $Root/Content/Body
+@onready var card_scroll = $Root/Content/Body/BodyMargin/Scroll
+@onready var card_grid = $Root/Content/Body/BodyMargin/Scroll/CardGrid
 @onready var return_button = $Root/Content/Footer/ReturnButton
 @onready var go_fight_button = $Root/Content/Footer/GoFightButton
 @onready var exit_button = $Root/Content/Footer/ExitGameButton
@@ -20,6 +31,7 @@ var loader
 var player_profile_data: Dictionary = {}
 var selected_deck_counts: Dictionary = {}
 var owned_card_counts: Dictionary = {}
+var card_texture_cache: Dictionary = {}
 
 
 func _ready() -> void:
@@ -27,10 +39,13 @@ func _ready() -> void:
 	loader.build_card_registry()
 	_load_player_profile()
 	_ensure_selected_deck()
+	_apply_visual_theme()
 	_refresh_scene()
 	return_button.pressed.connect(_on_return_pressed)
 	go_fight_button.pressed.connect(_on_go_fight_pressed)
 	exit_button.pressed.connect(_on_exit_game_pressed)
+	get_viewport().size_changed.connect(_on_viewport_resized)
+	call_deferred("_update_grid_columns")
 
 
 func _load_player_profile() -> void:
@@ -66,57 +81,110 @@ func _refresh_summary() -> void:
 	]
 	if _can_leave_scene():
 		status_label.text = "Deck is valid."
+		status_label.modulate = TEXT_SUCCESS
 	elif total_cards < MINIMUM_DECK_SIZE:
 		status_label.text = "Select at least %d cards before leaving." % MINIMUM_DECK_SIZE
+		status_label.modulate = TEXT_ERROR
 	else:
 		status_label.text = "Deck exceeds max size of %d." % max_deck_size
+		status_label.modulate = TEXT_ERROR
 
 
 func _rebuild_card_rows() -> void:
-	for child in card_list.get_children():
+	for child in card_grid.get_children():
 		child.queue_free()
 
 	var card_ids: Array = owned_card_counts.keys()
-	card_ids.sort()
+	card_ids.sort_custom(func(a, b): return _get_card_name(str(a)).naturalnocasecmp_to(_get_card_name(str(b))) < 0)
 
 	for card_id in card_ids:
 		var owned_quantity := int(owned_card_counts.get(card_id, 0))
 		var selected_quantity := int(selected_deck_counts.get(card_id, 0))
-		var card_name := _get_card_name(str(card_id))
+		card_grid.add_child(_build_card_tile(str(card_id), owned_quantity, selected_quantity))
 
-		var row := HBoxContainer.new()
-		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_theme_constant_override("separation", 12)
+	_update_grid_columns()
 
-		var name_label := Label.new()
-		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_label.text = card_name
-		row.add_child(name_label)
 
-		var owned_label := Label.new()
-		owned_label.custom_minimum_size = Vector2(110, 0)
-		owned_label.text = "Owned: %d" % owned_quantity
-		row.add_child(owned_label)
+func _build_card_tile(card_id: String, owned_quantity: int, selected_quantity: int) -> Control:
+	var card_data: Dictionary = loader.get_card(card_id)
+	var tile := PanelContainer.new()
+	tile.custom_minimum_size = Vector2(TILE_WIDTH, 390)
+	tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var tile_style := StyleBoxFlat.new()
+	tile_style.bg_color = PANEL_FILL
+	tile_style.border_width_left = 2
+	tile_style.border_width_top = 2
+	tile_style.border_width_right = 2
+	tile_style.border_width_bottom = 2
+	tile_style.border_color = PANEL_BORDER
+	tile_style.corner_radius_top_left = 10
+	tile_style.corner_radius_top_right = 10
+	tile_style.corner_radius_bottom_right = 10
+	tile_style.corner_radius_bottom_left = 10
+	tile.add_theme_stylebox_override("panel", tile_style)
 
-		var remove_button := Button.new()
-		remove_button.text = "-"
-		remove_button.disabled = selected_quantity <= 0
-		remove_button.pressed.connect(_on_remove_card.bind(str(card_id)))
-		row.add_child(remove_button)
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	tile.add_child(margin)
 
-		var selected_label := Label.new()
-		selected_label.custom_minimum_size = Vector2(90, 0)
-		selected_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		selected_label.text = "Deck: %d" % selected_quantity
-		row.add_child(selected_label)
+	var stack := VBoxContainer.new()
+	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	stack.add_theme_constant_override("separation", 8)
+	margin.add_child(stack)
 
-		var add_button := Button.new()
-		add_button.text = "+"
-		add_button.disabled = selected_quantity >= owned_quantity or PROFILE_DECK_SCRIPT.get_total_cards(selected_deck_counts) >= _get_effective_max_deck_size()
-		add_button.pressed.connect(_on_add_card.bind(str(card_id)))
-		row.add_child(add_button)
+	var art := TextureRect.new()
+	art.custom_minimum_size = Vector2(0, TILE_ART_HEIGHT)
+	art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.texture = _get_card_texture(card_data)
+	stack.add_child(art)
 
-		card_list.add_child(row)
+	var name_label := Label.new()
+	name_label.text = str(card_data.get("name", card_id))
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_label.modulate = TEXT_PRIMARY
+	stack.add_child(name_label)
+
+	var counts_label := Label.new()
+	counts_label.text = "Inventory: %d   Deck: %d" % [owned_quantity, selected_quantity]
+	counts_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	counts_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	counts_label.modulate = TEXT_MUTED
+	stack.add_child(counts_label)
+
+	var controls := HBoxContainer.new()
+	controls.alignment = BoxContainer.ALIGNMENT_CENTER
+	controls.add_theme_constant_override("separation", 10)
+	stack.add_child(controls)
+
+	var remove_button := Button.new()
+	remove_button.text = "-"
+	remove_button.custom_minimum_size = Vector2(46, 36)
+	remove_button.disabled = selected_quantity <= 0
+	remove_button.pressed.connect(_on_remove_card.bind(card_id))
+	controls.add_child(remove_button)
+
+	var deck_label := Label.new()
+	deck_label.custom_minimum_size = Vector2(58, 0)
+	deck_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	deck_label.text = str(selected_quantity)
+	deck_label.modulate = TEXT_PRIMARY
+	controls.add_child(deck_label)
+
+	var add_button := Button.new()
+	add_button.text = "+"
+	add_button.custom_minimum_size = Vector2(46, 36)
+	add_button.disabled = selected_quantity >= owned_quantity or PROFILE_DECK_SCRIPT.get_total_cards(selected_deck_counts) >= _get_effective_max_deck_size()
+	add_button.pressed.connect(_on_add_card.bind(card_id))
+	controls.add_child(add_button)
+
+	return tile
 
 
 func _get_card_name(card_id: String) -> String:
@@ -124,6 +192,19 @@ func _get_card_name(card_id: String) -> String:
 	if card_data.is_empty():
 		return card_id
 	return str(card_data.get("name", card_id))
+
+
+func _get_card_texture(card_data: Dictionary) -> Texture2D:
+	var art_ref := str(card_data.get("art_ref", "")).strip_edges()
+	if art_ref == "":
+		return CARD_BACK_TEXTURE
+	if card_texture_cache.has(art_ref):
+		return card_texture_cache[art_ref]
+	var texture = load(art_ref)
+	if texture is Texture2D:
+		card_texture_cache[art_ref] = texture
+		return texture
+	return CARD_BACK_TEXTURE
 
 
 func _on_add_card(card_id: String) -> void:
@@ -198,3 +279,32 @@ func _save_player_profile() -> void:
 
 	file.store_string(JSON.stringify(player_profile_data, "\t"))
 	file.close()
+
+
+func _apply_visual_theme() -> void:
+	deck_summary_label.modulate = TEXT_PRIMARY
+	status_label.modulate = TEXT_MUTED
+	var body_style := StyleBoxFlat.new()
+	body_style.bg_color = Color("0e0a08")
+	body_style.border_width_left = 2
+	body_style.border_width_top = 2
+	body_style.border_width_right = 2
+	body_style.border_width_bottom = 2
+	body_style.border_color = PANEL_BORDER
+	body_style.corner_radius_top_left = 12
+	body_style.corner_radius_top_right = 12
+	body_style.corner_radius_bottom_right = 12
+	body_style.corner_radius_bottom_left = 12
+	body_panel.add_theme_stylebox_override("panel", body_style)
+
+
+func _on_viewport_resized() -> void:
+	_update_grid_columns()
+
+
+func _update_grid_columns() -> void:
+	if card_grid == null or card_scroll == null:
+		return
+	var available_width: float = maxf(card_scroll.size.x - 16.0, TILE_WIDTH)
+	var columns := int(floor(available_width / (TILE_WIDTH + 16.0)))
+	card_grid.columns = clampi(columns, 1, 5)

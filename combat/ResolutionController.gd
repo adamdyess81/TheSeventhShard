@@ -15,6 +15,7 @@ func resolve_enemy_to_player(match_state: MatchCombatState, board_index: int) ->
     var damage := _get_effective_monster_value(match_state, card)
     match_state.player_state.take_damage(damage)
     _apply_monster_unblocked_specials(match_state, card)
+    _apply_monster_resolved_specials(match_state, card)
     _mark_card_resolved(card)
     match_state.board_state.remove_card_at(board_index)
 
@@ -354,6 +355,7 @@ func _resolve_monster_into_shield(match_state: MatchCombatState, board_index: in
     _mark_card_resolved(monster)
     match_state.board_state.remove_card_at(board_index)
     _apply_monster_blocked_specials(match_state, monster)
+    _apply_monster_resolved_specials(match_state, monster)
 
     var remaining_shield := shield_value - monster_value
 
@@ -460,9 +462,6 @@ func _apply_monster_unblocked_specials(match_state: MatchCombatState, monster) -
             "source_card_id": _get_card_id(monster)
         })
 
-    if _has_special_rule(monster, "spite"):
-        match_state.player_state.take_damage(_get_special_rule_value(monster, "spite", 1))
-
     if _has_special_rule(monster, "poison"):
         var poison_amount := _get_special_rule_value(monster, "poison", 1)
         match_state.player_state.add_poison_counters(poison_amount)
@@ -481,14 +480,16 @@ func _apply_monster_unblocked_specials(match_state: MatchCombatState, monster) -
 
 
 func _apply_monster_blocked_specials(match_state: MatchCombatState, monster) -> void:
-    if _has_special_rule(monster, "spite"):
-        match_state.player_state.take_damage(_get_special_rule_value(monster, "spite", 1))
-
     if _has_special_rule(monster, "entangle"):
         match_state.player_state.exhaust_all_loadout_slots()
         match_state.queue_event("player_entangled", {
             "source_card_id": _get_card_id(monster)
         })
+
+
+func _apply_monster_resolved_specials(match_state: MatchCombatState, monster) -> void:
+    if _has_special_rule(monster, "spite"):
+        match_state.player_state.take_damage(_get_special_rule_value(monster, "spite", 1))
 
 
 func _get_weapon_attack_value_for_use(weapon) -> int:
@@ -533,6 +534,7 @@ func _deal_damage_to_monster(match_state: MatchCombatState, monster, damage: int
     if remaining_monster <= 0:
         result["killed"] = true
         result["overflow"] = abs(mini(remaining_monster, 0))
+        _apply_monster_resolved_specials(match_state, monster)
         _mark_card_resolved(monster)
         _remove_board_card_reference(match_state, monster)
         match_state.trigger_boss_on_player_monster_kill(monster)
@@ -560,8 +562,11 @@ func _finalize_weapon_after_attack(
     attacked_boss: bool
 ) -> void:
     if _has_special_rule(weapon, "second_strike"):
-        _clear_weapon_follow_up_state(weapon)
-        return
+        if not _get_weapon_second_strike_state(weapon):
+            _set_weapon_second_strike_state(weapon, true)
+            _clear_weapon_follow_up_state(weapon)
+            return
+        _clear_weapon_second_strike_state(weapon)
 
     if _has_special_rule(weapon, "split"):
         var remaining_points := maxi(_get_card_runtime_value(weapon) - 1, 0)
@@ -614,6 +619,28 @@ func _clear_weapon_follow_up_state(weapon) -> void:
         weapon.special_state.erase("pierce_follow_up_pending")
     elif weapon is Dictionary:
         weapon.erase("pierce_follow_up_pending")
+
+
+func _get_weapon_second_strike_state(weapon) -> bool:
+    if weapon is CardRuntimeState:
+        return bool(weapon.get_special_state("second_strike_used", false))
+    if weapon is Dictionary:
+        return bool(weapon.get("second_strike_used", false))
+    return false
+
+
+func _set_weapon_second_strike_state(weapon, is_used: bool) -> void:
+    if weapon is CardRuntimeState:
+        weapon.set_special_state("second_strike_used", is_used)
+    elif weapon is Dictionary:
+        weapon["second_strike_used"] = is_used
+
+
+func _clear_weapon_second_strike_state(weapon) -> void:
+    if weapon is CardRuntimeState:
+        weapon.special_state.erase("second_strike_used")
+    elif weapon is Dictionary:
+        weapon.erase("second_strike_used")
 
 
 func _get_card_family(card) -> String:

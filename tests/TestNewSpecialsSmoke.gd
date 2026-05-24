@@ -36,7 +36,8 @@ func _run_tests() -> void:
 	_test_defense_potion_next_round_buff()
 	_test_power_potion_next_round_buff()
 	_test_thorns_reduces_monster_before_block()
-	_test_second_strike_keeps_weapon_ready()
+	_test_second_strike_resolves_on_second_use()
+	_test_spite_triggers_when_monster_dies()
 	_test_sweep_hits_adjacent_monsters()
 	_test_split_spends_weapon_value_one_point_at_a_time()
 	_test_pierce_carries_over_to_second_target()
@@ -161,18 +162,37 @@ func _test_thorns_reduces_monster_before_block() -> void:
 	_expect(int(match_state.player_state.left_hand_card.get("current_value", 0)) == 1, "Thorns should reduce the incoming monster value before defense is calculated.")
 
 
-func _test_second_strike_keeps_weapon_ready() -> void:
+func _test_second_strike_resolves_on_second_use() -> void:
 	var match_state := _build_match_state()
 	match_state.player_state.set_left_hand_card(_card("dagger"))
-	_place_on_board(match_state, [_card("risen_bones")])
+	_place_on_board(match_state, [_card("risen_bones"), _card("risen_bones")])
+
+	var first_use := _resolution.use_left_hand_weapon_on_monster(match_state, 0)
+
+	_expect(first_use, "Second Strike weapon should be usable on the first hit.")
+	_expect(match_state.player_state.left_hand_card != null, "Second Strike should return the weapon to the hand it came from after the first use.")
+	_expect(str(match_state.player_state.left_hand_card.get("id", "")) == "dagger", "Second Strike should keep the same weapon in hand after the first use.")
+	_expect(not match_state.player_state.left_hand_exhausted, "Second Strike should not exhaust the hand on the first use.")
+	_expect(match_state.board_state.active_count() == 1, "Second Strike should still resolve the first target monster.")
+
+	var second_use := _resolution.use_left_hand_weapon_on_monster(match_state, 1)
+
+	_expect(second_use, "Second Strike weapon should be usable on the second hit.")
+	_expect(match_state.player_state.left_hand_card == null, "Second Strike should resolve the weapon after the second use.")
+	_expect(match_state.player_state.left_hand_exhausted, "Second Strike should exhaust the hand after the second use.")
+	_expect(match_state.board_state.active_count() == 0, "Second Strike should still resolve the second target monster.")
+
+
+func _test_spite_triggers_when_monster_dies() -> void:
+	var match_state := _build_match_state()
+	match_state.player_state.set_left_hand_card(_card("spear"))
+	_place_on_board(match_state, [_set_value(_card("frenzied_abomination"), 1)])
 
 	var used := _resolution.use_left_hand_weapon_on_monster(match_state, 0)
 
-	_expect(used, "Second Strike weapon should be usable.")
-	_expect(match_state.player_state.left_hand_card != null, "Second Strike should return the weapon to the hand it came from.")
-	_expect(str(match_state.player_state.left_hand_card.get("id", "")) == "dagger", "Second Strike should keep the same weapon in hand.")
-	_expect(not match_state.player_state.left_hand_exhausted, "Second Strike should not exhaust the hand.")
-	_expect(match_state.board_state.active_count() == 0, "Second Strike attack should still resolve against the monster.")
+	_expect(used, "A weapon should be able to kill a spite monster.")
+	_expect(match_state.player_state.current_health == PLAYER_STARTING_HEALTH - 1, "Spite should trigger when the monster dies and leaves the board.")
+	_expect(match_state.board_state.active_count() == 0, "The spite monster should still be removed from the board on death.")
 
 
 func _test_sweep_hits_adjacent_monsters() -> void:

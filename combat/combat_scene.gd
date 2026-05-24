@@ -340,6 +340,28 @@ func _show_board_card_damage_slash(board_index: int) -> void:
     _show_damage_slash_at_rect(card_view.get_global_rect(), SWORD_DAMAGE_SLASH_TEXTURE)
 
 
+func _get_adjacent_monster_board_indices(board_index: int) -> Array[int]:
+    var adjacent_indices: Array[int] = []
+    if match_state == null or match_state.board_state == null:
+        return adjacent_indices
+
+    var active_cards = match_state.board_state.get_active_cards()
+    var left_index := board_index - 1
+    var right_index := board_index + 1
+
+    if left_index >= 0 and left_index < active_cards.size():
+        var left_card = active_cards[left_index]
+        if left_card != null and _get_card_family(left_card) == "monster":
+            adjacent_indices.append(left_index)
+
+    if right_index >= 0 and right_index < active_cards.size():
+        var right_card = active_cards[right_index]
+        if right_card != null and _get_card_family(right_card) == "monster":
+            adjacent_indices.append(right_index)
+
+    return adjacent_indices
+
+
 func _deal_opening_board() -> void:
     if match_state == null or match_state.board_state == null or match_state.shared_deck_state == null:
         return
@@ -1508,9 +1530,13 @@ func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
     var before_deck_count = match_state.shared_deck_state.remaining_count()
     var before_player_health = match_state.player_state.current_health
     var before_value := -1
+    var sweep_hit_indices: Array[int] = []
     var before_cards = match_state.board_state.get_active_cards()
     if board_index >= 0 and board_index < before_cards.size():
         before_value = _get_card_runtime_value(before_cards[board_index])
+    var source_weapon = get_slot_card(source_hand)
+    if _has_special_rule(source_weapon, "sweep") and _get_special_rule_value(source_weapon, "sweep", 0) > 0:
+        sweep_hit_indices = _get_adjacent_monster_board_indices(board_index)
 
     var success = false
     if source_hand == "left_hand":
@@ -1526,6 +1552,8 @@ func handle_weapon_drop_on_board(source_hand: String, board_index: int) -> void:
     var after_count = match_state.board_state.active_count()
     _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
     _play_sfx(_load_common_sfx(SWORD_SWING_SFX_PATH))
+    for sweep_index in sweep_hit_indices:
+        _show_board_card_damage_slash(sweep_index)
     if after_count < before_count:
         _show_board_card_damage_slash(board_index)
         await _animate_board_card_resolution(board_index)
