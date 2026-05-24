@@ -140,6 +140,9 @@ var escape_was_pressed := false
 var root_layout_base_position := Vector2.ZERO
 var background_base_position := Vector2.ZERO
 var player_profile_data: Dictionary = {}
+var current_match_config: Dictionary = {}
+var current_boss_data: Dictionary = {}
+var current_reward_profile: Dictionary = {}
 var current_boss_texture: Texture2D = null
 var data_loader = GAME_DATA_LOADER_SCRIPT.new()
 var card_texture_cache: Dictionary = {}
@@ -418,9 +421,11 @@ func _build_battle_match_state() -> void:
     var resolved_player_cards := data_loader.resolve_deck_cards(player_deck_data)
 
     var match_config := data_loader.load_json(DEFAULT_MATCH_PATH)
+    current_match_config = match_config.duplicate(true)
     var selected_battle: Dictionary = RUN_CONTEXT_SCRIPT.get_battle_selection()
     var boss_id := str(selected_battle.get("boss_id", match_config.get("boss_id", DEFAULT_BOSS_ID))).strip_edges()
     var boss_data := _load_boss_data(boss_id)
+    current_boss_data = boss_data.duplicate(true)
     var monster_deck_id := str(selected_battle.get("monster_deck_id", "")).strip_edges()
     if monster_deck_id == "":
         monster_deck_id = str(
@@ -430,6 +435,8 @@ func _build_battle_match_state() -> void:
             )
         ).strip_edges()
     var monster_deck := _load_monster_deck(monster_deck_id)
+    var reward_profile_id := str(match_config.get("reward_profile_id", "")).strip_edges()
+    current_reward_profile = _load_reward_profile(reward_profile_id)
     var resolved_monster_cards := data_loader.resolve_monster_deck(monster_deck)
 
     var merged_cards := data_loader.build_shared_deck(resolved_player_cards, resolved_monster_cards)
@@ -2024,10 +2031,15 @@ func _queue_restart_if_finished() -> void:
 
 func _show_battle_end_modal(outcome: String) -> void:
     var xp_gained = _apply_battle_xp_rewards(outcome)
+    var reward_summary := _apply_phase_one_battle_rewards(outcome)
     var xp_base = match_state.battle_xp_earned
     var xp_multiplier = match_state.battle_xp_multiplier
-    var gold_delta = match_state.player_state.temporary_gold
-    var gold_text := "Gold Gained: %d" % gold_delta
+    var gold_delta = int(reward_summary.get("temporary_gold_collected", match_state.player_state.temporary_gold))
+    var persistent_gold_awarded = int(reward_summary.get("persistent_gold_awarded", 0))
+    var persistent_gold_after = int(reward_summary.get("persistent_gold_after", int(player_profile_data.get("persistent_gold", 0))))
+    var gold_text := "Temporary Gold Collected: %d" % gold_delta
+    var banked_gold_text := "Persistent Gold Banked: %d" % persistent_gold_awarded
+    var total_gold_text := "Persistent Gold Total: %d" % persistent_gold_after
     var xp_text := "XP Gained: %d" % xp_gained
     if xp_multiplier > 1:
         xp_text = "XP Gained: %d (%d x%d)" % [xp_gained, xp_base, xp_multiplier]
@@ -2036,24 +2048,23 @@ func _show_battle_end_modal(outcome: String) -> void:
         set_status("Boss defeated.")
         end_modal_title.text = "Victory"
         _play_outcome_music(true)
-        if gold_delta < 0:
-            gold_text = "Gold Lost: %d" % abs(gold_delta)
     elif outcome == "survival":
         set_status("You survived the deck.")
         end_modal_title.text = "Survived"
         _play_outcome_music(true)
-        if gold_delta < 0:
-            gold_text = "Gold Lost: %d" % abs(gold_delta)
     else:
         set_status("You died.")
         end_modal_title.text = "Defeat"
         _play_outcome_music(false)
-        gold_text = "Gold Lost: %d" % max(gold_delta, 0)
+        banked_gold_text = "Persistent Gold Banked: 0"
+        total_gold_text = "Persistent Gold Total: %d" % int(player_profile_data.get("persistent_gold", persistent_gold_after))
 
     end_modal_stats.text = "Rounds: %d\n%s" % [
         match_state.round_number,
-        "%s\n%s\nLevel: %d\nTotal XP: %d" % [
+        "%s\n%s\n%s\n%s\nLevel: %d\nTotal XP: %d" % [
             gold_text,
+            banked_gold_text,
+            total_gold_text,
             xp_text,
             int(player_profile_data.get("player_level", 1)),
             int(player_profile_data.get("total_xp", 0))
@@ -2107,6 +2118,58 @@ func _apply_battle_xp_rewards(outcome: String) -> int:
     _save_player_profile()
     match_state.battle_xp_persisted = true
     return xp_gained
+
+
+func _apply_phase_one_battle_rewards(outcome: String) -> Dictionary:
+    if match_state == null:
+        return {}
+
+    if match_state.battle_rewards_persisted:
+        return match_state.battle_reward_summary.duplicate(true)
+
+    var persistent_gold_before := int(player_profile_data.get("persistent_gold", 0))
+    var should_keep_temporary_gold: bool = match_state.should_keep_temporary_gold(outcome, current_reward_profile)
+    var persistent_gold_awarded := 0
+    if should_keep_temporary_gold and match_state.player_state != null:
+        persistent_gold_awarded = match_state.player_state.temporary_gold
+
+    var reward_summary: Dictionary = match_state.build_battle_reward_summary(
+        outcome,
+        int(player_profile_data.get("player_level", 1)),
+        _get_current_boss_difficulty(),
+        persistent_gold_before,
+        persistent_gold_awarded
+    )
+    reward_summary["reward_profile_id"] = str(current_match_config.get("reward_profile_id", "")).strip_edges()
+
+    player_profile_data["persistent_gold"] = persistent_gold_before + persistent_gold_awarded
+    reward_summary["persistent_gold_after"] = int(player_profile_data.get("persistent_gold", persistent_gold_before))
+    player_profile_data["last_battle_reward_summary"] = reward_summary.duplicate(true)
+    _save_player_profile()
+
+    match_state.battle_reward_summary = reward_summary.duplicate(true)
+    match_state.battle_rewards_persisted = true
+    return reward_summary
+
+
+func _get_current_boss_difficulty() -> String:
+    var boss_difficulty := str(current_boss_data.get("boss_type", "")).strip_edges()
+    if boss_difficulty != "":
+        return boss_difficulty
+    return "baseline"
+
+
+func _load_reward_profile(reward_profile_id: String) -> Dictionary:
+    var normalized_id := reward_profile_id.strip_edges()
+    if normalized_id == "":
+        return {}
+
+    var reward_profile_path := "res://data/rewards/%s.json" % normalized_id
+    if not FileAccess.file_exists(reward_profile_path):
+        push_warning("Reward profile not found: " + reward_profile_path)
+        return {}
+
+    return data_loader.load_json(reward_profile_path)
 
 
 func _save_player_profile() -> void:

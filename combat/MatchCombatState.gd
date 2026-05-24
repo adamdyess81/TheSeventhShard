@@ -12,6 +12,8 @@ var battle_xp_earned: int = 0
 var battle_xp_multiplier: int = 1
 var battle_xp_awarded: int = 0
 var battle_xp_persisted: bool = false
+var battle_reward_summary: Dictionary = {}
+var battle_rewards_persisted: bool = false
 
 
 func setup(
@@ -31,6 +33,8 @@ func setup(
  battle_xp_multiplier = 1
  battle_xp_awarded = 0
  battle_xp_persisted = false
+ battle_reward_summary = {}
+ battle_rewards_persisted = false
 
 
 func advance_round() -> void:
@@ -104,6 +108,50 @@ func finalize_battle_xp(outcome: String) -> int:
 
  battle_xp_awarded = battle_xp_earned * battle_xp_multiplier
  return battle_xp_awarded
+
+
+func should_keep_temporary_gold(outcome: String, reward_profile: Dictionary = {}) -> bool:
+ var reward_rule := _get_reward_rule_for_outcome(outcome, reward_profile)
+ if reward_rule.is_empty():
+  return outcome in ["victory", "survival"]
+
+ return bool(reward_rule.get("keep_temporary_gold", false))
+
+
+func build_battle_reward_summary(
+ outcome: String,
+ player_level: int,
+ boss_difficulty: String,
+ persistent_gold_before: int,
+ persistent_gold_awarded: int
+) -> Dictionary:
+ var chest_carry_state := _build_chest_carry_state()
+ var boss_kill := outcome == "victory"
+ var boss_id := ""
+ var boss_name := ""
+ var temporary_gold_collected := 0
+
+ if boss_state != null:
+  boss_id = boss_state.boss_id
+  boss_name = boss_state.boss_name
+
+ if player_state != null:
+  temporary_gold_collected = player_state.temporary_gold
+
+ return {
+  "outcome": outcome,
+  "boss_kill": boss_kill,
+  "boss_id": boss_id,
+  "boss_name": boss_name,
+  "boss_difficulty": boss_difficulty,
+  "player_level": player_level,
+  "round_number": round_number,
+  "temporary_gold_collected": temporary_gold_collected,
+  "persistent_gold_before": persistent_gold_before,
+  "persistent_gold_awarded": persistent_gold_awarded,
+  "persistent_gold_after": persistent_gold_before + persistent_gold_awarded,
+  "chest_carry_state": chest_carry_state
+ }
 
 
 func trigger_boss_on_player_monster_kill(killed_monster = null) -> void:
@@ -211,6 +259,68 @@ func _trigger_boss_blight(trigger_reason: String = "", source_card = null) -> vo
   "reason": trigger_reason,
   "source_card_id": _get_source_card_id(source_card)
  })
+
+
+func _get_reward_rule_for_outcome(outcome: String, reward_profile: Dictionary) -> Dictionary:
+ if reward_profile.is_empty():
+  return {}
+
+ match outcome:
+  "victory":
+   return reward_profile.get("defeat_victory", {})
+  "survival":
+   return reward_profile.get("survival_outcome", {})
+  "failure":
+   return reward_profile.get("failure", {})
+
+ return {}
+
+
+func _build_chest_carry_state() -> Dictionary:
+ var left_hand_card = null
+ var right_hand_card = null
+ var backpack_chest_ids: Array[String] = []
+ var tracked_carried_chest_count := 0
+
+ if player_state != null:
+  left_hand_card = player_state.left_hand_card
+  right_hand_card = player_state.right_hand_card
+  tracked_carried_chest_count = player_state.carried_chests.size()
+
+ var left_hand_chest := _is_chest_card(left_hand_card)
+ var right_hand_chest := _is_chest_card(right_hand_card)
+ if player_state != null:
+  for card in player_state.backpack_cards:
+   if _is_chest_card(card):
+    backpack_chest_ids.append(_get_card_id(card))
+
+ var total_carried_chest_count := backpack_chest_ids.size()
+ if left_hand_chest:
+  total_carried_chest_count += 1
+ if right_hand_chest:
+  total_carried_chest_count += 1
+
+ return {
+  "has_carried_chest": left_hand_chest or right_hand_chest or not backpack_chest_ids.is_empty(),
+  "left_hand_has_chest": left_hand_chest,
+  "right_hand_has_chest": right_hand_chest,
+  "backpack_chest_count": backpack_chest_ids.size(),
+  "backpack_chest_ids": backpack_chest_ids,
+  "tracked_carried_chest_count": tracked_carried_chest_count,
+  "total_carried_chest_count": total_carried_chest_count
+ }
+
+
+func _is_chest_card(card) -> bool:
+ return _get_card_family(card) == "chest"
+
+
+func _get_card_id(card) -> String:
+ if card is Dictionary:
+  return str(card.get("id", ""))
+ if card != null and card.has_method("get_name"):
+  return str(card.card_id)
+ return ""
 
 
 func _process_end_of_round_effects() -> void:
