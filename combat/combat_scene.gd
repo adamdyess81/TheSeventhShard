@@ -2486,10 +2486,10 @@ func _open_shift_fate_modal(slot_name: String) -> void:
         wrapper.add_theme_stylebox_override("panel", style)
 
         var preview_card = CARD_VIEW_SCENE.instantiate()
-        preview_card.setup(card, -1)
         preview_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
         preview_card.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
         wrapper.add_child(preview_card)
+        preview_card.setup(card, -1)
 
         var order_label := Label.new()
         order_label.visible = false
