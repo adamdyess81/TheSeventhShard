@@ -5,7 +5,7 @@
   "subtype": "damage",
   "rarity": "common",
   "base_value": 1,
-  "description": "Cast from a hand. Deal Magic damage equal to this card's value to all monsters on the board, plus the boss",
+  "description": "Cast from a hand onto a monster or boss. Deal Magic damage equal to this card's value to all monsters on the board, plus the boss",
   "tags": ["spell", "damage", "magic", "board"],
   "keywords": [],
   "target_rules": ["enemy_card", "boss", "hand_slot"],
