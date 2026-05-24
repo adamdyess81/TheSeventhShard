@@ -7,23 +7,31 @@
 	"owned_card_counts": {
 		"adrenaline_potion": 10.0,
 		"axe": 10.0,
+		"banishing_sigil": 10.0,
+		"battle_focus": 10.0,
 		"cure_potion": 10.0,
 		"dagger": 10.0,
 		"defense_potion": 10.0,
+		"energy_burst": 10.0,
+		"fire_bolt": 10.0,
 		"large_health_potion": 10.0,
 		"large_shield": 10.0,
 		"power_potion": 10.0,
+		"recall": 10.0,
+		"shift_fate": 10.0,
 		"short_bow": 10.0,
 		"short_sword": 10.0,
 		"small_health_potion": 10.0,
 		"small_shield": 10.0,
 		"spiked_shield": 10.0,
-		"tower_shield": 10.0
+		"stasis_hex": 10.0,
+		"tower_shield": 10.0,
+		"ward_of_ash": 10.0
 	},
 	"owned_relic_ids": [],
 	"owned_rune_ids": [],
 	"persistent_gold": 0.0,
-	"player_level": 10.0,
+	"player_level": 12,
 	"player_profile_id": "player_main",
 	"profile_name": "Main Profile",
 	"progression_flag_ids": [],
@@ -31,14 +39,14 @@
 		"loadout_knight_starter_01"
 	],
 	"selected_deck_card_counts": {
-		"axe": 1,
-		"large_health_potion": 10,
-		"short_bow": 1,
-		"short_sword": 10,
-		"spiked_shield": 1
+		"axe": 1.0,
+		"large_health_potion": 5.0,
+		"shift_fate": 9.0,
+		"short_sword": 10.0,
+		"spiked_shield": 1.0
 	},
 	"starting_health_base": 15.0,
-	"total_xp": 2088.0,
+	"total_xp": 3165,
 	"unlocked_branch_ids": [
 		"ossara"
 	],
