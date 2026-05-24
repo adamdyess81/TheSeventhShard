@@ -3,7 +3,7 @@
   "name": "Spiked Shield",
   "family": "shield",
   "subtype": "defense",
-  "rarity": "common",
+  "rarity": "rare",
   "base_value": 2,
   "description": "Absorb incoming enemy monster value up to 2. Thorns: reduce the attacking monster's value by 1 before defense is calculated.",
   "tags": ["defense", "shield", "thorns"],

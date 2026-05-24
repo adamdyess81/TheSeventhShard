@@ -3,7 +3,7 @@
   "name": "Large Health Potion",
   "family": "potion",
   "subtype": "healing",
-  "rarity": "common",
+  "rarity": "uncommon",
   "base_value": 6,
   "description": "Heal 6 health.",
   "tags": ["starter", "healing"],

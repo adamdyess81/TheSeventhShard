@@ -3,7 +3,7 @@
   "name": "Banishing Sigil",
   "family": "spell",
   "subtype": "deck_manipulation",
-  "rarity": "common",
+  "rarity": "uncommon",
   "base_value": 1,
   "description": "Cast onto a monster. Removes copies of that monster card from the deck. If no copies remain in the deck, the spell fizzles.",
   "tags": ["spell", "deck", "banish"],

@@ -3,7 +3,7 @@
   "name": "Short Bow",
   "family": "weapon",
   "subtype": "ranged",
-  "rarity": "common",
+  "rarity": "uncommon",
   "base_value": 2,
   "description": "Deals ranged damage. Split: spend this value 1 point at a time across legal targets of your choice.",
   "tags": ["weapon", "ranged", "split", "two hands"],

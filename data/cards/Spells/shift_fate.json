@@ -3,7 +3,7 @@
   "name": "Shift Fate",
   "family": "spell",
   "subtype": "deck_manipulation",
-  "rarity": "common",
+  "rarity": "rare",
   "base_value": 0,
   "description": "Auto Resolved in Hand. Look at the top 3 cards of the deck and reorder them. The first clicked becomes the new top card.",
   "tags": ["spell", "deck", "control"],

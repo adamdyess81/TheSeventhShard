@@ -3,7 +3,7 @@
   "name": "Recall",
   "family": "spell",
   "subtype": "board_manipulation",
-  "rarity": "common",
+  "rarity": "uncommon",
   "base_value": 0,
   "description": "Cast onto a monster. Return it to a random position in the deck.",
   "tags": ["spell", "board", "tempo"],

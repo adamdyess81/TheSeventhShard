@@ -3,7 +3,7 @@
   "name": "Large Shield",
   "family": "shield",
   "subtype": "defense",
-  "rarity": "common",
+  "rarity": "uncommon",
   "base_value": 4,
   "description": "Absorb incoming enemy monster value up to 4.",
   "tags": ["defense", "shield"],

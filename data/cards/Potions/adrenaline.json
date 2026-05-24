@@ -3,7 +3,7 @@
   "name": "Adrenaline",
   "family": "potion",
   "subtype": "battle_buff",
-  "rarity": "common",
+  "rarity": "rare",
   "base_value": 1,
   "description": "Auto-resolve in hand. Increase the player's max health by 1 for the rest of the battle.",
   "tags": ["potion", "buff", "health"],

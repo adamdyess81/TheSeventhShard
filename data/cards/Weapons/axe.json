@@ -3,7 +3,7 @@
   "name": "Axe",
   "family": "weapon",
   "subtype": "melee",
-  "rarity": "common",
+  "rarity": "uncommon",
   "base_value": 2,
   "description": "Deal sweeping melee damage to a target enemy. Sweep 1: also deal 1 damage to adjacent monsters. Sweep has no effect on bosses.",
   "tags": ["weapon", "melee", "sweep","two hands"],

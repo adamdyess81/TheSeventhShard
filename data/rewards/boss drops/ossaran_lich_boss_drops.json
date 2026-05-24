@@ -1,1 +1,41 @@
-null
+{
+  "id": "ossaran_lich_boss_drops",
+  "boss_id": "ossaran_lich",
+  "name": "Ossaran Lich Boss Drops",
+  "drop_version": 1,
+  "drop_count": 1,
+  "grant_on_outcome": ["victory"],
+  "entries": [
+    {
+      "card_id": "short_sword",
+      "weight": 30,
+      "rarity": "common"
+    },
+    {
+      "card_id": "small_shield",
+      "weight": 25,
+      "rarity": "common"
+    },
+    {
+      "card_id": "fire_bolt",
+      "weight": 18,
+      "rarity": "uncommon"
+    },
+    {
+      "card_id": "battle_focus",
+      "weight": 12,
+      "rarity": "uncommon"
+    },
+    {
+      "card_id": "short_bow",
+      "weight": 10,
+      "rarity": "uncommon"
+    },
+    {
+      "card_id": "spiked_shield",
+      "weight": 5,
+      "rarity": "rare"
+    }
+  ],
+  "notes": "Baseline direct-kill reward table for the Ossaran Lich."
+}

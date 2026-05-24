@@ -3,7 +3,7 @@
   "name": "Stasis Hex",
   "family": "spell",
   "subtype": "effect",
-  "rarity": "common",
+  "rarity": "uncommon",
   "base_value": 1,
   "description": "Auto Resolved in Hand. Reduce this round's resolve threshold by value.",
   "tags": ["spell", "effect", "round"],

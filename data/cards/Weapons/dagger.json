@@ -3,7 +3,7 @@
   "name": "Dagger",
   "family": "weapon",
   "subtype": "melee",
-  "rarity": "common",
+  "rarity": "uncommon",
   "base_value": 1,
   "description": "Deals fast melee damage. Second Strike: return this card to the hand it came from and do not exhaust that hand.",
   "tags": ["weapon", "melee", "tempo"],

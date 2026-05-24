@@ -3,7 +3,7 @@
   "name": "Defense",
   "family": "potion",
   "subtype": "battle_buff",
-  "rarity": "common",
+  "rarity": "uncommon",
   "base_value": 1,
   "description": "Auto-resolve in hand. During the next round, your shields gain +1 value.",
   "tags": ["potion", "buff", "shield"],
