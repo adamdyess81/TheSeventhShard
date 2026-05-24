@@ -11,7 +11,7 @@
   "target_rules": ["hand_slot"],
   "special_rules": ["shift_fate"],
   "consumed_on_use": true,
-  "auto_resolve_on_hand_place": false,
+  "auto_resolve_on_hand_place": true,
   "can_be_trashed": true,
   "can_go_to_hand": true,
   "can_go_to_backpack": true,

@@ -1333,10 +1333,7 @@ func handle_slot_to_slot_drop(source_slot: String, target_slot: String) -> void:
         moved = _discard_hand_card(false)
 
     if moved:
-        if target_slot in ["left_hand", "right_hand"] and _is_shift_fate_card(get_slot_card(target_slot)):
-            set_status("Shift Fate awaits your choice.")
-            _refresh_ui()
-            _open_shift_fate_modal(target_slot)
+        if target_slot in ["left_hand", "right_hand"] and await _handle_auto_resolve_hand_spell(target_slot):
             return
         if target_slot == "discard":
             _play_sfx(_load_common_sfx(DISCARD_SFX_PATH))
@@ -2268,10 +2265,7 @@ func handle_drop_to_left_hand(board_index: int) -> void:
   elif board_card != null and _get_card_family(board_card) == "potion":
    _play_sfx(_load_common_sfx(DRINK_POTION_SFX_PATH))
   await _animate_board_card_resolution(board_index)
-  if _is_shift_fate_card(match_state.player_state.left_hand_card):
-   set_status("Shift Fate awaits your choice.")
-   _refresh_ui()
-   _open_shift_fate_modal("left_hand")
+  if await _handle_auto_resolve_hand_spell("left_hand"):
    return
   set_status("Dropped card into left hand.")
  else:
@@ -2311,10 +2305,7 @@ func handle_drop_to_right_hand(board_index: int) -> void:
   elif board_card != null and _get_card_family(board_card) == "potion":
    _play_sfx(_load_common_sfx(DRINK_POTION_SFX_PATH))
   await _animate_board_card_resolution(board_index)
-  if _is_shift_fate_card(match_state.player_state.right_hand_card):
-   set_status("Shift Fate awaits your choice.")
-   _refresh_ui()
-   _open_shift_fate_modal("right_hand")
+  if await _handle_auto_resolve_hand_spell("right_hand"):
    return
   set_status("Dropped card into right hand.")
  else:
@@ -2449,8 +2440,46 @@ func _card_targets(card, target_rule: String) -> bool:
     return false
 
 
+func _card_auto_resolves_in_hand(card) -> bool:
+    if _is_runtime_card(card):
+        return bool(card.card_data.get("auto_resolve_on_hand_place", false))
+    if card is Dictionary:
+        return bool(card.get("auto_resolve_on_hand_place", false))
+    return false
+
+
 func _is_shift_fate_card(card) -> bool:
     return _has_special_rule(card, "shift_fate")
+
+
+func _handle_auto_resolve_hand_spell(slot_name: String) -> bool:
+    var card = get_slot_card(slot_name)
+    if card == null or _get_card_family(card) != "spell":
+        return false
+    if not _card_auto_resolves_in_hand(card):
+        return false
+
+    if _is_shift_fate_card(card):
+        set_status("Shift Fate awaits your choice.")
+        _refresh_ui()
+        _open_shift_fate_modal(slot_name)
+        return true
+
+    var success := false
+    if slot_name == "left_hand":
+        success = combat_controller.use_left_hand_spell_on_player()
+    elif slot_name == "right_hand":
+        success = combat_controller.use_right_hand_spell_on_player()
+
+    if not success:
+        set_status("Could not resolve spell in hand.")
+        _refresh_ui()
+        return true
+
+    _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
+    set_status("Spell resolved in hand.")
+    _refresh_ui()
+    return true
 
 
 func _open_shift_fate_modal(slot_name: String) -> void:

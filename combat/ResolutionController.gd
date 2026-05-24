@@ -427,7 +427,7 @@ func _use_spell_on_boss(match_state: MatchCombatState, spell, is_left_hand: bool
 func _use_spell_on_player(match_state: MatchCombatState, spell, is_left_hand: bool) -> bool:
     if not _can_use_hand_spell(match_state, spell, is_left_hand):
         return false
-    if not _spell_targets(spell, "player_avatar"):
+    if not _spell_targets(spell, "player_avatar") and not _spell_targets(spell, "hand_slot"):
         return false
 
     var consumed := false

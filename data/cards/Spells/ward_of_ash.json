@@ -8,13 +8,13 @@
   "description": "Auto Resolved in Hand. Prevent the next damage the player would take by value.",
   "tags": ["spell", "effect", "defense"],
   "keywords": [],
-  "target_rules": ["hand_slot"],
+  "target_rules": ["hand_slot", "player_avatar"],
   "special_rules": ["ward_of_ash"],
   "special_values": {
     "ward_of_ash": 2
   },
   "consumed_on_use": true,
-  "auto_resolve_on_hand_place": false,
+  "auto_resolve_on_hand_place": true,
   "can_be_trashed": true,
   "can_go_to_hand": true,
   "can_go_to_backpack": true,
