@@ -4,7 +4,7 @@
   "family": "weapon",
   "subtype": "melee",
   "rarity": "common",
-  "base_value": 2,
+  "base_value": 3,
   "description": "Deals melee damage to a monster or boss. Pierce: remaining damage can be assigned to a second legal target, including bosses.",
   "tags": ["starter", "weapon"],
   "keywords": [],

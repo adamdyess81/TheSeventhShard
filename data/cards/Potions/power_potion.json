@@ -1,6 +1,6 @@
 {
   "id": "power_potion",
-  "name": "Power",
+  "name": "Power Potion",
   "family": "potion",
   "subtype": "battle_buff",
   "rarity": "uncommon",

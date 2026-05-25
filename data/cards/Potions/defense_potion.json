@@ -1,6 +1,6 @@
 {
   "id": "defense_potion",
-  "name": "Defense",
+  "name": "Defense Potion",
   "family": "potion",
   "subtype": "battle_buff",
   "rarity": "uncommon",

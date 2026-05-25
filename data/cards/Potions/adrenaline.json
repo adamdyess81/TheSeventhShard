@@ -1,6 +1,6 @@
 {
   "id": "adrenaline_potion",
-  "name": "Adrenaline",
+  "name": "Adrenaline Potion",
   "family": "potion",
   "subtype": "battle_buff",
   "rarity": "rare",

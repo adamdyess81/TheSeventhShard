@@ -1,0 +1,41 @@
+{
+  "id": "spore_matriarch_boss_drops",
+  "boss_id": "spore_matriarch",
+  "name": "Spore Matriarch Boss Drops",
+  "drop_version": 1,
+  "drop_count": 1,
+  "grant_on_outcome": ["victory"],
+  "entries": [
+    {
+      "card_id": "energy_burst",
+      "weight": 30,
+      "rarity": "common"
+    },
+    {
+      "card_id": "large_health_potion",
+      "weight": 25,
+      "rarity": "uncommon"
+    },
+    {
+      "card_id": "dagger",
+      "weight": 18,
+      "rarity": "uncommon"
+    },
+    {
+      "card_id": "power_potion",
+      "weight": 12,
+      "rarity": "uncommon"
+    },
+    {
+      "card_id": "stasis_hex",
+      "weight": 10,
+      "rarity": "uncommon"
+    },
+    {
+      "card_id": "shift_fate",
+      "weight": 5,
+      "rarity": "rare"
+    }
+  ],
+  "notes": "Baseline direct-kill reward table for the Ossaran Lich."
+}

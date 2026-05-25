@@ -1,6 +1,6 @@
 {
   "id": "cure_potion",
-  "name": "Cure",
+  "name": "Cure Potion",
   "family": "potion",
   "subtype": "cleanse",
   "rarity": "common",
