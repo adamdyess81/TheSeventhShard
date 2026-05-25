@@ -26,6 +26,9 @@ func _run_tests() -> void:
 	_test_hovel_shop_rules_load()
 	_test_level_one_offer_shape()
 	_test_shop_state_refresh_persists_three_offers()
+	_test_purchase_offer_succeeds_and_removes_stock()
+	_test_purchase_offer_creates_missing_inventory_key()
+	_test_purchase_offer_blocks_when_gold_is_too_low()
 	_test_missing_shop_rules_fail_soft()
 
 
@@ -70,6 +73,58 @@ func _test_shop_state_refresh_persists_three_offers() -> void:
 	_expect(state.has("shop_table_id"), "Refreshing Hovel shop state should persist the source table id.")
 	_expect(str(state.get("last_refresh_source", "")) == "battle_end", "Refreshing Hovel shop state should preserve the refresh source.")
 	_expect(offers is Array and offers.size() == 3, "Refreshing Hovel shop state should persist exactly three offers.")
+
+
+func _test_purchase_offer_succeeds_and_removes_stock() -> void:
+	var profile_data := {
+		"persistent_gold": 100,
+		"owned_card_counts": {},
+		"hovel_shop_state": {
+			"offers": [
+				{ "offer_id": "offer_1", "card_id": "short_sword", "rarity": "common", "price": 25 },
+				{ "offer_id": "offer_2", "card_id": "small_shield", "rarity": "common", "price": 25 },
+				{ "offer_id": "offer_3", "card_id": "battle_focus", "rarity": "common", "price": 25 }
+			]
+		}
+	}
+	var result: Dictionary = HOVEL_SHOP_SCRIPT.purchase_offer(profile_data, 1)
+	var offers = profile_data["hovel_shop_state"]["offers"]
+	_expect(bool(result.get("ok", false)), "Purchase should succeed when the player has enough gold.")
+	_expect(int(profile_data.get("persistent_gold", 0)) == 75, "Successful purchases should subtract the offer price from persistent gold.")
+	_expect(int(profile_data["owned_card_counts"].get("small_shield", 0)) == 1, "Successful purchases should add the bought card to inventory.")
+	_expect(offers[1] == null, "Successful purchases should clear the purchased offer slot until the next reroll.")
+
+
+func _test_purchase_offer_creates_missing_inventory_key() -> void:
+	var profile_data := {
+		"persistent_gold": 100,
+		"owned_card_counts": {},
+		"hovel_shop_state": {
+			"offers": [
+				{ "offer_id": "offer_1", "card_id": "ward_of_ash", "rarity": "uncommon", "price": 60 }
+			]
+		}
+	}
+	var result: Dictionary = HOVEL_SHOP_SCRIPT.purchase_offer(profile_data, 0)
+	_expect(bool(result.get("ok", false)), "Purchase should succeed for a valid one-off offer.")
+	_expect(int(profile_data["owned_card_counts"].get("ward_of_ash", 0)) == 1, "Buying a card should create the inventory key when it does not already exist.")
+
+
+func _test_purchase_offer_blocks_when_gold_is_too_low() -> void:
+	var profile_data := {
+		"persistent_gold": 10,
+		"owned_card_counts": {},
+		"hovel_shop_state": {
+			"offers": [
+				{ "offer_id": "offer_1", "card_id": "short_sword", "rarity": "common", "price": 25 }
+			]
+		}
+	}
+	var result: Dictionary = HOVEL_SHOP_SCRIPT.purchase_offer(profile_data, 0)
+	_expect(not bool(result.get("ok", false)), "Purchase should fail when the player does not have enough gold.")
+	_expect(str(result.get("reason", "")) == "insufficient_gold", "Low-gold purchase failures should report the correct reason.")
+	_expect(int(profile_data.get("persistent_gold", 0)) == 10, "Failed purchases should not change persistent gold.")
+	_expect(int(profile_data["owned_card_counts"].get("short_sword", 0)) == 0, "Failed purchases should not add cards to inventory.")
 
 
 func _test_missing_shop_rules_fail_soft() -> void:

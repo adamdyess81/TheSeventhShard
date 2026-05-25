@@ -173,15 +173,27 @@ layout_mode = 2
 text = "Offer 1: Empty"
 autowrap_mode = 3
 
+[node name="ShopBuyOne" type="Button" parent="Root/Content/ActionPanel/ActionContent/ShopSection" unique_id=201110331]
+layout_mode = 2
+text = "Buy"
+
 [node name="ShopOfferTwo" type="Label" parent="Root/Content/ActionPanel/ActionContent/ShopSection" unique_id=411583218]
 layout_mode = 2
 text = "Offer 2: Empty"
 autowrap_mode = 3
 
+[node name="ShopBuyTwo" type="Button" parent="Root/Content/ActionPanel/ActionContent/ShopSection" unique_id=202110331]
+layout_mode = 2
+text = "Buy"
+
 [node name="ShopOfferThree" type="Label" parent="Root/Content/ActionPanel/ActionContent/ShopSection" unique_id=110651304]
 layout_mode = 2
 text = "Offer 3: Empty"
 autowrap_mode = 3
+
+[node name="ShopBuyThree" type="Button" parent="Root/Content/ActionPanel/ActionContent/ShopSection" unique_id=203110331]
+layout_mode = 2
+text = "Buy"
 
 [node name="ActionButtons" type="VBoxContainer" parent="Root/Content/ActionPanel/ActionContent" unique_id=1098993176]
 layout_mode = 2

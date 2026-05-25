@@ -24,8 +24,11 @@ const HOVEL_SHOP_RULES_PATH := "res://data/rewards/hovel_shop_common.json"
 @onready var opponent_details_label = $Root/Content/ActionPanel/ActionContent/OpponentSection/OpponentDetailsLabel
 @onready var status_label = $Root/Content/ActionPanel/ActionContent/StatusLabel
 @onready var shop_offer_one = $Root/Content/ActionPanel/ActionContent/ShopSection/ShopOfferOne
+@onready var shop_buy_one = $Root/Content/ActionPanel/ActionContent/ShopSection/ShopBuyOne
 @onready var shop_offer_two = $Root/Content/ActionPanel/ActionContent/ShopSection/ShopOfferTwo
+@onready var shop_buy_two = $Root/Content/ActionPanel/ActionContent/ShopSection/ShopBuyTwo
 @onready var shop_offer_three = $Root/Content/ActionPanel/ActionContent/ShopSection/ShopOfferThree
+@onready var shop_buy_three = $Root/Content/ActionPanel/ActionContent/ShopSection/ShopBuyThree
 @onready var inventory_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/CardInventoryButton
 @onready var go_fight_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/GoFightButton
 @onready var exit_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/ExitGameButton
@@ -44,6 +47,9 @@ func _ready() -> void:
 	_refresh_shop_display()
 	_update_selected_encounter_details()
 	status_label.text = "The Hovel stands ready."
+	shop_buy_one.pressed.connect(_on_shop_buy_pressed.bind(0))
+	shop_buy_two.pressed.connect(_on_shop_buy_pressed.bind(1))
+	shop_buy_three.pressed.connect(_on_shop_buy_pressed.bind(2))
 	inventory_button.pressed.connect(_on_card_inventory_pressed)
 	opponent_selector.item_selected.connect(_on_opponent_selected)
 	go_fight_button.pressed.connect(_on_go_fight_pressed)
@@ -83,6 +89,7 @@ func _ensure_hovel_shop_stock() -> void:
 
 func _refresh_shop_display() -> void:
 	var offer_labels = [shop_offer_one, shop_offer_two, shop_offer_three]
+	var buy_buttons = [shop_buy_one, shop_buy_two, shop_buy_three]
 	var shop_state = player_profile_data.get("hovel_shop_state", {})
 	var offers = []
 	if shop_state is Dictionary:
@@ -90,13 +97,18 @@ func _refresh_shop_display() -> void:
 
 	for index in range(offer_labels.size()):
 		var label: Label = offer_labels[index]
+		var button: Button = buy_buttons[index]
 		if index >= offers.size():
 			label.text = "Offer %d: Empty" % [index + 1]
+			button.disabled = true
+			button.text = "Sold Out"
 			continue
 
 		var offer = offers[index]
 		if not (offer is Dictionary):
 			label.text = "Offer %d: Empty" % [index + 1]
+			button.disabled = true
+			button.text = "Sold Out"
 			continue
 
 		var card_id := str(offer.get("card_id", "")).strip_edges()
@@ -108,6 +120,8 @@ func _refresh_shop_display() -> void:
 			rarity.capitalize(),
 			price
 		]
+		button.disabled = false
+		button.text = "Buy"
 
 
 func _get_card_name(card_id: String) -> String:
@@ -245,6 +259,28 @@ func _on_opponent_selected(_index: int) -> void:
 
 func _on_card_inventory_pressed() -> void:
 	get_tree().change_scene_to_file(CARD_INVENTORY_SCENE_PATH)
+
+
+func _on_shop_buy_pressed(offer_index: int) -> void:
+	var result: Dictionary = HOVEL_SHOP_SCRIPT.purchase_offer(player_profile_data, offer_index)
+	if not bool(result.get("ok", false)):
+		var reason := str(result.get("reason", "")).strip_edges()
+		if reason == "insufficient_gold":
+			status_label.text = "Not enough gold for that offer."
+		elif reason == "empty_offer_slot":
+			status_label.text = "That offer is already gone."
+		else:
+			status_label.text = "Could not complete that purchase."
+		return
+
+	_save_player_profile()
+	_refresh_stats()
+	_refresh_shop_display()
+	var card_id := str(result.get("card_id", "")).strip_edges()
+	status_label.text = "Purchased %s for %d gold." % [
+		_get_card_name(card_id),
+		int(result.get("price", 0))
+	]
 
 
 func _on_go_fight_pressed() -> void:

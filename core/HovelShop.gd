@@ -89,6 +89,71 @@ static func generate_offers(
 	return offers
 
 
+static func purchase_offer(profile_data: Dictionary, offer_index: int) -> Dictionary:
+	var shop_state = profile_data.get("hovel_shop_state", {})
+	if not (shop_state is Dictionary):
+		return {
+			"ok": false,
+			"reason": "missing_shop_state"
+		}
+
+	var offers = shop_state.get("offers", [])
+	if not (offers is Array):
+		return {
+			"ok": false,
+			"reason": "missing_offers"
+		}
+
+	if offer_index < 0 or offer_index >= offers.size():
+		return {
+			"ok": false,
+			"reason": "invalid_offer_index"
+		}
+
+	var offer = offers[offer_index]
+	if not (offer is Dictionary):
+		return {
+			"ok": false,
+			"reason": "empty_offer_slot"
+		}
+
+	var price := int(offer.get("price", 0))
+	var persistent_gold := int(profile_data.get("persistent_gold", 0))
+	if persistent_gold < price:
+		return {
+			"ok": false,
+			"reason": "insufficient_gold",
+			"required_gold": price,
+			"available_gold": persistent_gold
+		}
+
+	var card_id := str(offer.get("card_id", "")).strip_edges()
+	if card_id == "":
+		return {
+			"ok": false,
+			"reason": "invalid_card_id"
+		}
+
+	profile_data["persistent_gold"] = persistent_gold - price
+	var owned_card_counts = profile_data.get("owned_card_counts", {})
+	if not (owned_card_counts is Dictionary):
+		owned_card_counts = {}
+	owned_card_counts[card_id] = int(owned_card_counts.get(card_id, 0)) + 1
+	profile_data["owned_card_counts"] = owned_card_counts
+
+	offers[offer_index] = null
+	shop_state["offers"] = offers
+	profile_data["hovel_shop_state"] = shop_state
+
+	return {
+		"ok": true,
+		"card_id": card_id,
+		"price": price,
+		"remaining_gold": int(profile_data.get("persistent_gold", 0)),
+		"offer_index": offer_index
+	}
+
+
 static func _get_shop_level_config(rules: Dictionary, shop_level: int) -> Dictionary:
 	var shop_levels = rules.get("shop_levels", [])
 	if not (shop_levels is Array):
