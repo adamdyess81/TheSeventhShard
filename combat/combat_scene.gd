@@ -143,6 +143,7 @@ var player_profile_data: Dictionary = {}
 var current_match_config: Dictionary = {}
 var current_boss_data: Dictionary = {}
 var current_reward_profile: Dictionary = {}
+var current_boss_drop_table: Dictionary = {}
 var current_boss_texture: Texture2D = null
 var data_loader = GAME_DATA_LOADER_SCRIPT.new()
 var card_texture_cache: Dictionary = {}
@@ -426,6 +427,7 @@ func _build_battle_match_state() -> void:
     var boss_id := str(selected_battle.get("boss_id", match_config.get("boss_id", DEFAULT_BOSS_ID))).strip_edges()
     var boss_data := _load_boss_data(boss_id)
     current_boss_data = boss_data.duplicate(true)
+    current_boss_drop_table = _load_boss_drop_table(boss_id)
     var monster_deck_id := str(selected_battle.get("monster_deck_id", "")).strip_edges()
     if monster_deck_id == "":
         monster_deck_id = str(
@@ -2040,6 +2042,7 @@ func _show_battle_end_modal(outcome: String) -> void:
     var gold_text := "Temporary Gold Collected: %d" % gold_delta
     var banked_gold_text := "Persistent Gold Banked: %d" % persistent_gold_awarded
     var total_gold_text := "Persistent Gold Total: %d" % persistent_gold_after
+    var boss_reward_text := _build_boss_reward_text(reward_summary)
     var xp_text := "XP Gained: %d" % xp_gained
     if xp_multiplier > 1:
         xp_text = "XP Gained: %d (%d x%d)" % [xp_gained, xp_base, xp_multiplier]
@@ -2061,10 +2064,11 @@ func _show_battle_end_modal(outcome: String) -> void:
 
     end_modal_stats.text = "Rounds: %d\n%s" % [
         match_state.round_number,
-        "%s\n%s\n%s\n%s\nLevel: %d\nTotal XP: %d" % [
+        "%s\n%s\n%s\n%s\n%s\nLevel: %d\nTotal XP: %d" % [
             gold_text,
             banked_gold_text,
             total_gold_text,
+            boss_reward_text,
             xp_text,
             int(player_profile_data.get("player_level", 1)),
             int(player_profile_data.get("total_xp", 0))
@@ -2141,6 +2145,8 @@ func _apply_phase_one_battle_rewards(outcome: String) -> Dictionary:
         persistent_gold_awarded
     )
     reward_summary["reward_profile_id"] = str(current_match_config.get("reward_profile_id", "")).strip_edges()
+    reward_summary["boss_drop_table_id"] = str(current_boss_drop_table.get("id", "")).strip_edges()
+    reward_summary["boss_drop_rewards"] = _grant_boss_drop_rewards(outcome)
 
     player_profile_data["persistent_gold"] = persistent_gold_before + persistent_gold_awarded
     reward_summary["persistent_gold_after"] = int(player_profile_data.get("persistent_gold", persistent_gold_before))
@@ -2170,6 +2176,126 @@ func _load_reward_profile(reward_profile_id: String) -> Dictionary:
         return {}
 
     return data_loader.load_json(reward_profile_path)
+
+
+func _load_boss_drop_table(boss_id: String) -> Dictionary:
+    var normalized_boss_id := boss_id.strip_edges()
+    if normalized_boss_id == "":
+        return {}
+
+    var boss_drop_table_path := "res://data/rewards/boss drops/%s_boss_drops.json" % normalized_boss_id
+    if not FileAccess.file_exists(boss_drop_table_path):
+        return {}
+
+    return data_loader.load_json(boss_drop_table_path)
+
+
+func _grant_boss_drop_rewards(outcome: String) -> Array:
+    if current_boss_drop_table.is_empty():
+        return []
+
+    var grant_on_outcome = current_boss_drop_table.get("grant_on_outcome", [])
+    if not (grant_on_outcome is Array):
+        return []
+
+    if outcome not in grant_on_outcome:
+        return []
+
+    var drop_count := int(current_boss_drop_table.get("drop_count", 0))
+    if drop_count <= 0:
+        return []
+
+    var granted_rewards: Array = []
+    for _i in range(drop_count):
+        var reward_entry := _roll_weighted_boss_drop_entry(current_boss_drop_table)
+        if reward_entry.is_empty():
+            continue
+
+        var card_id := str(reward_entry.get("card_id", "")).strip_edges()
+        if card_id == "":
+            continue
+
+        _grant_reward_card_to_inventory(card_id)
+        granted_rewards.append({
+            "card_id": card_id,
+            "rarity": str(reward_entry.get("rarity", "")).strip_edges()
+        })
+
+    return granted_rewards
+
+
+func _roll_weighted_boss_drop_entry(boss_drop_table: Dictionary) -> Dictionary:
+    var entries = boss_drop_table.get("entries", [])
+    if not (entries is Array):
+        return {}
+
+    var total_weight := 0
+    var weighted_entries: Array[Dictionary] = []
+    for entry in entries:
+        if not (entry is Dictionary):
+            continue
+
+        var weight := maxi(int(entry.get("weight", 0)), 0)
+        if weight <= 0:
+            continue
+
+        total_weight += weight
+        weighted_entries.append(entry)
+
+    if total_weight <= 0 or weighted_entries.is_empty():
+        return {}
+
+    var roll := randi() % total_weight
+    var running_weight := 0
+    for entry in weighted_entries:
+        running_weight += int(entry.get("weight", 0))
+        if roll < running_weight:
+            return entry.duplicate(true)
+
+    return weighted_entries[weighted_entries.size() - 1].duplicate(true)
+
+
+func _grant_reward_card_to_inventory(card_id: String) -> void:
+    var normalized_card_id := card_id.strip_edges()
+    if normalized_card_id == "":
+        return
+
+    var owned_card_counts = player_profile_data.get("owned_card_counts", {})
+    if not (owned_card_counts is Dictionary):
+        owned_card_counts = {}
+
+    var current_count := int(owned_card_counts.get(normalized_card_id, 0))
+    owned_card_counts[normalized_card_id] = current_count + 1
+    player_profile_data["owned_card_counts"] = owned_card_counts
+
+
+func _build_boss_reward_text(reward_summary: Dictionary) -> String:
+    var rewards = reward_summary.get("boss_drop_rewards", [])
+    if not (rewards is Array) or rewards.is_empty():
+        return "Boss Reward: None"
+
+    var reward_names: Array[String] = []
+    for reward in rewards:
+        if not (reward is Dictionary):
+            continue
+
+        var card_id := str(reward.get("card_id", "")).strip_edges()
+        if card_id == "":
+            continue
+
+        reward_names.append(_get_reward_card_name(card_id))
+
+    if reward_names.is_empty():
+        return "Boss Reward: None"
+
+    return "Boss Reward: %s" % ", ".join(reward_names)
+
+
+func _get_reward_card_name(card_id: String) -> String:
+    var card_data: Dictionary = data_loader.get_card(card_id)
+    if card_data.is_empty():
+        return card_id
+    return str(card_data.get("name", card_id))
 
 
 func _save_player_profile() -> void:
