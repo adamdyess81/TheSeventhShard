@@ -12,6 +12,7 @@ const RESOLUTION_CONTROLLER_SCRIPT = preload("res://combat/ResolutionController.
 const OUTCOME_CONTROLLER_SCRIPT = preload("res://combat/OutcomeController.gd")
 const COMBAT_CONTROLLER_SCRIPT = preload("res://combat/CombatController.gd")
 const RUN_CONTEXT_SCRIPT = preload("res://core/RunContext.gd")
+const HOVEL_SHOP_SCRIPT = preload("res://core/HovelShop.gd")
 const SHIFT_FATE_PREVIEW_COUNT := 6
 const SHIFT_FATE_SELECTION_COUNT := 3
 
@@ -60,6 +61,7 @@ const PANEL_FILL = Color("130f0d")
 const PANEL_BORDER = Color("6a5542")
 const DISCARD_BORDER = Color("9d6b55")
 const DEFAULT_MATCH_PATH := "res://data/matches/ossara_baseline_match_01.json"
+const HOVEL_SHOP_RULES_PATH := "res://data/rewards/hovel_shop_common.json"
 const DEFAULT_BOSS_ID := "ossaran_lich"
 const DEFAULT_BOSS_NAME := "Ossaran Lich"
 const DEFAULT_MONSTER_DECK_ID := "ossaran_lich_deck"
@@ -2147,6 +2149,14 @@ func _apply_phase_one_battle_rewards(outcome: String) -> Dictionary:
     reward_summary["reward_profile_id"] = str(current_match_config.get("reward_profile_id", "")).strip_edges()
     reward_summary["boss_drop_table_id"] = str(current_boss_drop_table.get("id", "")).strip_edges()
     reward_summary["boss_drop_rewards"] = _grant_boss_drop_rewards(outcome)
+    var hovel_shop_state: Dictionary = HOVEL_SHOP_SCRIPT.refresh_shop_state(
+        player_profile_data,
+        data_loader,
+        HOVEL_SHOP_RULES_PATH,
+        "battle_end"
+    )
+    if not hovel_shop_state.is_empty():
+        reward_summary["hovel_shop_state"] = hovel_shop_state.duplicate(true)
 
     player_profile_data["persistent_gold"] = persistent_gold_before + persistent_gold_awarded
     reward_summary["persistent_gold_after"] = int(player_profile_data.get("persistent_gold", persistent_gold_before))

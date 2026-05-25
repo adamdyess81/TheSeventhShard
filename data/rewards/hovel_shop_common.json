@@ -1,0 +1,62 @@
+{
+	"id": "hovel_shop_common",
+	"name": "Hovel Shop Stock Rules",
+	"shop_version": 1,
+	"refresh_trigger": "after_battle",
+	"allow_duplicate_offers": true,
+	"replace_unsold_stock_on_refresh": true,
+	"price_rules": {
+		"common": 25,
+		"uncommon": 60,
+		"rare": 140
+	},
+	"shop_levels": [
+		{
+			"shop_level": 1,
+			"offer_count": 3,
+			"slots": [
+				{ "slot_index": 0, "guaranteed_rarity": "common" },
+				{ "slot_index": 1, "guaranteed_rarity": "common" },
+				{
+					"slot_index": 2,
+					"rolls": [
+						{ "rarity": "uncommon", "weight": 25 },
+						{ "rarity": "common", "weight": 75 }
+					]
+				}
+			]
+		}
+	],
+	"rarity_pools": {
+		"common": [
+			"short_sword",
+			"small_shield",
+			"spear",
+			"small_health_potion",
+			"cure_potion",
+			"energy_burst",
+			"battle_focus"
+		],
+		"uncommon": [
+			"axe",
+			"dagger",
+			"short_bow",
+			"large_shield",
+			"large_health_potion",
+			"defense_potion",
+			"power_potion",
+			"fire_bolt",
+			"banishing_sigil",
+			"recall",
+			"stasis_hex",
+			"ward_of_ash"
+		],
+		"rare": [
+			"spiked_shield",
+			"tower_shield",
+			"adrenaline_potion",
+			"shift_fate"
+		]
+	},
+	"notes": "Baseline Hovel shop stock table. Shop level 1 offers two commons and a third slot that may upgrade to uncommon."
+}

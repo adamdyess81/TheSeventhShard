@@ -8,10 +8,12 @@ const DEFAULT_MAX_DECK_SIZE := 15
 const BOSS_DIRECTORY_PATH := "res://data/bosses"
 const DECK_DIRECTORY_PATH := "res://data/decks"
 const GAME_DATA_LOADER_SCRIPT = preload("res://core/GameDataLoader.gd")
+const HOVEL_SHOP_SCRIPT = preload("res://core/HovelShop.gd")
 const PROGRESSION_SCRIPT = preload("res://core/Progression.gd")
 const PROFILE_DECK_SCRIPT = preload("res://core/ProfileDeck.gd")
 const RUN_CONTEXT_SCRIPT = preload("res://core/RunContext.gd")
 const MINIMUM_DECK_SIZE := 15
+const HOVEL_SHOP_RULES_PATH := "res://data/rewards/hovel_shop_common.json"
 
 @onready var health_value = $Root/Content/StatsPanel/StatsContent/StatsRows/HealthRow/Value
 @onready var gold_value = $Root/Content/StatsPanel/StatsContent/StatsRows/GoldRow/Value
@@ -21,18 +23,25 @@ const MINIMUM_DECK_SIZE := 15
 @onready var opponent_selector = $Root/Content/ActionPanel/ActionContent/OpponentSection/OpponentSelector
 @onready var opponent_details_label = $Root/Content/ActionPanel/ActionContent/OpponentSection/OpponentDetailsLabel
 @onready var status_label = $Root/Content/ActionPanel/ActionContent/StatusLabel
+@onready var shop_offer_one = $Root/Content/ActionPanel/ActionContent/ShopSection/ShopOfferOne
+@onready var shop_offer_two = $Root/Content/ActionPanel/ActionContent/ShopSection/ShopOfferTwo
+@onready var shop_offer_three = $Root/Content/ActionPanel/ActionContent/ShopSection/ShopOfferThree
 @onready var inventory_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/CardInventoryButton
 @onready var go_fight_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/GoFightButton
 @onready var exit_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/ExitGameButton
 
 var player_profile_data: Dictionary = {}
 var available_encounters: Array[Dictionary] = []
+var loader = GAME_DATA_LOADER_SCRIPT.new()
 
 
 func _ready() -> void:
+	loader.build_card_registry()
 	_load_player_profile()
+	_ensure_hovel_shop_stock()
 	_load_available_encounters()
 	_refresh_stats()
+	_refresh_shop_display()
 	_update_selected_encounter_details()
 	status_label.text = "The Hovel stands ready."
 	inventory_button.pressed.connect(_on_card_inventory_pressed)
@@ -42,8 +51,70 @@ func _ready() -> void:
 
 
 func _load_player_profile() -> void:
-	var loader = GAME_DATA_LOADER_SCRIPT.new()
 	player_profile_data = loader.load_json(PLAYER_PROFILE_PATH)
+
+
+func _save_player_profile() -> void:
+	var file := FileAccess.open(PLAYER_PROFILE_PATH, FileAccess.WRITE)
+	if file == null:
+		push_error("Failed to open player profile for write: " + PLAYER_PROFILE_PATH)
+		return
+
+	file.store_string(JSON.stringify(player_profile_data, "\t"))
+	file.close()
+
+
+func _ensure_hovel_shop_stock() -> void:
+	var shop_state = player_profile_data.get("hovel_shop_state", {})
+	if shop_state is Dictionary:
+		var offers = shop_state.get("offers", [])
+		if offers is Array and not offers.is_empty():
+			return
+
+	var refreshed_state: Dictionary = HOVEL_SHOP_SCRIPT.refresh_shop_state(
+		player_profile_data,
+		loader,
+		HOVEL_SHOP_RULES_PATH,
+		"hovel_open"
+	)
+	if not refreshed_state.is_empty():
+		_save_player_profile()
+
+
+func _refresh_shop_display() -> void:
+	var offer_labels = [shop_offer_one, shop_offer_two, shop_offer_three]
+	var shop_state = player_profile_data.get("hovel_shop_state", {})
+	var offers = []
+	if shop_state is Dictionary:
+		offers = shop_state.get("offers", [])
+
+	for index in range(offer_labels.size()):
+		var label: Label = offer_labels[index]
+		if index >= offers.size():
+			label.text = "Offer %d: Empty" % [index + 1]
+			continue
+
+		var offer = offers[index]
+		if not (offer is Dictionary):
+			label.text = "Offer %d: Empty" % [index + 1]
+			continue
+
+		var card_id := str(offer.get("card_id", "")).strip_edges()
+		var rarity := str(offer.get("rarity", "")).strip_edges()
+		var price := int(offer.get("price", 0))
+		label.text = "Offer %d: %s | %s | %d gold" % [
+			index + 1,
+			_get_card_name(card_id),
+			rarity.capitalize(),
+			price
+		]
+
+
+func _get_card_name(card_id: String) -> String:
+	var card_data: Dictionary = loader.get_card(card_id)
+	if card_data.is_empty():
+		return card_id
+	return str(card_data.get("name", card_id))
 
 
 func _refresh_stats() -> void:

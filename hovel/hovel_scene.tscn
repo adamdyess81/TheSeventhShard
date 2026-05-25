@@ -160,6 +160,29 @@ layout_mode = 2
 text = "No opponent selected."
 autowrap_mode = 3
 
+[node name="ShopSection" type="VBoxContainer" parent="Root/Content/ActionPanel/ActionContent" unique_id=918722311]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ShopLabel" type="Label" parent="Root/Content/ActionPanel/ActionContent/ShopSection" unique_id=273610119]
+layout_mode = 2
+text = "Hovel Shop"
+
+[node name="ShopOfferOne" type="Label" parent="Root/Content/ActionPanel/ActionContent/ShopSection" unique_id=140270331]
+layout_mode = 2
+text = "Offer 1: Empty"
+autowrap_mode = 3
+
+[node name="ShopOfferTwo" type="Label" parent="Root/Content/ActionPanel/ActionContent/ShopSection" unique_id=411583218]
+layout_mode = 2
+text = "Offer 2: Empty"
+autowrap_mode = 3
+
+[node name="ShopOfferThree" type="Label" parent="Root/Content/ActionPanel/ActionContent/ShopSection" unique_id=110651304]
+layout_mode = 2
+text = "Offer 3: Empty"
+autowrap_mode = 3
+
 [node name="ActionButtons" type="VBoxContainer" parent="Root/Content/ActionPanel/ActionContent" unique_id=1098993176]
 layout_mode = 2
 theme_override_constants/separation = 12
