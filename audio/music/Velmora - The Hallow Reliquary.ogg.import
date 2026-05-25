@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://7sgpxvvksg8g"
+path="res://.godot/imported/Velmora - The Hallow Reliquary.ogg-e72ef569bdb43dc48d1c645a5c00c26b.oggvorbisstr"
+
+[deps]
+
+source_file="res://audio/music/Velmora - The Hallow Reliquary.ogg"
+dest_files=["res://.godot/imported/Velmora - The Hallow Reliquary.ogg-e72ef569bdb43dc48d1c645a5c00c26b.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

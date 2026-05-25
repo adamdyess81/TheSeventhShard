@@ -15,6 +15,6 @@
   "global_rule_ids": [],
   "board_cap_modifier": 0,
   "unresolved_card_cap_modifier": 0,
-  "art_ref": null,
+  "art_ref": "res://art/cards/Spore Matriarch.png",
   "notes": "Ossara blight boss. Every 2 rounds, insert a Necrotic Spore into the deck at a random position."
 }

@@ -3,13 +3,13 @@
 [ext_resource type="Script" uid="uid://ddy7p7fwnmhhr" path="res://combat/combat_scene.gd" id="1_q5cen"]
 [ext_resource type="Script" uid="uid://cw08f63aan686" path="res://cards/DropZone.gd" id="2_a5s3s"]
 [ext_resource type="Texture2D" uid="uid://iwqrol5bl0g7" path="res://art/ui/Knight.png" id="3_3of7o"]
+[ext_resource type="AudioStream" uid="uid://7sgpxvvksg8g" path="res://audio/music/Velmora - The Hallow Reliquary.ogg" id="3_7ua0y"]
 [ext_resource type="Texture2D" uid="uid://btauel4mp3amf" path="res://art/ui/LeftHand Placement Card.png" id="4_8wbxd"]
 [ext_resource type="Texture2D" uid="uid://deuf62lc3xk7n" path="res://art/ui/RightHand Placement Card.png" id="5_6ggyu"]
 [ext_resource type="Texture2D" uid="uid://cy8xyafcik6rj" path="res://art/ui/Backpack Placement Card.png" id="6_7f78p"]
 [ext_resource type="Texture2D" uid="uid://mk8ed4edrh6v" path="res://art/ui/Trash Placement Card.png" id="7_w6j6n"]
 [ext_resource type="Texture2D" uid="uid://bdkuuu4t8rdv5" path="res://art/backgrounds/Ossara-Titled-Arena.png" id="8_bg"]
 [ext_resource type="Texture2D" uid="uid://crfty4ni1hpdn" path="res://art/ui/CardBack.png" id="9_deck"]
-[ext_resource type="AudioStream" uid="uid://chjjv84fnvl1n" path="res://audio/music/Battle Track-001.ogg" id="10_battle_music"]
 [ext_resource type="AudioStream" uid="uid://2jmsu0mrviyw" path="res://audio/music/Battle Triumph.ogg" id="11_victory_music"]
 [ext_resource type="AudioStream" uid="uid://dvbnybi6nge8c" path="res://audio/music/Defeat.ogg" id="12_defeat_music"]
 
@@ -45,7 +45,7 @@ expand_mode = 1
 stretch_mode = 6
 
 [node name="BattleMusic" type="AudioStreamPlayer" parent="." unique_id=314159265]
-stream = ExtResource("10_battle_music")
+stream = ExtResource("3_7ua0y")
 autoplay = true
 
 [node name="VictoryStinger" type="AudioStreamPlayer" parent="." unique_id=314159266]
@@ -55,6 +55,7 @@ stream = ExtResource("11_victory_music")
 stream = ExtResource("12_defeat_music")
 
 [node name="FadeOverlay" type="ColorRect" parent="." unique_id=271828182]
+visible = false
 z_index = 100
 layout_mode = 1
 anchors_preset = 15
@@ -182,15 +183,10 @@ text = "Done"
 
 [node name="RootLayout" type="VBoxContainer" parent="." unique_id=247386464]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 10
 anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 32.0
-offset_top = 8.0
-offset_right = -32.0
-offset_bottom = 50.0
+offset_bottom = 1122.0
 grow_horizontal = 2
-grow_vertical = 2
 theme_override_constants/separation = 4
 
 [node name="StageCenter" type="CenterContainer" parent="RootLayout" unique_id=1335955818]
@@ -249,8 +245,13 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = -78.0
+offset_top = -42.0
+offset_right = -78.0
+offset_bottom = -42.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.4006364, 1.4006364)
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
@@ -260,10 +261,10 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -132.0
-offset_top = 30.0
-offset_right = 132.0
-offset_bottom = 60.0
+offset_left = -137.0
+offset_top = 231.0
+offset_right = 127.0
+offset_bottom = 261.0
 grow_horizontal = 2
 horizontal_alignment = 1
 
@@ -275,10 +276,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -67.0
-offset_top = -84.0
-offset_right = 67.0
-offset_bottom = -52.0
+offset_left = -208.0
+offset_top = -33.0
+offset_right = 212.0
+offset_bottom = -1.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
@@ -290,7 +291,7 @@ vertical_alignment = 1
 
 [node name="PlayArea" type="VBoxContainer" parent="RootLayout/StageCenter/Stage" unique_id=194280336]
 layout_mode = 2
-size_flags_vertical = 3
+size_flags_vertical = 6
 theme_override_constants/separation = 22
 
 [node name="BoardCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage/PlayArea" unique_id=127803510]
@@ -304,7 +305,6 @@ theme_override_constants/separation = 10
 [node name="BoardTitle" type="Label" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection" unique_id=401729791]
 layout_direction = 2
 layout_mode = 2
-text = "Active Board Cards"
 horizontal_alignment = 1
 
 [node name="BoardLane" type="HBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection" unique_id=496576509]
@@ -371,7 +371,8 @@ horizontal_alignment = 1
 
 [node name="LoadoutCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage/PlayArea" unique_id=51322928]
 layout_mode = 2
-size_flags_vertical = 4
+size_flags_horizontal = 4
+size_flags_vertical = 0
 
 [node name="LoadoutGroup" type="VBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter" unique_id=1910022334]
 layout_mode = 2
@@ -474,10 +475,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -67.0
-offset_top = -70.0
-offset_right = 67.0
-offset_bottom = -38.0
+offset_left = -86.0
+offset_top = -77.0
+offset_right = 84.0
+offset_bottom = -45.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
