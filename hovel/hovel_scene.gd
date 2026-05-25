@@ -14,6 +14,14 @@ const PROFILE_DECK_SCRIPT = preload("res://core/ProfileDeck.gd")
 const RUN_CONTEXT_SCRIPT = preload("res://core/RunContext.gd")
 const MINIMUM_DECK_SIZE := 15
 const HOVEL_SHOP_RULES_PATH := "res://data/rewards/hovel_shop_common.json"
+const KNIGHT_CLASS_PATH := "res://data/classes/knight.json"
+const KNIGHT_STARTER_LOADOUT_PATH := "res://data/loadouts/loadout_knight_starter_01.json"
+const RESET_PLAYER_LEVEL := 1
+const RESET_TOTAL_XP := 0
+const RESET_PERSISTENT_GOLD := 0
+const RESET_STARTING_HEALTH := 20
+const RESET_MAX_DECK_SIZE := 15
+const RESET_HOVEL_SHOP_LEVEL := 1
 
 @onready var health_value = $Root/Content/StatsPanel/StatsContent/StatsRows/HealthRow/Value
 @onready var gold_value = $Root/Content/StatsPanel/StatsContent/StatsRows/GoldRow/Value
@@ -31,6 +39,7 @@ const HOVEL_SHOP_RULES_PATH := "res://data/rewards/hovel_shop_common.json"
 @onready var shop_buy_three = $Root/Content/ActionPanel/ActionContent/ShopSection/ShopBuyThree
 @onready var inventory_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/CardInventoryButton
 @onready var go_fight_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/GoFightButton
+@onready var reset_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/ResetPlayerButton
 @onready var exit_button = $Root/Content/ActionPanel/ActionContent/ActionButtons/ExitGameButton
 
 var player_profile_data: Dictionary = {}
@@ -53,6 +62,7 @@ func _ready() -> void:
 	inventory_button.pressed.connect(_on_card_inventory_pressed)
 	opponent_selector.item_selected.connect(_on_opponent_selected)
 	go_fight_button.pressed.connect(_on_go_fight_pressed)
+	reset_button.pressed.connect(_on_reset_player_pressed)
 	exit_button.pressed.connect(_on_exit_game_pressed)
 
 
@@ -259,6 +269,68 @@ func _on_opponent_selected(_index: int) -> void:
 
 func _on_card_inventory_pressed() -> void:
 	get_tree().change_scene_to_file(CARD_INVENTORY_SCENE_PATH)
+
+
+func _on_reset_player_pressed() -> void:
+	reset_player_profile_to_knight_baseline()
+	var refreshed_state: Dictionary = HOVEL_SHOP_SCRIPT.refresh_shop_state(
+		player_profile_data,
+		loader,
+		HOVEL_SHOP_RULES_PATH,
+		"player_reset"
+	)
+	if refreshed_state.is_empty():
+		player_profile_data["hovel_shop_state"] = {}
+	_save_player_profile()
+	_refresh_stats()
+	_refresh_shop_display()
+	status_label.text = "Player reset to Knight baseline."
+
+
+func reset_player_profile_to_knight_baseline() -> void:
+	var knight_class: Dictionary = loader.load_json(KNIGHT_CLASS_PATH)
+	var knight_loadout: Dictionary = loader.load_json(KNIGHT_STARTER_LOADOUT_PATH)
+	var starting_inventory := _build_card_counts_from_entries(knight_class.get("starting_card_grants", []))
+	var starting_deck := _build_card_counts_from_entries(knight_loadout.get("deck_card_entries", []))
+
+	player_profile_data["active_class_id"] = "knight"
+	player_profile_data["hovel_upgrade_ids"] = []
+	player_profile_data["hovel_shop_level"] = RESET_HOVEL_SHOP_LEVEL
+	player_profile_data["max_deck_size_base"] = RESET_MAX_DECK_SIZE
+	player_profile_data["owned_card_counts"] = starting_inventory
+	player_profile_data["owned_relic_ids"] = []
+	player_profile_data["owned_rune_ids"] = []
+	player_profile_data["persistent_gold"] = RESET_PERSISTENT_GOLD
+	player_profile_data["player_level"] = RESET_PLAYER_LEVEL
+	player_profile_data["progression_flag_ids"] = []
+	player_profile_data["saved_loadout_ids"] = ["loadout_knight_starter_01"]
+	player_profile_data["selected_deck_card_counts"] = starting_deck
+	player_profile_data["starting_health_base"] = RESET_STARTING_HEALTH
+	player_profile_data["total_xp"] = RESET_TOTAL_XP
+	player_profile_data["unlocked_branch_ids"] = ["ossara"]
+	player_profile_data["unlocked_campaign_ids"] = ["ossara_short_01"]
+	player_profile_data["unlocked_classes"] = ["knight"]
+	player_profile_data["hovel_shop_state"] = {}
+	player_profile_data.erase("last_battle_reward_summary")
+
+
+func _build_card_counts_from_entries(entries) -> Dictionary:
+	var counts: Dictionary = {}
+	if not (entries is Array):
+		return counts
+
+	for entry in entries:
+		if not (entry is Dictionary):
+			continue
+		var card_id := str(entry.get("card_id", "")).strip_edges()
+		if card_id == "":
+			continue
+		var quantity := int(entry.get("quantity", 0))
+		if quantity <= 0:
+			continue
+		counts[card_id] = quantity
+
+	return counts
 
 
 func _on_shop_buy_pressed(offer_index: int) -> void:

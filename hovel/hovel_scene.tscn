@@ -207,6 +207,10 @@ text = "Card Inventory"
 layout_mode = 2
 text = "Go Fight"
 
+[node name="ResetPlayerButton" type="Button" parent="Root/Content/ActionPanel/ActionContent/ActionButtons" unique_id=41464061]
+layout_mode = 2
+text = "Reset Player"
+
 [node name="ExitGameButton" type="Button" parent="Root/Content/ActionPanel/ActionContent/ActionButtons" unique_id=1666680272]
 layout_mode = 2
 text = "Exit Game"
