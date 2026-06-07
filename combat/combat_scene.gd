@@ -357,19 +357,19 @@ func _show_boss_damage_slash() -> void:
 
 
 func _show_board_card_damage_slash(board_index: int) -> void:
-    var card_view = _get_board_card_view(board_index)
+    var card_view: Control = _get_board_card_view(board_index)
     if card_view == null or not is_instance_valid(card_view):
         return
     _show_damage_slash_at_rect(card_view.get_global_rect(), SWORD_DAMAGE_SLASH_TEXTURE)
 
 
 func _show_fire_bolt_impact(board_index: int) -> void:
-    var card_view = _get_board_card_view(board_index)
+    var card_view: Control = _get_board_card_view(board_index)
     if card_view == null or not is_instance_valid(card_view):
         return
 
-    var target_rect := card_view.get_global_rect()
-    var target_center := target_rect.position - global_position + (target_rect.size * 0.5)
+    var target_rect: Rect2 = card_view.get_global_rect()
+    var target_center: Vector2 = target_rect.position - global_position + (target_rect.size * 0.5)
 
     var burst := GPUParticles2D.new()
     burst.position = target_center
@@ -1048,15 +1048,15 @@ func _get_card_sfx(card):
  return _load_cached_sfx(_get_card_sfx_ref(card))
 
 
-func _get_board_card_view(board_index: int):
+func _get_board_card_view(board_index: int) -> Control:
  if board_index < 0 or board_index >= board_card_list.get_child_count():
   return null
 
- return board_card_list.get_child(board_index)
+ return board_card_list.get_child(board_index) as Control
 
 
 func _animate_board_card_resolution(board_index: int) -> void:
- var card_view = _get_board_card_view(board_index)
+ var card_view: Control = _get_board_card_view(board_index)
  if card_view == null:
   return
 
