@@ -6,24 +6,24 @@
 		"last_refresh_source": "battle_end",
 		"offers": [
 			{
+				"card_id": "small_shield",
+				"offer_id": "shop_1_0_263765",
+				"player_level_at_roll": 10,
+				"price": 25,
+				"rarity": "common",
+				"shop_level": 1
+			},
+			{
+				"card_id": "battle_focus",
+				"offer_id": "shop_1_1_695859",
+				"player_level_at_roll": 10,
+				"price": 25,
+				"rarity": "common",
+				"shop_level": 1
+			},
+			{
 				"card_id": "cure_potion",
-				"offer_id": "shop_1_0_938877",
-				"player_level_at_roll": 10,
-				"price": 25,
-				"rarity": "common",
-				"shop_level": 1
-			},
-			{
-				"card_id": "energy_burst",
-				"offer_id": "shop_1_1_579700",
-				"player_level_at_roll": 10,
-				"price": 25,
-				"rarity": "common",
-				"shop_level": 1
-			},
-			{
-				"card_id": "short_sword",
-				"offer_id": "shop_1_2_146284",
+				"offer_id": "shop_1_2_685817",
 				"player_level_at_roll": 10,
 				"price": 25,
 				"rarity": "common",
@@ -37,12 +37,12 @@
 	},
 	"hovel_upgrade_ids": [],
 	"last_battle_reward_summary": {
-		"boss_difficulty": "guardian",
+		"boss_difficulty": "baseline",
 		"boss_drop_rewards": [],
-		"boss_drop_table_id": "",
-		"boss_id": "velmora_hallow_reliquary",
+		"boss_drop_table_id": "ossaran_lich_boss_drops",
+		"boss_id": "ossaran_lich",
 		"boss_kill": false,
-		"boss_name": "Velmora, The Hallow Reliquary",
+		"boss_name": "Ossaran Lich",
 		"chest_carry_state": {
 			"backpack_chest_count": 0,
 			"backpack_chest_ids": [],
@@ -56,24 +56,24 @@
 			"last_refresh_source": "battle_end",
 			"offers": [
 				{
+					"card_id": "small_shield",
+					"offer_id": "shop_1_0_263765",
+					"player_level_at_roll": 10,
+					"price": 25,
+					"rarity": "common",
+					"shop_level": 1
+				},
+				{
+					"card_id": "battle_focus",
+					"offer_id": "shop_1_1_695859",
+					"player_level_at_roll": 10,
+					"price": 25,
+					"rarity": "common",
+					"shop_level": 1
+				},
+				{
 					"card_id": "cure_potion",
-					"offer_id": "shop_1_0_938877",
-					"player_level_at_roll": 10,
-					"price": 25,
-					"rarity": "common",
-					"shop_level": 1
-				},
-				{
-					"card_id": "energy_burst",
-					"offer_id": "shop_1_1_579700",
-					"player_level_at_roll": 10,
-					"price": 25,
-					"rarity": "common",
-					"shop_level": 1
-				},
-				{
-					"card_id": "short_sword",
-					"offer_id": "shop_1_2_146284",
+					"offer_id": "shop_1_2_685817",
 					"player_level_at_roll": 10,
 					"price": 25,
 					"rarity": "common",
@@ -85,14 +85,14 @@
 			"shop_level": 1,
 			"shop_table_id": "hovel_shop_common"
 		},
-		"outcome": "failure",
-		"persistent_gold_after": 70,
-		"persistent_gold_awarded": 0,
+		"outcome": "survival",
+		"persistent_gold_after": 110,
+		"persistent_gold_awarded": 40,
 		"persistent_gold_before": 70,
 		"player_level": 10,
 		"reward_profile_id": "baseline_match_rewards",
-		"round_number": 13,
-		"temporary_gold_collected": 75
+		"round_number": 22,
+		"temporary_gold_collected": 40
 	},
 	"max_deck_size_base": 15.0,
 	"notes": "First baseline profile for prototype testing.",
@@ -109,7 +109,7 @@
 	},
 	"owned_relic_ids": [],
 	"owned_rune_ids": [],
-	"persistent_gold": 70,
+	"persistent_gold": 110,
 	"player_level": 10,
 	"player_profile_id": "player_main",
 	"profile_name": "Main Profile",
@@ -127,7 +127,7 @@
 		"small_shield": 3.0
 	},
 	"starting_health_base": 20.0,
-	"total_xp": 2117,
+	"total_xp": 2312,
 	"unlocked_branch_ids": [
 		"ossara"
 	],
