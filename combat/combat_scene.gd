@@ -37,6 +37,7 @@ const DEAL_CARDS_SFX_PATH := "res://audio/sound fx/deal_cards.wav"
 const DISCARD_SFX_PATH := "res://audio/sound fx/discard.wav"
 const DRINK_POTION_SFX_PATH := "res://audio/sound fx/drink_potion.wav"
 const DROP_CARD_SFX_PATH := "res://audio/sound fx/drop_card.wav"
+const EXPLOSION_SOUND_SFX_PATH := "res://audio/sound fx/Explosion Sound.wav"
 const GAIN_COINS_SFX_PATH := "res://audio/sound fx/gain_coins.wav"
 const GRAVEBOUND_WARDEN_HURT_SFX_PATH := "res://audio/sound fx/gravebound_warden_hurt.wav"
 const GRAVEBOUND_WARDEN_SPECIAL_SFX_PATH := "res://audio/sound fx/gravebound_warden_special.wav"
@@ -363,12 +364,7 @@ func _show_board_card_damage_slash(board_index: int) -> void:
     _show_damage_slash_at_rect(card_view.get_global_rect(), SWORD_DAMAGE_SLASH_TEXTURE)
 
 
-func _show_fire_bolt_impact(board_index: int) -> void:
-    var card_view: Control = _get_board_card_view(board_index)
-    if card_view == null or not is_instance_valid(card_view):
-        return
-
-    var target_rect: Rect2 = card_view.get_global_rect()
+func _show_fire_bolt_impact_at_rect(target_rect: Rect2) -> void:
     var target_center: Vector2 = target_rect.position - global_position + (target_rect.size * 0.5)
 
     var burst := GPUParticles2D.new()
@@ -411,25 +407,24 @@ func _show_fire_bolt_impact(board_index: int) -> void:
     burst.restart()
     burst.emitting = true
 
-    var flare := ColorRect.new()
-    flare.color = FIRE_BOLT_GLOW_COLOR
-    flare.mouse_filter = Control.MOUSE_FILTER_IGNORE
-    flare.z_index = 169
-    flare.size = target_rect.size * Vector2(0.72, 0.72)
-    flare.position = target_rect.position - global_position + ((target_rect.size - flare.size) * 0.5)
-    add_child(flare)
-
-    var flare_tween := create_tween()
-    flare_tween.set_parallel(true)
-    flare_tween.tween_property(flare, "modulate:a", 0.0, 0.18)
-    flare_tween.tween_property(flare, "scale", Vector2(1.24, 1.24), 0.18)
-    flare_tween.finished.connect(Callable(flare, "queue_free"))
-
     var cleanup_timer := get_tree().create_timer(0.8)
     cleanup_timer.timeout.connect(func() -> void:
         if is_instance_valid(burst):
             burst.queue_free()
     )
+
+
+func _show_fire_bolt_impact(board_index: int) -> void:
+    var card_view: Control = _get_board_card_view(board_index)
+    if card_view == null or not is_instance_valid(card_view):
+        return
+    _show_fire_bolt_impact_at_rect(card_view.get_global_rect())
+
+
+func _show_fire_bolt_boss_impact() -> void:
+    if boss_drop_zone == null or not is_instance_valid(boss_drop_zone):
+        return
+    _show_fire_bolt_impact_at_rect(boss_drop_zone.get_global_rect())
 
 
 func _get_adjacent_monster_board_indices(board_index: int) -> Array[int]:
@@ -1714,15 +1709,13 @@ func handle_slot_card_drop_on_board(source_hand: String, board_index: int) -> vo
 
     _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
     if source_card_id == "fire_bolt":
+        _play_sfx(_load_common_sfx(EXPLOSION_SOUND_SFX_PATH))
         _show_fire_bolt_impact(board_index)
     var target_after = null
     if board_index >= 0 and board_index < active_cards.size():
         target_after = active_cards[board_index]
     if target_before != null and target_after == null:
-        _show_board_card_damage_slash(board_index)
         await _animate_board_card_resolution(board_index)
-    elif target_before != null and target_after != target_before:
-        _show_board_card_damage_slash(board_index)
     set_status("Spell cast on monster.")
     _refresh_ui()
 
@@ -1859,6 +1852,7 @@ func handle_slot_card_drop_on_boss(source_hand: String) -> void:
         _refresh_ui()
         return
 
+    var source_card_id := _get_card_id(slot_card)
     var before_health = match_state.boss_state.current_health
     var player_health_before = match_state.player_state.current_health
     var success := false
@@ -1875,7 +1869,9 @@ func handle_slot_card_drop_on_boss(source_hand: String) -> void:
     var after_health = match_state.boss_state.current_health
     var retaliation_damage: int = maxi(player_health_before - match_state.player_state.current_health, 0)
     _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
-    _show_boss_damage_slash()
+    if source_card_id == "fire_bolt":
+        _play_sfx(_load_common_sfx(EXPLOSION_SOUND_SFX_PATH))
+        _show_fire_bolt_boss_impact()
     if retaliation_damage > 0:
         set_status("Spell hit the boss. %d to %d. Retaliation dealt %d damage." % [before_health, after_health, retaliation_damage])
     else:
