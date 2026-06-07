@@ -57,6 +57,9 @@ const SUCCESS_TEXT = Color("d5c074")
 const ERROR_TEXT = Color("d38a80")
 const VALID_DROP_TINT = Color(0.45, 0.72, 1.0, 0.58)
 const INVALID_DROP_TINT = Color(1.0, 0.36, 0.36, 0.58)
+const FIRE_BOLT_GLOW_COLOR = Color(1.0, 0.52, 0.16, 0.72)
+const FIRE_BOLT_SPARK_COLOR = Color(1.0, 0.8, 0.32, 1.0)
+const FIRE_BOLT_EMBER_COLOR = Color(1.0, 0.22, 0.08, 0.0)
 const PANEL_FILL = Color("130f0d")
 const PANEL_BORDER = Color("6a5542")
 const DISCARD_BORDER = Color("9d6b55")
@@ -358,6 +361,75 @@ func _show_board_card_damage_slash(board_index: int) -> void:
     if card_view == null or not is_instance_valid(card_view):
         return
     _show_damage_slash_at_rect(card_view.get_global_rect(), SWORD_DAMAGE_SLASH_TEXTURE)
+
+
+func _show_fire_bolt_impact(board_index: int) -> void:
+    var card_view = _get_board_card_view(board_index)
+    if card_view == null or not is_instance_valid(card_view):
+        return
+
+    var target_rect := card_view.get_global_rect()
+    var target_center := target_rect.position - global_position + (target_rect.size * 0.5)
+
+    var burst := GPUParticles2D.new()
+    burst.position = target_center
+    burst.z_index = 170
+    burst.amount = 26
+    burst.lifetime = 0.55
+    burst.one_shot = true
+    burst.explosiveness = 0.95
+    burst.randomness = 0.55
+    burst.emitting = false
+
+    var process_material := ParticleProcessMaterial.new()
+    process_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+    process_material.emission_sphere_radius = max(target_rect.size.x, target_rect.size.y) * 0.16
+    process_material.spread = 180.0
+    process_material.initial_velocity_min = 85.0
+    process_material.initial_velocity_max = 170.0
+    process_material.gravity = Vector3(0.0, -30.0, 0.0)
+    process_material.scale_min = 0.75
+    process_material.scale_max = 1.35
+    process_material.angular_velocity_min = -3.0
+    process_material.angular_velocity_max = 3.0
+    process_material.linear_accel_min = -40.0
+    process_material.linear_accel_max = 22.0
+    process_material.damping_min = 8.0
+    process_material.damping_max = 14.0
+    process_material.color = FIRE_BOLT_SPARK_COLOR
+
+    var gradient := Gradient.new()
+    gradient.offsets = PackedFloat32Array([0.0, 0.35, 1.0])
+    gradient.colors = PackedColorArray([FIRE_BOLT_GLOW_COLOR, FIRE_BOLT_SPARK_COLOR, FIRE_BOLT_EMBER_COLOR])
+
+    var color_ramp := GradientTexture1D.new()
+    color_ramp.gradient = gradient
+    process_material.color_ramp = color_ramp
+    burst.process_material = process_material
+
+    add_child(burst)
+    burst.restart()
+    burst.emitting = true
+
+    var flare := ColorRect.new()
+    flare.color = FIRE_BOLT_GLOW_COLOR
+    flare.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    flare.z_index = 169
+    flare.size = target_rect.size * Vector2(0.72, 0.72)
+    flare.position = target_rect.position - global_position + ((target_rect.size - flare.size) * 0.5)
+    add_child(flare)
+
+    var flare_tween := create_tween()
+    flare_tween.set_parallel(true)
+    flare_tween.tween_property(flare, "modulate:a", 0.0, 0.18)
+    flare_tween.tween_property(flare, "scale", Vector2(1.24, 1.24), 0.18)
+    flare_tween.finished.connect(Callable(flare, "queue_free"))
+
+    var cleanup_timer := get_tree().create_timer(0.8)
+    cleanup_timer.timeout.connect(func() -> void:
+        if is_instance_valid(burst):
+            burst.queue_free()
+    )
 
 
 func _get_adjacent_monster_board_indices(board_index: int) -> Array[int]:
@@ -1105,6 +1177,16 @@ func _get_card_runtime_value(card) -> int:
  return 0
 
 
+func _get_card_id(card) -> String:
+ if _is_runtime_card(card):
+  return card.card_id
+
+ if card is Dictionary:
+  return str(card.get("id", ""))
+
+ return ""
+
+
 func _get_card_display_text(card) -> String:
     if _is_runtime_card(card):
         return "%s | %s | value: %d | zone: %s" % [
@@ -1618,6 +1700,7 @@ func handle_slot_card_drop_on_board(source_hand: String, board_index: int) -> vo
         _refresh_ui()
         return
 
+    var source_card_id := _get_card_id(slot_card)
     var success := false
     if source_hand == "left_hand":
         success = combat_controller.use_left_hand_spell_on_monster(board_index)
@@ -1630,6 +1713,8 @@ func handle_slot_card_drop_on_board(source_hand: String, board_index: int) -> vo
         return
 
     _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
+    if source_card_id == "fire_bolt":
+        _show_fire_bolt_impact(board_index)
     var target_after = null
     if board_index >= 0 and board_index < active_cards.size():
         target_after = active_cards[board_index]
