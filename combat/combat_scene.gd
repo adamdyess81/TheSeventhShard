@@ -370,7 +370,7 @@ func _show_fire_bolt_impact_at_rect(target_rect: Rect2) -> void:
     var burst := GPUParticles2D.new()
     burst.position = target_center
     burst.z_index = 170
-    burst.amount = 26
+    burst.amount = 126
     burst.lifetime = 0.55
     burst.one_shot = true
     burst.explosiveness = 0.95
@@ -419,12 +419,14 @@ func _show_fire_bolt_impact(board_index: int) -> void:
     if card_view == null or not is_instance_valid(card_view):
         return
     _show_fire_bolt_impact_at_rect(card_view.get_global_rect())
+    _play_damage_screen_shake()
 
 
 func _show_fire_bolt_boss_impact() -> void:
     if boss_drop_zone == null or not is_instance_valid(boss_drop_zone):
         return
     _show_fire_bolt_impact_at_rect(boss_drop_zone.get_global_rect())
+    _play_damage_screen_shake()
 
 
 func _get_adjacent_monster_board_indices(board_index: int) -> Array[int]:

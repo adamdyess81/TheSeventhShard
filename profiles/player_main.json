@@ -7,110 +7,104 @@
 		"offers": [
 			{
 				"card_id": "small_shield",
-				"offer_id": "shop_1_0_263765",
-				"player_level_at_roll": 10,
-				"price": 25,
+				"offer_id": "shop_1_0_704816",
+				"player_level_at_roll": 13.0,
+				"price": 25.0,
 				"rarity": "common",
-				"shop_level": 1
+				"shop_level": 1.0
 			},
-			{
-				"card_id": "battle_focus",
-				"offer_id": "shop_1_1_695859",
-				"player_level_at_roll": 10,
-				"price": 25,
-				"rarity": "common",
-				"shop_level": 1
-			},
-			{
-				"card_id": "cure_potion",
-				"offer_id": "shop_1_2_685817",
-				"player_level_at_roll": 10,
-				"price": 25,
-				"rarity": "common",
-				"shop_level": 1
-			}
+			null,
+			null
 		],
-		"player_level_at_refresh": 10,
+		"player_level_at_refresh": 13.0,
 		"refresh_trigger": "after_battle",
-		"shop_level": 1,
+		"shop_level": 1.0,
 		"shop_table_id": "hovel_shop_common"
 	},
 	"hovel_upgrade_ids": [],
 	"last_battle_reward_summary": {
 		"boss_difficulty": "baseline",
-		"boss_drop_rewards": [],
+		"boss_drop_rewards": [
+			{
+				"card_id": "short_sword",
+				"rarity": "common"
+			}
+		],
 		"boss_drop_table_id": "ossaran_lich_boss_drops",
 		"boss_id": "ossaran_lich",
-		"boss_kill": false,
+		"boss_kill": true,
 		"boss_name": "Ossaran Lich",
 		"chest_carry_state": {
-			"backpack_chest_count": 0,
+			"backpack_chest_count": 0.0,
 			"backpack_chest_ids": [],
 			"has_carried_chest": false,
 			"left_hand_has_chest": false,
 			"right_hand_has_chest": false,
-			"total_carried_chest_count": 0,
-			"tracked_carried_chest_count": 0
+			"total_carried_chest_count": 0.0,
+			"tracked_carried_chest_count": 0.0
 		},
 		"hovel_shop_state": {
 			"last_refresh_source": "battle_end",
 			"offers": [
 				{
 					"card_id": "small_shield",
-					"offer_id": "shop_1_0_263765",
-					"player_level_at_roll": 10,
-					"price": 25,
+					"offer_id": "shop_1_0_704816",
+					"player_level_at_roll": 13.0,
+					"price": 25.0,
 					"rarity": "common",
-					"shop_level": 1
+					"shop_level": 1.0
 				},
 				{
-					"card_id": "battle_focus",
-					"offer_id": "shop_1_1_695859",
-					"player_level_at_roll": 10,
-					"price": 25,
+					"card_id": "energy_burst",
+					"offer_id": "shop_1_1_992316",
+					"player_level_at_roll": 13.0,
+					"price": 25.0,
 					"rarity": "common",
-					"shop_level": 1
+					"shop_level": 1.0
 				},
 				{
-					"card_id": "cure_potion",
-					"offer_id": "shop_1_2_685817",
-					"player_level_at_roll": 10,
-					"price": 25,
+					"card_id": "energy_burst",
+					"offer_id": "shop_1_2_820526",
+					"player_level_at_roll": 13.0,
+					"price": 25.0,
 					"rarity": "common",
-					"shop_level": 1
+					"shop_level": 1.0
 				}
 			],
-			"player_level_at_refresh": 10,
+			"player_level_at_refresh": 13.0,
 			"refresh_trigger": "after_battle",
-			"shop_level": 1,
+			"shop_level": 1.0,
 			"shop_table_id": "hovel_shop_common"
 		},
-		"outcome": "survival",
-		"persistent_gold_after": 110,
-		"persistent_gold_awarded": 40,
-		"persistent_gold_before": 70,
-		"player_level": 10,
+		"outcome": "victory",
+		"persistent_gold_after": 180.0,
+		"persistent_gold_awarded": 10.0,
+		"persistent_gold_before": 170.0,
+		"player_level": 13.0,
 		"reward_profile_id": "baseline_match_rewards",
-		"round_number": 22,
-		"temporary_gold_collected": 40
+		"round_number": 12.0,
+		"temporary_gold_collected": 10.0
 	},
 	"max_deck_size_base": 15.0,
 	"notes": "First baseline profile for prototype testing.",
 	"owned_card_counts": {
+		"axe": 1.0,
 		"banishing_sigil": 1.0,
-		"battle_focus": 1.0,
+		"battle_focus": 2.0,
 		"cure_potion": 3.0,
-		"energy_burst": 3.0,
-		"fire_bolt": 1.0,
+		"energy_burst": 5,
+		"fire_bolt": 2.0,
 		"large_health_potion": 3.0,
-		"short_sword": 5.0,
-		"small_health_potion": 6.0,
-		"small_shield": 6.0
+		"large_shield": 1.0,
+		"short_sword": 9.0,
+		"small_health_potion": 8.0,
+		"small_shield": 7.0,
+		"spiked_shield": 1.0
 	},
 	"owned_relic_ids": [],
 	"owned_rune_ids": [],
-	"persistent_gold": 110,
-	"player_level": 10,
+	"persistent_gold": 130,
+	"player_level": 13.0,
 	"player_profile_id": "player_main",
 	"profile_name": "Main Profile",
 	"progression_flag_ids": [],
@@ -118,16 +112,20 @@
 		"loadout_knight_starter_01"
 	],
 	"selected_deck_card_counts": {
-		"cure_potion": 3.0,
+		"axe": 1.0,
+		"banishing_sigil": 1.0,
+		"battle_focus": 1.0,
 		"energy_burst": 3.0,
-		"fire_bolt": 1.0,
+		"fire_bolt": 2.0,
 		"large_health_potion": 3.0,
-		"short_sword": 5.0,
-		"small_health_potion": 6.0,
-		"small_shield": 3.0
+		"large_shield": 1.0,
+		"short_sword": 7.0,
+		"small_health_potion": 5.0,
+		"small_shield": 1.0,
+		"spiked_shield": 1.0
 	},
 	"starting_health_base": 20.0,
-	"total_xp": 2312,
+	"total_xp": 3572.0,
 	"unlocked_branch_ids": [
 		"ossara"
 	],
