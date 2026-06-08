@@ -5,6 +5,7 @@
   "drop_version": 1,
   "drop_count": 1,
   "grant_on_outcome": ["victory"],
+  "boss_unlock": ["velmora_hallow_reliquary"],
   "entries": [
     {
       "card_id": "energy_burst",

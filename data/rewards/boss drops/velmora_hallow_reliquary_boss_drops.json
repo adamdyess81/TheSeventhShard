@@ -1,11 +1,10 @@
 {
-  "id": "gravebound_warden_boss_drops",
-  "boss_id": "gravebound_warden",
-  "name": "Gravebound Warden Boss Drops",
+  "id": "velmora_hallow_reliquary_boss_drops",
+  "boss_id": "velmora_hallow_reliquary",
+  "name": "Velmora Boss Drops",
   "drop_version": 1,
   "drop_count": 1,
   "grant_on_outcome": ["victory"],
-  "boss_unlock": ["spore_matriarch"],
   "entries": [
     {
       "card_id": "cure_potion",
@@ -13,9 +12,9 @@
       "rarity": "common"
     },
     {
-      "card_id": "small_health_potion",
+      "card_id": "large_health_potion",
       "weight": 25,
-      "rarity": "common"
+      "rarity": "uncommon"
     },
     {
       "card_id": "short_bow",
@@ -23,20 +22,20 @@
       "rarity": "uncommon"
     },
     {
-      "card_id": "axe",
+      "card_id": "stasis_hex",
       "weight": 12,
       "rarity": "uncommon"
     },
     {
-      "card_id": "ward_of_ash",
-      "weight": 10,
-      "rarity": "uncommon"
+      "card_id": "adrenaline_potion",
+      "weight": 8,
+      "rarity": "rare"
     },
     {
-      "card_id": "adrenaline_potion",
+      "card_id": "shift_fate",
       "weight": 5,
       "rarity": "rare"
     }
   ],
-  "notes": "Baseline direct-kill reward table for the Ossaran Lich."
+  "notes": "Baseline direct-kill reward table for the Velmora."
 }

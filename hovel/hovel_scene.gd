@@ -153,10 +153,9 @@ func _refresh_stats() -> void:
 
 	health_value.text = str(starting_health)
 	gold_value.text = str(persistent_gold)
-	xp_value.text = "%d total | %d/%d to next level" % [
+	xp_value.text = "%d total | %d to next level" % [
 		total_xp,
-		int(progress.get("xp_into_level", 0)),
-		int(progress.get("xp_to_next_level", 0))
+		int(progress.get("xp_to_next_level", 0)) - int(progress.get("xp_into_level", 0))		
 	]
 	level_value.text = str(int(progress.get("level", 1)))
 	deck_size_value.text = str(max_deck_size)
@@ -166,12 +165,20 @@ func _load_available_encounters() -> void:
 	available_encounters.clear()
 	opponent_selector.clear()
 
+	var loader = GAME_DATA_LOADER_SCRIPT.new()
+
+	var player_data := loader.load_json(PLAYER_PROFILE_PATH)
+	var unlocked_boss_ids: Array = player_data.get("unlocked_boss_ids", [])
+
+	var unlocked_boss_lookup := {}
+	for boss_id in unlocked_boss_ids:
+		unlocked_boss_lookup[str(boss_id).strip_edges()] = true
+
 	var dir := DirAccess.open(DECK_DIRECTORY_PATH)
 	if dir == null:
 		status_label.text = "Could not open deck directory."
 		return
 
-	var loader = GAME_DATA_LOADER_SCRIPT.new()
 	var deck_paths: Array[String] = []
 	dir.list_dir_begin()
 	var file_name := dir.get_next()
@@ -195,8 +202,15 @@ func _load_available_encounters() -> void:
 		if boss_data.is_empty():
 			continue
 
+		var boss_id := str(boss_data.get("id", "")).strip_edges()
+		if boss_id == "":
+			continue
+
+		if not unlocked_boss_lookup.has(boss_id):
+			continue
+
 		available_encounters.append({
-			"boss_id": str(boss_data.get("id", "")).strip_edges(),
+			"boss_id": boss_id,
 			"boss_name": str(boss_data.get("name", "Unknown Opponent")).strip_edges(),
 			"boss_health": int(boss_data.get("base_health", DEFAULT_STARTING_HEALTH)),
 			"deck_id": str(deck_data.get("id", "")).strip_edges(),
@@ -212,14 +226,13 @@ func _load_available_encounters() -> void:
 		opponent_selector.add_item(str(encounter.get("boss_name", "Unknown Opponent")))
 
 	if available_encounters.is_empty():
-		opponent_details_label.text = "No boss decks found."
+		opponent_details_label.text = "No unlocked boss decks found."
 		go_fight_button.disabled = true
 		return
 
 	go_fight_button.disabled = false
 	var selected_index: int = _find_default_encounter_index()
 	opponent_selector.select(selected_index)
-
 
 func _count_deck_entries(deck_data: Dictionary) -> int:
 	var total := 0
@@ -312,6 +325,7 @@ func reset_player_profile_to_knight_baseline() -> void:
 	player_profile_data["unlocked_classes"] = ["knight"]
 	player_profile_data["hovel_shop_state"] = {}
 	player_profile_data.erase("last_battle_reward_summary")
+	player_profile_data["unlocked_boss_ids"] = ["ossaran_lich"]
 
 
 func _build_card_counts_from_entries(entries) -> Dictionary:

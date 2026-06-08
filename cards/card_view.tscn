@@ -1,6 +1,19 @@
 [gd_scene format=3 uid="uid://p3u0bkbnxt61"]
 
 [ext_resource type="Script" uid="uid://cn7khforim32f" path="res://cards/CardView.gd" id="1_cuaw8"]
+[ext_resource type="Shader" uid="uid://dj17sqkp4b4tj" path="res://art/shaders/card_foil.gdshader" id="2_467wm"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_467wm"]
+shader = ExtResource("2_467wm")
+shader_parameter/foil_enabled = false
+shader_parameter/foil_strength = 0.4630000219925
+shader_parameter/gold_strength = 0.7200000342
+shader_parameter/rainbow_strength = 1.5010000712975
+shader_parameter/shine_strength = 0.130000006175
+shader_parameter/shine_width = 0.26700001198398005
+shader_parameter/shine_speed = 0.1150000054625
+shader_parameter/rainbow_scale = 3.7750001318125
+shader_parameter/noise_strength = 0.0800000038
 
 [node name="CardView" type="PanelContainer" unique_id=1506696375]
 custom_minimum_size = Vector2(220, 300)
@@ -14,6 +27,7 @@ mouse_filter = 2
 [node name="ArtRect" type="TextureRect" parent="CardCanvas" unique_id=615004321]
 unique_name_in_owner = true
 texture_filter = 6
+material = SubResource("ShaderMaterial_467wm")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

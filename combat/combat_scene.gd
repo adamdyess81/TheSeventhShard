@@ -38,6 +38,7 @@ const DISCARD_SFX_PATH := "res://audio/sound fx/discard.wav"
 const DRINK_POTION_SFX_PATH := "res://audio/sound fx/drink_potion.wav"
 const DROP_CARD_SFX_PATH := "res://audio/sound fx/drop_card.wav"
 const EXPLOSION_SOUND_SFX_PATH := "res://audio/sound fx/Explosion Sound.wav"
+const ENERGY_BURST_SOUND_SFX_PATH := "res://audio/sound fx/energy_burst.wav"
 const GAIN_COINS_SFX_PATH := "res://audio/sound fx/gain_coins.wav"
 const GRAVEBOUND_WARDEN_HURT_SFX_PATH := "res://audio/sound fx/gravebound_warden_hurt.wav"
 const GRAVEBOUND_WARDEN_SPECIAL_SFX_PATH := "res://audio/sound fx/gravebound_warden_special.wav"
@@ -427,7 +428,6 @@ func _show_fire_bolt_boss_impact() -> void:
         return
     _show_fire_bolt_impact_at_rect(boss_drop_zone.get_global_rect())
     _play_damage_screen_shake()
-
 
 func _get_adjacent_monster_board_indices(board_index: int) -> Array[int]:
     var adjacent_indices: Array[int] = []
@@ -1711,8 +1711,11 @@ func handle_slot_card_drop_on_board(source_hand: String, board_index: int) -> vo
 
     _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
     if source_card_id == "fire_bolt":
-        _play_sfx(_load_common_sfx(EXPLOSION_SOUND_SFX_PATH))
+        _play_sfx(_load_common_sfx(EXPLOSION_SOUND_SFX_PATH), 8.0)
         _show_fire_bolt_impact(board_index)
+    if source_card_id == "energy_burst":
+        _play_sfx(_load_common_sfx(ENERGY_BURST_SOUND_SFX_PATH), 2.0)
+              
     var target_after = null
     if board_index >= 0 and board_index < active_cards.size():
         target_after = active_cards[board_index]
@@ -1872,8 +1875,11 @@ func handle_slot_card_drop_on_boss(source_hand: String) -> void:
     var retaliation_damage: int = maxi(player_health_before - match_state.player_state.current_health, 0)
     _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
     if source_card_id == "fire_bolt":
-        _play_sfx(_load_common_sfx(EXPLOSION_SOUND_SFX_PATH))
+        _play_sfx(_load_common_sfx(EXPLOSION_SOUND_SFX_PATH), 8.0)
         _show_fire_bolt_boss_impact()
+    if source_card_id == "energy_burst":
+        _play_sfx(_load_common_sfx(ENERGY_BURST_SOUND_SFX_PATH), 2.0)
+        _show_fire_bolt_boss_impact()        
     if retaliation_damage > 0:
         set_status("Spell hit the boss. %d to %d. Retaliation dealt %d damage." % [before_health, after_health, retaliation_damage])
     else:
@@ -2293,7 +2299,7 @@ func _grant_boss_drop_rewards(outcome: String) -> Array:
 
     if outcome not in grant_on_outcome:
         return []
-
+    var newly_unlocked_boss_ids := _unlock_boss_ids_from_drop_table()
     var drop_count := int(current_boss_drop_table.get("drop_count", 0))
     if drop_count <= 0:
         return []
@@ -2316,6 +2322,53 @@ func _grant_boss_drop_rewards(outcome: String) -> Array:
 
     return granted_rewards
 
+func _unlock_boss_ids_from_drop_table() -> Array:
+    if current_boss_drop_table.is_empty():
+        return []
+
+    var boss_unlock = current_boss_drop_table.get("boss_unlock", [])
+    if not (boss_unlock is Array):
+        return []
+
+    if boss_unlock.is_empty():
+        return []
+
+    if player_profile_data.is_empty():
+        player_profile_data = {}
+
+    var unlocked_boss_ids = player_profile_data.get("unlocked_boss_ids", [])
+    if not (unlocked_boss_ids is Array):
+        unlocked_boss_ids = []
+
+    var unlocked_lookup := {}
+    for boss_id in unlocked_boss_ids:
+        unlocked_lookup[str(boss_id).strip_edges()] = true
+
+    var newly_unlocked: Array = []
+
+    for boss_id in boss_unlock:
+        var clean_boss_id := str(boss_id).strip_edges()
+        if clean_boss_id == "":
+            continue
+
+        if unlocked_lookup.has(clean_boss_id):
+            continue
+
+        unlocked_boss_ids.append(clean_boss_id)
+        unlocked_lookup[clean_boss_id] = true
+        newly_unlocked.append(clean_boss_id)
+
+    if newly_unlocked.is_empty():
+        return []
+
+    player_profile_data["unlocked_boss_ids"] = unlocked_boss_ids
+
+    _save_player_profile()
+
+    print("Unlocked new boss ids: ", newly_unlocked)
+    print("Current unlocked_boss_ids: ", player_profile_data["unlocked_boss_ids"])
+
+    return newly_unlocked
 
 func _roll_weighted_boss_drop_entry(boss_drop_table: Dictionary) -> Dictionary:
     var entries = boss_drop_table.get("entries", [])

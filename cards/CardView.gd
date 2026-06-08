@@ -31,6 +31,8 @@ func setup(card, index: int) -> void:
 func _apply_setup() -> void:
 	_apply_visual_theme()
 	_apply_card_art()
+	_apply_card_foil()
+	
 	var meta := _get_card_meta()
 
 	if _is_runtime_card(card_data):
@@ -124,6 +126,20 @@ func _apply_card_art() -> void:
 
 	art_rect.texture = null
 
+
+func _apply_card_foil() -> void:
+	var is_foil := bool(_get_card_meta().get("is_foil", false))
+
+	if art_rect.material == null:
+		return
+
+	if not (art_rect.material is ShaderMaterial):
+		return
+
+	art_rect.material = art_rect.material.duplicate()
+
+	var shader_material := art_rect.material as ShaderMaterial
+	shader_material.set_shader_parameter("foil_enabled", is_foil)
 
 func _get_card_id() -> String:
 	if _is_runtime_card(card_data):

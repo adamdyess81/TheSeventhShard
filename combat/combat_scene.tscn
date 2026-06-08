@@ -185,18 +185,20 @@ text = "Done"
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 1122.0
+offset_top = -11.115
+offset_bottom = 1110.885
 grow_horizontal = 2
 theme_override_constants/separation = 4
 
 [node name="StageCenter" type="CenterContainer" parent="RootLayout" unique_id=1335955818]
 layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 3
 
 [node name="Stage" type="VBoxContainer" parent="RootLayout/StageCenter" unique_id=202841576]
 custom_minimum_size = Vector2(1180, 760)
 layout_mode = 2
-theme_override_constants/separation = 22
+theme_override_constants/separation = 25
 
 [node name="TopBar" type="HBoxContainer" parent="RootLayout/StageCenter/Stage" unique_id=1510757556]
 layout_mode = 2
@@ -227,6 +229,7 @@ horizontal_alignment = 2
 
 [node name="BossCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage" unique_id=204300001]
 layout_mode = 2
+size_flags_horizontal = 4
 
 [node name="BossDropZone" type="PanelContainer" parent="RootLayout/StageCenter/Stage/BossCenter" unique_id=204300002]
 custom_minimum_size = Vector2(400, 294)
@@ -291,11 +294,13 @@ vertical_alignment = 1
 
 [node name="PlayArea" type="VBoxContainer" parent="RootLayout/StageCenter/Stage" unique_id=194280336]
 layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 6
-theme_override_constants/separation = 22
+theme_override_constants/separation = -30
 
 [node name="BoardCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage/PlayArea" unique_id=127803510]
 layout_mode = 2
+size_flags_horizontal = 4
 size_flags_vertical = 3
 
 [node name="BoardSection" type="VBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/BoardCenter" unique_id=1821397121]
@@ -372,7 +377,7 @@ horizontal_alignment = 1
 [node name="LoadoutCenter" type="CenterContainer" parent="RootLayout/StageCenter/Stage/PlayArea" unique_id=51322928]
 layout_mode = 2
 size_flags_horizontal = 4
-size_flags_vertical = 0
+size_flags_vertical = 4
 
 [node name="LoadoutGroup" type="VBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter" unique_id=1910022334]
 layout_mode = 2
@@ -607,6 +612,7 @@ layout_mode = 2
 horizontal_alignment = 1
 
 [node name="LabelRow" type="HBoxContainer" parent="RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup" unique_id=967501462]
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 28
 alignment = 1

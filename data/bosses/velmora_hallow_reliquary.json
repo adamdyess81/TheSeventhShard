@@ -3,7 +3,7 @@
   "name": "Velmora, The Hallow Reliquary",
   "branch_id": "ossara",
   "guardian_id": "velmora",
-  "boss_type": "guardian",
+  "boss_type": "baseline",
   "theme_tags": ["ossara", "guardian", "reliquary", "prototype"],
   "base_health": 26,
   "has_special_rules": true,

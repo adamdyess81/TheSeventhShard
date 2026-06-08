@@ -347,14 +347,14 @@ func _use_weapon_on_monster(match_state: MatchCombatState, board_index: int, wea
 
     var adjacent_monsters := _get_adjacent_monster_refs(active_cards, board_index)
     var attack_value := _get_weapon_attack_value_for_use(weapon)
-    var attack_result := _deal_damage_to_monster(match_state, monster, attack_value)
+    var attack_result := _deal_damage_to_monster(match_state, monster, attack_value, "melee")
 
     if _has_special_rule(weapon, "sweep"):
         var sweep_damage := _get_special_rule_value(weapon, "sweep", 0)
         for adjacent_monster in adjacent_monsters:
             if sweep_damage <= 0 or adjacent_monster == null:
                 continue
-            _deal_damage_to_monster(match_state, adjacent_monster, sweep_damage)
+            _deal_damage_to_monster(match_state, adjacent_monster, sweep_damage, "melee")
 
     _finalize_weapon_after_attack(match_state, weapon, is_left_hand, attack_result, false)
     return true
@@ -378,7 +378,7 @@ func _use_spell_on_monster(match_state: MatchCombatState, board_index: int, spel
 
     if _has_special_rule(spell, "fire_damage"):
         var damage := _get_card_runtime_value(spell)
-        _deal_damage_to_monster(match_state, target, damage)
+        _deal_damage_to_monster(match_state, target, damage, "spell")
         consumed = true
     elif _has_special_rule(spell, "board_burst"):
         _apply_board_burst_spell(match_state, spell)
@@ -464,7 +464,7 @@ func _apply_board_burst_spell(match_state: MatchCombatState, spell) -> void:
             targets.append(card)
 
     for target in targets:
-        _deal_damage_to_monster(match_state, target, damage)
+        _deal_damage_to_monster(match_state, target, damage,"spell")
 
     var boss_health_before := match_state.boss_state.current_health
     match_state.boss_state.take_damage(damage)
@@ -695,7 +695,7 @@ func _get_adjacent_monster_refs(active_cards: Array, board_index: int) -> Array:
     return adjacent
 
 
-func _deal_damage_to_monster(match_state: MatchCombatState, monster, damage: int) -> Dictionary:
+func _deal_damage_to_monster(match_state: MatchCombatState, monster, damage: int, type) -> Dictionary:
     var result := {
         "killed": false,
         "overflow": 0,
@@ -705,7 +705,10 @@ func _deal_damage_to_monster(match_state: MatchCombatState, monster, damage: int
         return result
 
     var monster_value := _get_effective_monster_value(match_state, monster)
-    var armor_value := _get_special_rule_value(monster, "armored", 0)
+    var armor_value := 0
+    if type == "melee":
+        armor_value = _get_special_rule_value(monster, "armored", 0)
+         
     var total_health := monster_value + armor_value
     var remaining_monster := total_health - damage
     result["damage_dealt"] = mini(damage, total_health)

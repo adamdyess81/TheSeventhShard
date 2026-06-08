@@ -5,7 +5,7 @@
   "guardian_id": "velmora",
   "boss_type": "baseline",
   "theme_tags": ["ossara", "undead", "lich", "prototype"],
-  "base_health": 18,
+  "base_health": 16,
   "has_special_rules": true,
   "special_rule_ids": ["reanimation"],
   "special_values": {
