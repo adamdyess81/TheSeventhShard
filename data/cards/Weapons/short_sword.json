@@ -19,6 +19,5 @@
   "requires_hand_to_use": true,
   "occupies_two_hands": false,
   "art_ref": "res://art/cards/Short Sword.png",
-  "is_foil": true,
   "icon_ref": null
 }

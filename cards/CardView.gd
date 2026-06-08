@@ -7,6 +7,7 @@ static var art_cache: Dictionary = {}
 var card_data
 var board_index: int = -1
 var _is_setup_ready: bool = false
+var value_label_base_position: Vector2
 
 @onready var card_canvas: Control = %CardCanvas
 @onready var art_rect: TextureRect = %ArtRect
@@ -15,6 +16,7 @@ var _is_setup_ready: bool = false
 @onready var value_label: Label = %ValueLabel
 
 func _ready() -> void:
+	value_label_base_position = value_label.position
 	_is_setup_ready = true
 	if card_data != null:
 		_apply_setup()
@@ -38,17 +40,30 @@ func _apply_setup() -> void:
 	if _is_runtime_card(card_data):
 		name_label.text = _get_card_display_name(meta, _humanize_token(card_data.card_id))
 		family_label.text = _humanize_token(str(card_data.get_family()))
-		value_label.text = str(card_data.current_value)
+		value_label.text = _format_card_value(card_data.current_value)
 	elif card_data is Dictionary:
 		name_label.text = _get_card_display_name(meta, "Unknown")
 		family_label.text = _humanize_token(str(card_data.get("family", "")))
-		value_label.text = str(card_data.get("current_value", card_data.get("base_value", "?")))
+		value_label.text = _format_card_value(card_data.get("current_value", card_data.get("base_value", "?")))
 	else:
 		name_label.text = "Unknown"
 		family_label.text = "Unknown"
 		value_label.text = "?"
 
 	tooltip_text = _build_tooltip_text()
+
+func _format_card_value(value) -> String:
+	if typeof(value) == TYPE_INT:
+		return str(value)
+
+	if typeof(value) == TYPE_FLOAT:
+		return str(int(value))
+
+	var value_text := str(value).strip_edges()
+	if value_text.ends_with(".0"):
+		value_text = value_text.substr(0, value_text.length() - 2)
+
+	return value_text
 
 func _get_drag_data(_at_position):
 	var combat_scene = get_tree().get_first_node_in_group("combat_scene")
@@ -190,6 +205,7 @@ func _apply_visual_theme() -> void:
 
 	value_label.add_theme_color_override("font_color", Color("ffffff"))
 	value_label.add_theme_font_size_override("font_size", 18)
+	
 
 
 func _humanize_token(value: String) -> String:
@@ -263,7 +279,13 @@ func _get_card_display_name(meta: Dictionary, fallback: String) -> String:
 
 
 func _is_runtime_card(value) -> bool:
-	return value != null and value.get_script() == CARD_RUNTIME_STATE_SCRIPT
+	if value == null:
+		return false
+
+	if not (value is Object):
+		return false
+
+	return value.get_script() == CARD_RUNTIME_STATE_SCRIPT
 
 
 func _format_specials(meta: Dictionary) -> String:

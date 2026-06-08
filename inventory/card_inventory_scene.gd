@@ -17,6 +17,7 @@ const TEXT_SUCCESS = Color("d6c583")
 const TEXT_ERROR = Color("d38a80")
 const TILE_WIDTH := 220.0
 const TILE_ART_HEIGHT := 250.0
+const CARD_VIEW_SCENE = preload("res://cards/card_view.tscn")
 
 @onready var deck_summary_label = $Root/Content/Header/DeckSummary
 @onready var status_label = $Root/Content/Header/StatusLabel
@@ -32,6 +33,8 @@ var player_profile_data: Dictionary = {}
 var selected_deck_counts: Dictionary = {}
 var owned_card_counts: Dictionary = {}
 var card_texture_cache: Dictionary = {}
+var owned_card_instances: Array = []
+var selected_deck_card_instance_ids: Array = []
 
 
 func _ready() -> void:
@@ -50,16 +53,37 @@ func _ready() -> void:
 
 func _load_player_profile() -> void:
 	player_profile_data = loader.load_json(PLAYER_PROFILE_PATH)
+
 	var owned = player_profile_data.get("owned_card_counts", {})
 	if owned is Dictionary:
 		owned_card_counts = owned.duplicate(true)
 	else:
 		owned_card_counts = {}
 
+	var owned_instances = player_profile_data.get("owned_card_instances", [])
+	if owned_instances is Array:
+		owned_card_instances = owned_instances.duplicate(true)
+	else:
+		owned_card_instances = []
+
+	var selected_instances = player_profile_data.get("selected_deck_card_instance_ids", [])
+	if selected_instances is Array:
+		selected_deck_card_instance_ids = selected_instances.duplicate(true)
+	else:
+		selected_deck_card_instance_ids = []
+
 
 func _ensure_selected_deck() -> void:
 	selected_deck_counts = PROFILE_DECK_SCRIPT.get_selected_deck_card_counts(player_profile_data)
 	player_profile_data["selected_deck_card_counts"] = selected_deck_counts.duplicate(true)
+
+	var selected_instances = player_profile_data.get("selected_deck_card_instance_ids", [])
+	if selected_instances is Array:
+		selected_deck_card_instance_ids = selected_instances.duplicate(true)
+	else:
+		selected_deck_card_instance_ids = []
+		player_profile_data["selected_deck_card_instance_ids"] = []
+
 	_save_player_profile()
 
 
@@ -72,7 +96,7 @@ func _refresh_scene() -> void:
 
 
 func _refresh_summary() -> void:
-	var total_cards := PROFILE_DECK_SCRIPT.get_total_cards(selected_deck_counts)
+	var total_cards := _get_total_selected_cards()
 	var max_deck_size := _get_effective_max_deck_size()
 	deck_summary_label.text = "Deck: %d cards | Minimum: %d | Max: %d" % [
 		total_cards,
@@ -89,10 +113,26 @@ func _refresh_summary() -> void:
 		status_label.text = "Deck exceeds max size of %d." % max_deck_size
 		status_label.modulate = TEXT_ERROR
 
-
+func _get_total_selected_cards() -> int:
+	return PROFILE_DECK_SCRIPT.get_total_cards(selected_deck_counts) + selected_deck_card_instance_ids.size()
+	
 func _rebuild_card_rows() -> void:
 	for child in card_grid.get_children():
 		child.queue_free()
+
+	var sorted_instances := owned_card_instances.duplicate()
+	sorted_instances.sort_custom(func(a, b):
+		if not (a is Dictionary) or not (b is Dictionary):
+			return false
+
+		return _get_instance_display_name(a).naturalnocasecmp_to(_get_instance_display_name(b)) < 0
+	)
+
+	for card_instance in sorted_instances:
+		if not (card_instance is Dictionary):
+			continue
+
+		card_grid.add_child(_build_card_instance_tile(card_instance))
 
 	var card_ids: Array = owned_card_counts.keys()
 	card_ids.sort_custom(func(a, b): return _get_card_name(str(a)).naturalnocasecmp_to(_get_card_name(str(b))) < 0)
@@ -104,12 +144,159 @@ func _rebuild_card_rows() -> void:
 
 	_update_grid_columns()
 
+func _build_card_instance_tile(card_instance: Dictionary) -> Control:
+	var instance_id := str(card_instance.get("instance_id", "")).strip_edges()
+
+	var is_selected := selected_deck_card_instance_ids.has(instance_id)
+	var display_data := _build_instance_display_data(card_instance)
+
+	var tile := PanelContainer.new()
+	tile.custom_minimum_size = Vector2(TILE_WIDTH, 460)
+	tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var tile_style := StyleBoxFlat.new()
+	tile_style.bg_color = PANEL_FILL
+	tile_style.border_width_left = 2
+	tile_style.border_width_top = 2
+	tile_style.border_width_right = 2
+	tile_style.border_width_bottom = 2
+	tile_style.border_color = Color("d7b17a")
+	tile_style.corner_radius_top_left = 10
+	tile_style.corner_radius_top_right = 10
+	tile_style.corner_radius_bottom_right = 10
+	tile_style.corner_radius_bottom_left = 10
+	tile.add_theme_stylebox_override("panel", tile_style)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_top", 10)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_bottom", 10)
+	tile.add_child(margin)
+
+	var stack := VBoxContainer.new()
+	stack.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stack.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	stack.add_theme_constant_override("separation", 8)
+	margin.add_child(stack)
+
+	var card_holder := CenterContainer.new()
+	card_holder.custom_minimum_size = Vector2(0, 330)
+	card_holder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stack.add_child(card_holder)
+
+	var card_view = CARD_VIEW_SCENE.instantiate()
+	card_view.custom_minimum_size = Vector2(220, 302)
+	card_view.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+
+	if card_view.has_method("setup"):
+		card_view.setup(display_data, -1)
+
+	card_holder.add_child(card_view)
+	
+	var name_label := Label.new()
+	name_label.text = str(display_data.get("name", "Unknown Card"))
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_label.modulate = Color("f6d77b")
+	stack.add_child(name_label)
+
+	var counts_label := Label.new()
+	counts_label.text = "Affixed Card   Deck: %s" % ["Yes" if is_selected else "No"]
+	counts_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	counts_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	counts_label.modulate = TEXT_MUTED
+	stack.add_child(counts_label)
+
+	var controls := HBoxContainer.new()
+	controls.alignment = BoxContainer.ALIGNMENT_CENTER
+	controls.add_theme_constant_override("separation", 10)
+	stack.add_child(controls)
+
+	var remove_button := Button.new()
+	remove_button.text = "-"
+	remove_button.custom_minimum_size = Vector2(46, 36)
+	remove_button.disabled = not is_selected
+	remove_button.pressed.connect(_on_remove_card_instance.bind(instance_id))
+	controls.add_child(remove_button)
+
+	var deck_label := Label.new()
+	deck_label.custom_minimum_size = Vector2(58, 0)
+	deck_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	deck_label.text = "1" if is_selected else "0"
+	deck_label.modulate = TEXT_PRIMARY
+	controls.add_child(deck_label)
+
+	var add_button := Button.new()
+	add_button.text = "+"
+	add_button.custom_minimum_size = Vector2(46, 36)
+	add_button.disabled = is_selected or _get_total_selected_cards() >= _get_effective_max_deck_size()
+	add_button.pressed.connect(_on_add_card_instance.bind(instance_id))
+	controls.add_child(add_button)
+
+	return tile
+
+func _build_instance_display_data(card_instance: Dictionary) -> Dictionary:
+	var card_id := str(card_instance.get("card_id", "")).strip_edges()
+
+	var base_card_data: Dictionary = loader.get_card(card_id)
+	var display_data := base_card_data.duplicate(true)
+
+	var affix_ids = card_instance.get("affix_ids", [])
+	if not (affix_ids is Array):
+		affix_ids = []
+
+	display_data["id"] = card_id
+	display_data["card_id"] = card_id
+	display_data["instance_id"] = str(card_instance.get("instance_id", "")).strip_edges()
+	display_data["affix_ids"] = affix_ids
+
+	if affix_ids.has("golden"):
+		var base_name := str(base_card_data.get("name", card_id))
+		display_data["name"] = "Golden " + base_name
+		display_data["is_foil"] = true
+
+		var base_description := str(base_card_data.get("description", "")).strip_edges()
+		var golden_text := "Golden: Gain this card's value in coins when discarded."
+
+		if base_description == "":
+			display_data["description"] = golden_text
+		else:
+			display_data["description"] = base_description + "\n\n" + golden_text
+
+	return display_data
+
+func _on_add_card_instance(instance_id: String) -> void:
+	if instance_id == "":
+		return
+
+	if selected_deck_card_instance_ids.has(instance_id):
+		return
+
+	if _get_total_selected_cards() >= _get_effective_max_deck_size():
+		status_label.text = "Deck is already at its max size."
+		return
+
+	selected_deck_card_instance_ids.append(instance_id)
+	_save_selected_deck()
+	_refresh_scene()
+
+func _on_remove_card_instance(instance_id: String) -> void:
+	if instance_id == "":
+		return
+
+	selected_deck_card_instance_ids.erase(instance_id)
+
+	_save_selected_deck()
+	_refresh_scene()
 
 func _build_card_tile(card_id: String, owned_quantity: int, selected_quantity: int) -> Control:
 	var card_data: Dictionary = loader.get_card(card_id)
+
 	var tile := PanelContainer.new()
-	tile.custom_minimum_size = Vector2(TILE_WIDTH, 390)
+	tile.custom_minimum_size = Vector2(TILE_WIDTH, 460)
 	tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
 	var tile_style := StyleBoxFlat.new()
 	tile_style.bg_color = PANEL_FILL
 	tile_style.border_width_left = 2
@@ -136,14 +323,20 @@ func _build_card_tile(card_id: String, owned_quantity: int, selected_quantity: i
 	stack.add_theme_constant_override("separation", 8)
 	margin.add_child(stack)
 
-	var art := TextureRect.new()
-	art.custom_minimum_size = Vector2(0, TILE_ART_HEIGHT)
-	art.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	art.texture = _get_card_texture(card_data)
-	stack.add_child(art)
+	var card_holder := CenterContainer.new()
+	card_holder.custom_minimum_size = Vector2(0, 330)
+	card_holder.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	stack.add_child(card_holder)
 
+	var card_view = CARD_VIEW_SCENE.instantiate()
+	card_view.custom_minimum_size = Vector2(220, 302)
+	card_view.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+
+	if card_view.has_method("setup"):
+		card_view.setup(card_data, -1)
+
+	card_holder.add_child(card_view)
+	
 	var name_label := Label.new()
 	name_label.text = str(card_data.get("name", card_id))
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -180,7 +373,7 @@ func _build_card_tile(card_id: String, owned_quantity: int, selected_quantity: i
 	var add_button := Button.new()
 	add_button.text = "+"
 	add_button.custom_minimum_size = Vector2(46, 36)
-	add_button.disabled = selected_quantity >= owned_quantity or PROFILE_DECK_SCRIPT.get_total_cards(selected_deck_counts) >= _get_effective_max_deck_size()
+	add_button.disabled = selected_quantity >= owned_quantity or _get_total_selected_cards() >= _get_effective_max_deck_size()
 	add_button.pressed.connect(_on_add_card.bind(card_id))
 	controls.add_child(add_button)
 
@@ -212,7 +405,7 @@ func _on_add_card(card_id: String) -> void:
 	var selected_quantity := int(selected_deck_counts.get(card_id, 0))
 	if selected_quantity >= owned_quantity:
 		return
-	if PROFILE_DECK_SCRIPT.get_total_cards(selected_deck_counts) >= _get_effective_max_deck_size():
+	if _get_total_selected_cards() >= _get_effective_max_deck_size():
 		status_label.text = "Deck is already at its max size."
 		return
 
@@ -253,11 +446,10 @@ func _on_exit_game_pressed() -> void:
 
 
 func _can_leave_scene() -> bool:
-	return PROFILE_DECK_SCRIPT.is_valid(
-		selected_deck_counts,
-		MINIMUM_DECK_SIZE,
-		_get_effective_max_deck_size()
-	)
+	var total_cards := _get_total_selected_cards()
+	var max_deck_size := _get_effective_max_deck_size()
+
+	return total_cards >= MINIMUM_DECK_SIZE and total_cards <= max_deck_size
 
 
 func _get_effective_max_deck_size() -> int:
@@ -268,8 +460,21 @@ func _get_effective_max_deck_size() -> int:
 
 func _save_selected_deck() -> void:
 	player_profile_data["selected_deck_card_counts"] = selected_deck_counts.duplicate(true)
+	player_profile_data["selected_deck_card_instance_ids"] = selected_deck_card_instance_ids.duplicate(true)
 	_save_player_profile()
 
+func _get_instance_display_name(card_instance: Dictionary) -> String:
+	var card_id := str(card_instance.get("card_id", "")).strip_edges()
+	var base_name := _get_card_name(card_id)
+
+	var affix_ids = card_instance.get("affix_ids", [])
+	if not (affix_ids is Array):
+		return base_name
+
+	if affix_ids.has("golden"):
+		return "Golden " + base_name
+
+	return base_name
 
 func _save_player_profile() -> void:
 	var file := FileAccess.open(PLAYER_PROFILE_PATH, FileAccess.WRITE)

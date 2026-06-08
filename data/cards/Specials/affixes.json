@@ -1,1 +1,12 @@
-null
+{
+    "golden": {
+        "id": "golden",
+        "display_name": "Golden",
+        "name_position": "prefix",
+        "description": "Gain this card's value in coins when discarded.",
+        "foil": true,
+        "trigger": "on_discard",
+        "effect": "gain_gold_equal_to_card_value",
+        "weight": 10
+    }
+}

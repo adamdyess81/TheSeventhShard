@@ -492,6 +492,8 @@ func _build_battle_match_state() -> void:
     var player_deck_data := {"cards": player_deck_entries}
     var resolved_player_cards := data_loader.resolve_deck_cards(player_deck_data)
 
+    _append_selected_card_instances_to_resolved_player_cards(resolved_player_cards)
+
     var match_config := data_loader.load_json(DEFAULT_MATCH_PATH)
     current_match_config = match_config.duplicate(true)
     var selected_battle: Dictionary = RUN_CONTEXT_SCRIPT.get_battle_selection()
@@ -570,6 +572,81 @@ func _build_battle_match_state() -> void:
         background_texture.texture = BACKGROUND_TEXTURE
     if deck_card_texture != null:
         deck_card_texture.texture = CARD_BACK_TEXTURE
+
+func _append_selected_card_instances_to_resolved_player_cards(resolved_player_cards: Array) -> void:
+    var selected_instance_ids = player_profile_data.get("selected_deck_card_instance_ids", [])
+    if not (selected_instance_ids is Array):
+        return
+
+    for raw_instance_id in selected_instance_ids:
+        var instance_id := str(raw_instance_id).strip_edges()
+        if instance_id == "":
+            continue
+
+        var card_instance := _get_owned_card_instance_by_id(instance_id)
+        if card_instance.is_empty():
+            push_warning("Selected card instance not found in owned_card_instances: " + instance_id)
+            continue
+
+        var instance_card_data := _build_instance_combat_card_data(card_instance)
+        if instance_card_data.is_empty():
+            continue
+
+        resolved_player_cards.append(instance_card_data)
+
+func _get_owned_card_instance_by_id(instance_id: String) -> Dictionary:
+    var owned_card_instances = player_profile_data.get("owned_card_instances", [])
+    if not (owned_card_instances is Array):
+        return {}
+
+    for card_instance in owned_card_instances:
+        if not (card_instance is Dictionary):
+            continue
+
+        var current_instance_id := str(card_instance.get("instance_id", "")).strip_edges()
+        if current_instance_id == instance_id:
+            return card_instance
+
+    return {}
+
+func _build_instance_combat_card_data(card_instance: Dictionary) -> Dictionary:
+    var card_id := str(card_instance.get("card_id", "")).strip_edges()
+    if card_id == "":
+        return {}
+
+    var base_card_data: Dictionary = data_loader.get_card(card_id)
+    if base_card_data.is_empty():
+        push_warning("Could not find base card data for instance card_id: " + card_id)
+        return {}
+
+    var combat_card_data := base_card_data.duplicate(true)
+
+    var affix_ids = card_instance.get("affix_ids", [])
+    if not (affix_ids is Array):
+        affix_ids = []
+
+    combat_card_data["id"] = card_id
+    combat_card_data["card_id"] = card_id
+    combat_card_data["instance_id"] = str(card_instance.get("instance_id", "")).strip_edges()
+    combat_card_data["affix_ids"] = affix_ids
+
+    if affix_ids.has("golden"):
+        _apply_golden_affix_to_card_data(combat_card_data, base_card_data, card_id)
+
+    return combat_card_data
+
+func _apply_golden_affix_to_card_data(card_data: Dictionary, base_card_data: Dictionary, card_id: String) -> void:
+    var base_name := str(base_card_data.get("name", card_id))
+    card_data["name"] = "Golden " + base_name
+    card_data["is_foil"] = true
+
+    var base_description := str(base_card_data.get("description", "")).strip_edges()
+    var golden_text := "Golden: Gain this card's value in coins when discarded."
+
+    if base_description == "":
+        card_data["description"] = golden_text
+    else:
+        card_data["description"] = base_description + "\n\n" + golden_text
 
 func set_status(message: String) -> void:
  status_label.text = message
@@ -2299,12 +2376,15 @@ func _grant_boss_drop_rewards(outcome: String) -> Array:
 
     if outcome not in grant_on_outcome:
         return []
+
     var newly_unlocked_boss_ids := _unlock_boss_ids_from_drop_table()
+
     var drop_count := int(current_boss_drop_table.get("drop_count", 0))
     if drop_count <= 0:
         return []
 
     var granted_rewards: Array = []
+
     for _i in range(drop_count):
         var reward_entry := _roll_weighted_boss_drop_entry(current_boss_drop_table)
         if reward_entry.is_empty():
@@ -2314,13 +2394,65 @@ func _grant_boss_drop_rewards(outcome: String) -> Array:
         if card_id == "":
             continue
 
-        _grant_reward_card_to_inventory(card_id)
-        granted_rewards.append({
-            "card_id": card_id,
-            "rarity": str(reward_entry.get("rarity", "")).strip_edges()
-        })
+        var affix_id := _roll_reward_affix_id()
+
+        if affix_id == "":
+            _grant_reward_card_to_inventory(card_id)
+
+            granted_rewards.append({
+                "card_id": card_id,
+                "rarity": str(reward_entry.get("rarity", "")).strip_edges(),
+                "instance_id": "",
+                "affix_ids": [],
+                "is_affixed": false
+            })
+        else:
+            var card_instance := _grant_affixed_reward_card_to_inventory(card_id, affix_id)
+
+            granted_rewards.append({
+                "card_id": card_id,
+                "rarity": str(reward_entry.get("rarity", "")).strip_edges(),
+                "instance_id": str(card_instance.get("instance_id", "")),
+                "affix_ids": card_instance.get("affix_ids", []),
+                "is_affixed": true
+            })
 
     return granted_rewards
+
+func _roll_reward_affix_id() -> String:
+    var affix_chance := 1
+
+    if randf() > affix_chance:
+        return ""
+
+    return "golden"
+
+func _grant_affixed_reward_card_to_inventory(card_id: String, affix_id: String) -> Dictionary:
+    if player_profile_data.is_empty():
+        player_profile_data = {}
+
+    var owned_card_instances = player_profile_data.get("owned_card_instances", [])
+    if not (owned_card_instances is Array):
+        owned_card_instances = []
+
+    var next_card_instance_number := int(player_profile_data.get("next_card_instance_number", 1))
+    var instance_id := "card_instance_%06d" % next_card_instance_number
+
+    var card_instance := {
+        "instance_id": instance_id,
+        "card_id": card_id,
+        "affix_ids": [affix_id]
+    }
+
+    owned_card_instances.append(card_instance)
+
+    player_profile_data["owned_card_instances"] = owned_card_instances
+    player_profile_data["next_card_instance_number"] = next_card_instance_number + 1
+
+    _save_player_profile()
+
+    return card_instance
+
 
 func _unlock_boss_ids_from_drop_table() -> Array:
     if current_boss_drop_table.is_empty():
