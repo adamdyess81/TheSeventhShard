@@ -2541,7 +2541,7 @@ func _grant_boss_drop_rewards(outcome: String) -> Array:
     var granted_rewards: Array = []
 
     for _i in range(drop_count):
-        var reward_entry := _roll_weighted_boss_drop_entry(current_boss_drop_table)
+        var reward_entry := _roll_boss_drop_reward_entry(current_boss_drop_table)
         if reward_entry.is_empty():
             continue
 
@@ -2684,6 +2684,9 @@ func _roll_reward_affix_id(card_id: String, affix_chance: float = 1.0) -> String
     if base_card_data.is_empty():
         return ""
 
+    if str(base_card_data.get("rarity", "")).strip_edges().to_lower() == "unique":
+        return ""
+
     var card_family := str(base_card_data.get("family", "")).strip_edges().to_lower()
     return CARD_AFFIX_LIBRARY_SCRIPT.roll_affix_id_for_family(card_family)
 
@@ -2691,6 +2694,9 @@ func _roll_reward_affix_id(card_id: String, affix_chance: float = 1.0) -> String
 func _get_reward_affix_roll_candidates(card_id: String) -> Array[Dictionary]:
     var base_card_data: Dictionary = data_loader.get_card(card_id)
     if base_card_data.is_empty():
+        return []
+
+    if str(base_card_data.get("rarity", "")).strip_edges().to_lower() == "unique":
         return []
 
     var card_family := str(base_card_data.get("family", "")).strip_edges().to_lower()
@@ -2727,15 +2733,24 @@ func _roll_weighted_rarity(raw_rolls) -> String:
     return str(weighted_rolls[weighted_rolls.size() - 1].get("rarity", "")).strip_edges()
 
 
-func _roll_card_id_from_reward_rarity(rarity: String) -> String:
+func _roll_card_id_from_reward_rarity(rarity: String, allowed_card_ids: Array = []) -> String:
     var normalized_rarity := rarity.strip_edges().to_lower()
     if normalized_rarity == "":
         return ""
+
+    var restricted_card_ids := {}
+    for raw_allowed_card_id in allowed_card_ids:
+        var allowed_card_id := str(raw_allowed_card_id).strip_edges()
+        if allowed_card_id != "":
+            restricted_card_ids[allowed_card_id] = true
 
     var eligible_card_ids: Array[String] = []
     for raw_card_id in data_loader.card_registry.keys():
         var card_id := str(raw_card_id).strip_edges()
         if card_id == "":
+            continue
+
+        if not restricted_card_ids.is_empty() and not restricted_card_ids.has(card_id):
             continue
 
         var card_data = data_loader.card_registry.get(card_id, {})
@@ -2756,6 +2771,74 @@ func _roll_card_id_from_reward_rarity(rarity: String) -> String:
         return ""
 
     return eligible_card_ids[randi() % eligible_card_ids.size()]
+
+
+func _roll_boss_drop_reward_entry(boss_drop_table: Dictionary) -> Dictionary:
+    if boss_drop_table.has("entries"):
+        return _roll_weighted_boss_drop_entry(boss_drop_table)
+
+    var special_entry := _roll_special_boss_drop_entry(boss_drop_table)
+    if not special_entry.is_empty():
+        return special_entry
+
+    var reward_rarity := _roll_weighted_rarity(boss_drop_table.get("rarity_rolls", []))
+    if reward_rarity == "":
+        return {}
+
+    var unique_pool = boss_drop_table.get("unique_pool", [])
+    if not (unique_pool is Array):
+        unique_pool = []
+
+    var reward_card_id := _roll_card_id_from_reward_rarity(
+        reward_rarity,
+        unique_pool if reward_rarity == "unique" else []
+    )
+    if reward_card_id == "":
+        return {}
+
+    return {
+        "card_id": reward_card_id,
+        "rarity": reward_rarity
+    }
+
+
+func _roll_special_boss_drop_entry(boss_drop_table: Dictionary) -> Dictionary:
+    var special_roll_chance := clampf(float(boss_drop_table.get("special_roll_chance", 0.0)), 0.0, 1.0)
+    if special_roll_chance <= 0.0:
+        return {}
+
+    if randf() > special_roll_chance:
+        return {}
+
+    var special_entries = boss_drop_table.get("special_entries", [])
+    if not (special_entries is Array):
+        return {}
+
+    var total_weight := 0
+    var weighted_entries: Array[Dictionary] = []
+    for entry in special_entries:
+        if not (entry is Dictionary):
+            continue
+
+        var weight := maxi(int(entry.get("weight", 0)), 0)
+        var card_id := str(entry.get("card_id", "")).strip_edges()
+        if weight <= 0 or card_id == "":
+            continue
+
+        total_weight += weight
+        weighted_entries.append(entry)
+
+    if total_weight <= 0 or weighted_entries.is_empty():
+        return {}
+
+    var roll := randi() % total_weight
+    var running_weight := 0
+    for entry in weighted_entries:
+        running_weight += int(entry.get("weight", 0))
+        if roll < running_weight:
+            return entry.duplicate(true)
+
+    return weighted_entries[weighted_entries.size() - 1].duplicate(true)
 
 func _grant_affixed_reward_card_to_inventory(card_id: String, affix_id: String) -> Dictionary:
     if player_profile_data.is_empty():

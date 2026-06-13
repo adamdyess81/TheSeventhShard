@@ -5,37 +5,18 @@
   "drop_version": 1,
   "drop_count": 1,
   "grant_on_outcome": ["victory"],
-  "entries": [
+  "special_roll_chance": 0.05,
+  "special_entries": [
     {
-      "card_id": "cure_potion",
-      "weight": 30,
-      "rarity": "common"
-    },
-    {
-      "card_id": "large_health_potion",
-      "weight": 25,
-      "rarity": "uncommon"
-    },
-    {
-      "card_id": "short_bow",
-      "weight": 18,
-      "rarity": "uncommon"
-    },
-    {
-      "card_id": "stasis_hex",
-      "weight": 12,
-      "rarity": "uncommon"
-    },
-    {
-      "card_id": "adrenaline_potion",
-      "weight": 8,
-      "rarity": "rare"
-    },
-    {
-      "card_id": "shift_fate",
-      "weight": 5,
-      "rarity": "rare"
+      "card_id": "velmoras_touch",
+      "weight": 1,
+      "rarity": "unique"
     }
   ],
-  "notes": "Baseline direct-kill reward table for the Velmora."
+  "rarity_rolls": [
+    { "rarity": "common", "weight": 30 },
+    { "rarity": "uncommon", "weight": 55 },
+    { "rarity": "rare", "weight": 13 }
+  ],
+  "notes": "Velmora rolls its special unique chance first, then falls back to the normal rarity reward table if that misses."
 }

@@ -6,37 +6,12 @@
   "drop_count": 1,
   "grant_on_outcome": ["victory"],
   "boss_unlock": ["gravebound_warden"],
-  "entries": [
-    {
-      "card_id": "short_sword",
-      "weight": 30,
-      "rarity": "common"
-    },
-    {
-      "card_id": "small_shield",
-      "weight": 25,
-      "rarity": "common"
-    },
-    {
-      "card_id": "fire_bolt",
-      "weight": 18,
-      "rarity": "uncommon"
-    },
-    {
-      "card_id": "battle_focus",
-      "weight": 12,
-      "rarity": "uncommon"
-    },
-    {
-      "card_id": "short_bow",
-      "weight": 10,
-      "rarity": "uncommon"
-    },
-    {
-      "card_id": "spiked_shield",
-      "weight": 5,
-      "rarity": "rare"
-    }
+  "special_roll_chance": 0.0,
+  "special_entries": [],
+  "rarity_rolls": [
+    { "rarity": "common", "weight": 55 },
+    { "rarity": "uncommon", "weight": 40 },
+    { "rarity": "rare", "weight": 5 }
   ],
-  "notes": "Baseline direct-kill reward table for the Ossaran Lich."
+  "notes": "Baseline victory reward table for the Ossaran Lich."
 }

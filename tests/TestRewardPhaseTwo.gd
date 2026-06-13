@@ -2,6 +2,7 @@ extends SceneTree
 
 const COMBAT_SCENE_SCRIPT = preload("res://combat/combat_scene.gd")
 const CARD_AFFIX_LIBRARY_SCRIPT = preload("res://core/CardAffixLibrary.gd")
+const PROFILE_DECK_SCRIPT = preload("res://core/ProfileDeck.gd")
 const MATCH_COMBAT_STATE_SCRIPT = preload("res://combat/MatchCombatState.gd")
 const PLAYER_COMBAT_STATE_SCRIPT = preload("res://combat/PlayerCombatState.gd")
 const BOSS_COMBAT_STATE_SCRIPT = preload("res://combat/BossCombatState.gd")
@@ -32,6 +33,9 @@ func _run_tests() -> void:
 	_test_reward_affix_candidates_are_family_filtered()
 	_test_reward_affix_roll_stays_inside_family_pool()
 	_test_reward_card_roll_from_rarity_excludes_non_loot_cards()
+	_test_unique_reward_cards_do_not_roll_affixes()
+	_test_boss_special_unique_roll_happens_before_rarity_table()
+	_test_profile_deck_rejects_duplicate_unique_counts()
 	_test_carried_chests_grant_extra_rewards_on_survival()
 	_test_affix_gameplay_effects_apply_to_card_data()
 	_test_affix_discard_gold_bonus_is_reported()
@@ -179,6 +183,74 @@ func _test_reward_card_roll_from_rarity_excludes_non_loot_cards() -> void:
 		_expect(str(common_card.get("family", "")) not in ["monster", "coin", "chest"], "Chest rewards should not roll monsters, coins, or other chests.")
 		_expect(str(rare_card.get("family", "")) not in ["monster", "coin", "chest"], "Rare chest rewards should not roll monsters, coins, or other chests.")
 	scene.free()
+
+
+func _test_unique_reward_cards_do_not_roll_affixes() -> void:
+	var scene = _build_combat_scene()
+	var unique_affix := scene._roll_reward_affix_id("velmoras_touch")
+	var unique_candidates := scene._get_reward_affix_roll_candidates("velmoras_touch")
+	var unique_card_id := scene._roll_card_id_from_reward_rarity("unique")
+
+	_expect(unique_affix == "", "Unique reward cards should never roll affixes.")
+	_expect(unique_candidates.is_empty(), "Unique reward cards should not expose reward affix candidates.")
+	_expect(unique_card_id == "velmoras_touch", "Unique reward rarity rolls should resolve eligible unique cards from the registry.")
+	scene.free()
+
+
+func _test_boss_special_unique_roll_happens_before_rarity_table() -> void:
+	var scene = _build_combat_scene()
+	scene.player_profile_data = {
+		"owned_card_counts": {},
+		"owned_card_instances": [],
+		"next_card_instance_number": 1
+	}
+	scene.current_boss_drop_table = {
+		"id": "test_special_unique_boss_drops",
+		"boss_id": "velmora_hallow_reliquary",
+		"drop_count": 1,
+		"grant_on_outcome": ["victory"],
+		"special_roll_chance": 1.0,
+		"special_entries": [
+			{
+				"card_id": "velmoras_touch",
+				"weight": 1,
+				"rarity": "unique"
+			}
+		],
+		"rarity_rolls": [
+			{
+				"rarity": "common",
+				"weight": 1
+			}
+		]
+	}
+
+	var rewards: Array = scene._grant_boss_drop_rewards("victory")
+	var owned_card_counts: Dictionary = scene.player_profile_data.get("owned_card_counts", {})
+
+	_expect(rewards.size() == 1, "Boss special unique rolls should still grant exactly one reward.")
+	_expect(int(owned_card_counts.get("velmoras_touch", 0)) == 1, "Boss special unique rolls should grant the named unique card.")
+	if rewards.size() == 1 and rewards[0] is Dictionary:
+		_expect(str(rewards[0].get("card_id", "")) == "velmoras_touch", "Special unique boss rewards should resolve before the normal rarity table.")
+		_expect(rewards[0].get("affix_ids", []).is_empty(), "Special unique boss rewards should never be affixed.")
+	scene.free()
+
+
+func _test_profile_deck_rejects_duplicate_unique_counts() -> void:
+	var card_registry := {
+		"velmoras_touch": {"rarity": "unique"},
+		"test_unique_two": {"rarity": "unique"},
+		"short_sword": {"rarity": "common"}
+	}
+
+	_expect(
+		not PROFILE_DECK_SCRIPT.is_valid({"velmoras_touch": 2}, 1, 30, card_registry),
+		"Deck validation should reject two copies of the same unique card."
+	)
+	_expect(
+		PROFILE_DECK_SCRIPT.is_valid({"velmoras_touch": 1, "test_unique_two": 1, "short_sword": 1}, 1, 30, card_registry),
+		"Deck validation should allow multiple different unique cards."
+	)
 
 
 func _test_carried_chests_grant_extra_rewards_on_survival() -> void:

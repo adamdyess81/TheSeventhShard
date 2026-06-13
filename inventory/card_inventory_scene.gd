@@ -109,7 +109,16 @@ func _refresh_summary() -> void:
 		MINIMUM_DECK_SIZE,
 		max_deck_size
 	]
-	if _can_leave_scene():
+	var duplicate_unique_ids := PROFILE_DECK_SCRIPT.get_duplicate_unique_card_ids(
+		selected_deck_counts,
+		loader.card_registry,
+		selected_deck_card_instance_ids,
+		owned_card_instances
+	)
+	if not duplicate_unique_ids.is_empty():
+		status_label.text = "Only one copy of each unique card can be in the deck."
+		status_label.modulate = TEXT_ERROR
+	elif _can_leave_scene():
 		status_label.text = "Deck is valid."
 		status_label.modulate = TEXT_SUCCESS
 	elif total_cards < MINIMUM_DECK_SIZE:
@@ -374,7 +383,7 @@ func _build_card_tile(card_id: String, owned_quantity: int, selected_quantity: i
 	var add_button := Button.new()
 	add_button.text = "+"
 	add_button.custom_minimum_size = Vector2(46, 36)
-	add_button.disabled = selected_quantity >= owned_quantity or _get_total_selected_cards() >= _get_effective_max_deck_size()
+	add_button.disabled = not _can_add_card_to_deck(card_id, owned_quantity, selected_quantity)
 	add_button.pressed.connect(_on_add_card.bind(card_id))
 	controls.add_child(add_button)
 
@@ -410,10 +419,12 @@ func _get_card_texture(card_data: Dictionary) -> Texture2D:
 func _on_add_card(card_id: String) -> void:
 	var owned_quantity := int(owned_card_counts.get(card_id, 0))
 	var selected_quantity := int(selected_deck_counts.get(card_id, 0))
-	if selected_quantity >= owned_quantity:
-		return
-	if _get_total_selected_cards() >= _get_effective_max_deck_size():
-		status_label.text = "Deck is already at its max size."
+	if not _can_add_card_to_deck(card_id, owned_quantity, selected_quantity):
+		if _is_unique_card_id(card_id) and selected_quantity > 0:
+			status_label.text = "Only one copy of each unique card can be in the deck."
+		elif _get_total_selected_cards() >= _get_effective_max_deck_size():
+			status_label.text = "Deck is already at its max size."
+		status_label.modulate = TEXT_ERROR
 		return
 
 	selected_deck_counts[card_id] = selected_quantity + 1
@@ -505,10 +516,14 @@ func _on_exit_game_pressed() -> void:
 
 
 func _can_leave_scene() -> bool:
-	var total_cards := _get_total_selected_cards()
-	var max_deck_size := _get_effective_max_deck_size()
-
-	return total_cards >= MINIMUM_DECK_SIZE and total_cards <= max_deck_size
+	return PROFILE_DECK_SCRIPT.is_valid(
+		selected_deck_counts,
+		MINIMUM_DECK_SIZE,
+		_get_effective_max_deck_size(),
+		loader.card_registry,
+		selected_deck_card_instance_ids,
+		owned_card_instances
+	)
 
 
 func _get_effective_max_deck_size() -> int:
@@ -576,6 +591,24 @@ func _find_owned_card_instance(instance_id: String) -> Dictionary:
 		if card_instance is Dictionary and str(card_instance.get("instance_id", "")).strip_edges() == instance_id:
 			return card_instance
 	return {}
+
+
+func _can_add_card_to_deck(card_id: String, owned_quantity: int, selected_quantity: int) -> bool:
+	if selected_quantity >= owned_quantity:
+		return false
+	if _get_total_selected_cards() >= _get_effective_max_deck_size():
+		return false
+	if _is_unique_card_id(card_id) and selected_quantity > 0:
+		return false
+	return true
+
+
+func _is_unique_card_id(card_id: String) -> bool:
+	if card_id == "" or not loader.card_registry.has(card_id):
+		return false
+
+	var card_data = loader.card_registry.get(card_id, {})
+	return card_data is Dictionary and str(card_data.get("rarity", "")).strip_edges().to_lower() == "unique"
 
 
 func _build_salvage_button_text(card_data: Dictionary, affix_ids: Array = []) -> String:
