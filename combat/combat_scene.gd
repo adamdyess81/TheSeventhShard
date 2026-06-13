@@ -112,9 +112,12 @@ const DECK_DIRECTORY_PATH := "res://data/decks"
 @onready var player_avatar_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas/AvatarTexture
 @onready var right_hand_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas/PlacementTexture
 @onready var backpack_texture = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas/PlacementTexture
+@onready var left_hand_canvas = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone/CardCanvas
 @onready var left_hand_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/LeftHandDropZone
 @onready var player_avatar_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone
+@onready var right_hand_canvas = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone/CardCanvas
 @onready var right_hand_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/RightHandDropZone
+@onready var backpack_canvas = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone/CardCanvas
 @onready var backpack_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/BackpackDropZone
 @onready var discard_drop_zone = $RootLayout/StageCenter/Stage/PlayArea/BoardCenter/BoardSection/BoardLane/DiscardCenter/DiscardColumn/DiscardDropZone
 @onready var player_life_bar = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/DropZoneRow/PlayerAvatarDropZone/PlayerCanvas/PlayerLifeBar
@@ -162,6 +165,9 @@ var shift_fate_preview_cards: Array = []
 var shift_fate_selected_cards: Array = []
 var shift_fate_preview_entries: Array = []
 var shift_fate_required_selection_count := SHIFT_FATE_SELECTION_COUNT
+var left_hand_slot_card_view: Control = null
+var right_hand_slot_card_view: Control = null
+var backpack_slot_card_view: Control = null
 
 
 func _ready() -> void:
@@ -809,37 +815,31 @@ func _refresh_board_cards() -> void:
 
 
 func _refresh_drop_zone_textures() -> void:
- left_hand_visual_card_id = _update_slot_visual(
+ left_hand_visual_card_id = _update_slot_card_view(
+  left_hand_canvas,
   left_hand_texture,
-  left_hand_name_label,
-  left_hand_type_label,
-  left_hand_value_label,
   match_state.player_state.left_hand_card,
   LEFT_HAND_PLACEHOLDER,
-  left_hand_visual_card_id
+  "left_hand"
  )
- right_hand_visual_card_id = _update_slot_visual(
+ right_hand_visual_card_id = _update_slot_card_view(
+  right_hand_canvas,
   right_hand_texture,
-  right_hand_name_label,
-  right_hand_type_label,
-  right_hand_value_label,
   match_state.player_state.right_hand_card,
   RIGHT_HAND_PLACEHOLDER,
-  right_hand_visual_card_id
+  "right_hand"
  )
 
  var backpack_card = null
  if match_state.player_state.backpack_cards.size() > 0:
   backpack_card = match_state.player_state.backpack_cards[0]
 
- backpack_visual_card_id = _update_slot_visual(
+ backpack_visual_card_id = _update_slot_card_view(
+  backpack_canvas,
   backpack_texture,
-  backpack_name_label,
-  backpack_type_label,
-  backpack_value_label,
   backpack_card,
   BACKPACK_PLACEHOLDER,
-  backpack_visual_card_id
+  "backpack"
  )
 
 
@@ -1129,22 +1129,6 @@ func _animate_board_card_resolution(board_index: int) -> void:
  await tween.finished
 
 
-func _animate_slot_resolution(texture_rect: TextureRect, name_label: Label, type_label: Label, value_label: Label, placeholder) -> void:
- if texture_rect.texture == null:
-  texture_rect.texture = placeholder
-  texture_rect.modulate.a = 1.0
-  _clear_slot_text(name_label, type_label, value_label)
-  return
-
- var tween = create_tween()
- tween.tween_property(texture_rect, "modulate:a", 0.0, 0.18)
- tween.tween_callback(func():
-  texture_rect.texture = placeholder
-  texture_rect.modulate.a = 1.0
-  _clear_slot_text(name_label, type_label, value_label)
- )
-
-
 func _animate_new_board_cards(slot_indices: Array[int]) -> void:
  await get_tree().process_frame
  await get_tree().process_frame
@@ -1195,35 +1179,72 @@ func _animate_new_board_cards(slot_indices: Array[int]) -> void:
    await get_tree().create_timer(0.14).timeout
 
 
-func _update_slot_visual(texture_rect: TextureRect, name_label: Label, type_label: Label, value_label: Label, card, placeholder, previous_card_id: String) -> String:
+func _update_slot_card_view(card_canvas: Control, placeholder_texture: TextureRect, card, placeholder, slot_name: String) -> String:
  var next_card_id := ""
  if card != null:
-  next_card_id = _get_card_name(card)
+  next_card_id = _get_card_unique_key(card)
 
- if previous_card_id != "" and next_card_id == "":
-  _animate_slot_resolution(texture_rect, name_label, type_label, value_label, placeholder)
+ var slot_card_view: Control = _get_slot_card_view(slot_name)
+
+ if card == null:
+  placeholder_texture.visible = true
+  placeholder_texture.texture = placeholder
+  placeholder_texture.modulate = Color(1, 1, 1, 1)
+  if slot_card_view != null and is_instance_valid(slot_card_view):
+   slot_card_view.visible = false
+   slot_card_view.tooltip_text = ""
   return ""
 
- texture_rect.modulate.a = 1.0
- texture_rect.texture = _get_card_texture_or_placeholder(card, placeholder)
- _apply_slot_text(name_label, type_label, value_label, card)
+ slot_card_view = _ensure_slot_card_view(card_canvas, slot_name)
+ placeholder_texture.visible = false
+ placeholder_texture.modulate = Color(1, 1, 1, 1)
+ if slot_card_view.has_method("set_drag_source"):
+  slot_card_view.set_drag_source(slot_name)
+ if slot_card_view.has_method("setup"):
+  slot_card_view.setup(card, -1)
+ slot_card_view.visible = true
+ slot_card_view.modulate = Color(1, 1, 1, 1)
  return next_card_id
 
 
-func _apply_slot_text(name_label: Label, type_label: Label, value_label: Label, card) -> void:
- if card == null:
-  _clear_slot_text(name_label, type_label, value_label)
-  return
+func _ensure_slot_card_view(card_canvas: Control, slot_name: String) -> Control:
+ var existing_view := _get_slot_card_view(slot_name)
+ if existing_view != null and is_instance_valid(existing_view):
+  return existing_view
 
- name_label.text = _get_card_display_name(card)
- type_label.text = _humanize_card_name(_get_card_family(card))
- value_label.text = str(_get_card_runtime_value(card))
+ var card_view = CARD_VIEW_SCENE.instantiate()
+ card_view.name = "%sCardView" % _humanize_card_name(slot_name).replace(" ", "")
+ card_view.custom_minimum_size = Vector2(220, 300)
+ card_canvas.add_child(card_view)
+ card_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+ if card_view.has_method("set_drag_source"):
+  card_view.set_drag_source(slot_name)
+
+ _set_slot_card_view(slot_name, card_view)
+ return card_view
 
 
-func _clear_slot_text(name_label: Label, type_label: Label, value_label: Label) -> void:
- name_label.text = ""
- type_label.text = ""
- value_label.text = ""
+func _get_slot_card_view(slot_name: String) -> Control:
+ match slot_name:
+  "left_hand":
+   return left_hand_slot_card_view
+  "right_hand":
+   return right_hand_slot_card_view
+  "backpack":
+   return backpack_slot_card_view
+  _:
+   return null
+
+
+func _set_slot_card_view(slot_name: String, card_view: Control) -> void:
+ match slot_name:
+  "left_hand":
+   left_hand_slot_card_view = card_view
+  "right_hand":
+   right_hand_slot_card_view = card_view
+  "backpack":
+   backpack_slot_card_view = card_view
 
 
 func _get_card_runtime_value(card) -> int:
@@ -2030,9 +2051,9 @@ func _style_zone(panel: PanelContainer, border_color: Color, fill_color: Color =
 
 
 func _refresh_slot_state_visuals() -> void:
-    _reset_slot_visual_state(left_hand_drop_zone, left_hand_texture, PANEL_BORDER)
-    _reset_slot_visual_state(right_hand_drop_zone, right_hand_texture, PANEL_BORDER)
-    _reset_slot_visual_state(backpack_drop_zone, backpack_texture, Color("6e7e66"))
+    _reset_slot_visual_state(left_hand_drop_zone, "left_hand", PANEL_BORDER)
+    _reset_slot_visual_state(right_hand_drop_zone, "right_hand", PANEL_BORDER)
+    _reset_slot_visual_state(backpack_drop_zone, "backpack", Color("6e7e66"))
     _style_zone(player_avatar_drop_zone, Color("8d7867"), Color(0, 0, 0, 0), 0)
     _style_zone(boss_drop_zone, Color("8a6651"), Color(0, 0, 0, 0), 0)
     _style_zone(discard_drop_zone, DISCARD_BORDER, Color(0, 0, 0, 0), 0)
@@ -2041,21 +2062,21 @@ func _refresh_slot_state_visuals() -> void:
     discard_texture.modulate = Color(1, 1, 1, 1)
 
     if match_state.player_state.left_hand_exhausted:
-        _apply_exhausted_slot_visual(left_hand_drop_zone, left_hand_texture)
+        _apply_exhausted_slot_visual(left_hand_drop_zone, "left_hand")
 
     if match_state.player_state.right_hand_exhausted:
-        _apply_exhausted_slot_visual(right_hand_drop_zone, right_hand_texture)
+        _apply_exhausted_slot_visual(right_hand_drop_zone, "right_hand")
     if match_state.player_state.backpack_exhausted:
-        _apply_exhausted_slot_visual(backpack_drop_zone, backpack_texture)
+        _apply_exhausted_slot_visual(backpack_drop_zone, "backpack")
 
 
-func _reset_slot_visual_state(panel: PanelContainer, texture_rect: TextureRect, border_color: Color) -> void:
+func _reset_slot_visual_state(panel: PanelContainer, slot_name: String, border_color: Color) -> void:
     _style_zone(panel, border_color, Color(0, 0, 0, 0), 0)
     panel.modulate = Color(1, 1, 1, 1)
-    texture_rect.modulate = Color(1, 1, 1, 1)
+    _set_slot_content_modulate(slot_name, Color(1, 1, 1, 1))
 
 
-func _apply_exhausted_slot_visual(panel: PanelContainer, texture_rect: TextureRect) -> void:
+func _apply_exhausted_slot_visual(panel: PanelContainer, slot_name: String) -> void:
     var style := StyleBoxFlat.new()
     style.bg_color = Color(0, 0, 0, 0)
     style.border_color = Color("d15b5b")
@@ -2070,18 +2091,34 @@ func _apply_exhausted_slot_visual(panel: PanelContainer, texture_rect: TextureRe
     style.shadow_color = Color(0, 0, 0, 0)
     style.shadow_size = 0
     panel.add_theme_stylebox_override("panel", style)
-    texture_rect.modulate = Color(0.62, 0.3, 0.3, 1.0)
+    _set_slot_content_modulate(slot_name, Color(0.62, 0.3, 0.3, 1.0))
+
+
+func _set_slot_content_modulate(slot_name: String, tint: Color) -> void:
+    match slot_name:
+        "left_hand":
+            left_hand_texture.modulate = tint
+            if left_hand_slot_card_view != null and is_instance_valid(left_hand_slot_card_view):
+                left_hand_slot_card_view.modulate = tint
+        "right_hand":
+            right_hand_texture.modulate = tint
+            if right_hand_slot_card_view != null and is_instance_valid(right_hand_slot_card_view):
+                right_hand_slot_card_view.modulate = tint
+        "backpack":
+            backpack_texture.modulate = tint
+            if backpack_slot_card_view != null and is_instance_valid(backpack_slot_card_view):
+                backpack_slot_card_view.modulate = tint
 
 
 func preview_drop_zone_state(target_slot: String, is_valid: bool) -> void:
     var tint := VALID_DROP_TINT if is_valid else INVALID_DROP_TINT
     match target_slot:
         "left_hand":
-            left_hand_texture.modulate = tint
+            _set_slot_content_modulate("left_hand", tint)
         "right_hand":
-            right_hand_texture.modulate = tint
+            _set_slot_content_modulate("right_hand", tint)
         "backpack":
-            backpack_texture.modulate = tint
+            _set_slot_content_modulate("backpack", tint)
         "player_avatar":
             player_avatar_texture.modulate = tint
         "boss":

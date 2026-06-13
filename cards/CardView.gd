@@ -6,6 +6,7 @@ static var art_cache: Dictionary = {}
 
 var card_data
 var board_index: int = -1
+var drag_source: String = "board"
 var _is_setup_ready: bool = false
 var value_label_base_position: Vector2
 
@@ -28,6 +29,10 @@ func setup(card, index: int) -> void:
 	if not _is_setup_ready:
 		return
 	_apply_setup()
+
+
+func set_drag_source(source: String) -> void:
+	drag_source = source.strip_edges()
 
 
 func _apply_setup() -> void:
@@ -70,15 +75,20 @@ func _get_drag_data(_at_position):
 	if combat_scene != null and combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
 		return null
 
+	if drag_source != "board":
+		if combat_scene == null or not combat_scene.can_drag_slot_card(drag_source):
+			return null
+
 	var preview = duplicate()
 	set_drag_preview(preview)
 	modulate.a = 0.35
 
 	var data = {
-		"source": "board",
-		"board_index": board_index,
+		"source": drag_source,
 		"card_family": _get_card_family()
 	}
+	if drag_source == "board":
+		data["board_index"] = board_index
 
 	print("drag data: ", data)
 	return data
