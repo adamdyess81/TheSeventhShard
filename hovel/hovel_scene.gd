@@ -326,6 +326,8 @@ func reset_player_profile_to_knight_baseline() -> void:
 	player_profile_data["hovel_shop_state"] = {}
 	player_profile_data.erase("last_battle_reward_summary")
 	player_profile_data["unlocked_boss_ids"] = ["ossaran_lich"]
+	player_profile_data["selected_deck_card_instance_ids"] = {}
+	player_profile_data["owned_card_instances"] = {}
 
 
 func _build_card_counts_from_entries(entries) -> Dictionary:
