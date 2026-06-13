@@ -50,6 +50,11 @@ func advance_round() -> void:
  _apply_active_round_buffs_to_cards()
 
 
+func refresh_active_buffs_on_cards() -> void:
+ _remove_active_round_buffs_from_cards()
+ _apply_active_round_buffs_to_cards()
+
+
 func refill_board_if_allowed() -> bool:
  if board_state.can_refill():
   advance_round()

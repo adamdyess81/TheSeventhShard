@@ -33,8 +33,8 @@ func _init() -> void:
 
 func _run_tests() -> void:
 	_test_adrenaline_potion()
-	_test_defense_potion_next_round_buff()
-	_test_power_potion_next_round_buff()
+	_test_defense_potion_match_buff()
+	_test_power_potion_match_buff()
 	_test_thorns_reduces_monster_before_block()
 	_test_second_strike_resolves_on_second_use()
 	_test_spite_triggers_when_monster_dies()
@@ -114,7 +114,7 @@ func _test_adrenaline_potion() -> void:
 	_expect(match_state.player_state.current_health == 14, "Adrenaline Potion should raise current health by the added capacity.")
 
 
-func _test_defense_potion_next_round_buff() -> void:
+func _test_defense_potion_match_buff() -> void:
 	var match_state := _build_match_state()
 	var shield := _card("small_shield")
 	match_state.player_state.set_right_hand_card(shield)
@@ -123,19 +123,15 @@ func _test_defense_potion_next_round_buff() -> void:
 	var used := _resolution.use_left_hand_potion(match_state)
 
 	_expect(used, "Defense Potion should be usable from hand.")
-	_expect(match_state.player_state.pending_shield_bonus == 1, "Defense Potion should queue a shield bonus for next round.")
-	_expect(_runtime_value(shield) == 3, "Defense Potion should not immediately change shield value.")
+	_expect(match_state.player_state.active_shield_bonus == 1, "Defense Potion should add a persistent shield bonus immediately.")
+	_expect(_runtime_value(shield) == 4, "Defense Potion should immediately give shields +1 value.")
 
 	match_state.advance_round()
-	_expect(match_state.player_state.active_shield_bonus == 1, "Defense Potion should activate on the next round.")
-	_expect(_runtime_value(shield) == 4, "Defense Potion should give shields +1 value during the next round.")
-
-	match_state.advance_round()
-	_expect(match_state.player_state.active_shield_bonus == 0, "Defense Potion bonus should expire after the round.")
-	_expect(_runtime_value(shield) == 3, "Defense Potion bonus should be removed after the round ends.")
+	_expect(match_state.player_state.active_shield_bonus == 1, "Defense Potion bonus should persist into later rounds.")
+	_expect(_runtime_value(shield) == 4, "Defense Potion bonus should remain applied for the rest of the match.")
 
 
-func _test_power_potion_next_round_buff() -> void:
+func _test_power_potion_match_buff() -> void:
 	var match_state := _build_match_state()
 	var weapon := _card("short_sword")
 	match_state.player_state.set_right_hand_card(weapon)
@@ -144,16 +140,12 @@ func _test_power_potion_next_round_buff() -> void:
 	var used := _resolution.use_left_hand_potion(match_state)
 
 	_expect(used, "Power Potion should be usable from hand.")
-	_expect(match_state.player_state.pending_weapon_bonus == 1, "Power Potion should queue a weapon bonus for next round.")
-	_expect(_runtime_value(weapon) == int(weapon.get("base_value", 0)), "Power Potion should not immediately change weapon value.")
+	_expect(match_state.player_state.active_weapon_bonus == 1, "Power Potion should add a persistent weapon bonus immediately.")
+	_expect(_runtime_value(weapon) == int(weapon.get("base_value", 0)) + 1, "Power Potion should immediately give weapons +1 value.")
 
 	match_state.advance_round()
-	_expect(match_state.player_state.active_weapon_bonus == 1, "Power Potion should activate on the next round.")
-	_expect(_runtime_value(weapon) == int(weapon.get("base_value", 0)) + 1, "Power Potion should give weapons +1 value during the next round.")
-
-	match_state.advance_round()
-	_expect(match_state.player_state.active_weapon_bonus == 0, "Power Potion bonus should expire after the round.")
-	_expect(_runtime_value(weapon) == int(weapon.get("base_value", 0)), "Power Potion bonus should be removed after the round ends.")
+	_expect(match_state.player_state.active_weapon_bonus == 1, "Power Potion bonus should persist into later rounds.")
+	_expect(_runtime_value(weapon) == int(weapon.get("base_value", 0)) + 1, "Power Potion bonus should remain applied for the rest of the match.")
 
 
 func _test_thorns_reduces_monster_before_block() -> void:

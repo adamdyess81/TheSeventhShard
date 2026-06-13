@@ -204,9 +204,21 @@ func queue_shield_bonus(amount: int) -> void:
     pending_shield_bonus += amount
 
 
+func add_weapon_bonus(amount: int) -> void:
+    if amount <= 0:
+        return
+    active_weapon_bonus += amount
+
+
+func add_shield_bonus(amount: int) -> void:
+    if amount <= 0:
+        return
+    active_shield_bonus += amount
+
+
 func advance_round_buffs() -> void:
-    active_weapon_bonus = pending_weapon_bonus
-    active_shield_bonus = pending_shield_bonus
+    active_weapon_bonus += pending_weapon_bonus
+    active_shield_bonus += pending_shield_bonus
     pending_weapon_bonus = 0
     pending_shield_bonus = 0
 

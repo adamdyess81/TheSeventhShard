@@ -173,6 +173,7 @@ var last_discard_bonus_gold := 0
 
 
 func _ready() -> void:
+    _stop_hovel_music()
     randomize()
     add_to_group("combat_scene")
     _build_battle_match_state()
@@ -301,6 +302,16 @@ func _play_sfx(stream: AudioStream, volume_db: float = 0.0) -> void:
     add_child(player)
     player.finished.connect(Callable(player, "queue_free"))
     player.play()
+
+
+func _get_music_manager():
+    return get_node_or_null("/root/MusicManager")
+
+
+func _stop_hovel_music() -> void:
+    var music_manager = _get_music_manager()
+    if music_manager != null and music_manager.has_method("stop_hovel_music"):
+        music_manager.stop_hovel_music()
 
 
 func _play_random_player_hurt_sfx() -> void:
@@ -1764,11 +1775,13 @@ func _apply_runtime_potion_effect(card) -> void:
         handled_special = true
 
     if _has_special_rule(card, "defense"):
-        match_state.player_state.queue_shield_bonus(_get_special_rule_value(card, "defense", 1))
+        match_state.player_state.add_shield_bonus(_get_special_rule_value(card, "defense", 1))
+        match_state.refresh_active_buffs_on_cards()
         handled_special = true
 
     if _has_special_rule(card, "power"):
-        match_state.player_state.queue_weapon_bonus(_get_special_rule_value(card, "power", 1))
+        match_state.player_state.add_weapon_bonus(_get_special_rule_value(card, "power", 1))
+        match_state.refresh_active_buffs_on_cards()
         handled_special = true
 
     if not handled_special:

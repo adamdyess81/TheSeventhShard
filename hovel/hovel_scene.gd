@@ -48,6 +48,7 @@ var loader = GAME_DATA_LOADER_SCRIPT.new()
 
 
 func _ready() -> void:
+	_play_hovel_music()
 	loader.build_card_registry()
 	_load_player_profile()
 	_ensure_hovel_shop_stock()
@@ -389,8 +390,25 @@ func _on_go_fight_pressed() -> void:
 		str(encounter.get("boss_id", "")),
 		str(encounter.get("deck_id", ""))
 	)
+	_stop_hovel_music()
 	get_tree().change_scene_to_file(COMBAT_SCENE_PATH)
 
 
 func _on_exit_game_pressed() -> void:
 	get_tree().quit()
+
+
+func _get_music_manager():
+	return get_node_or_null("/root/MusicManager")
+
+
+func _play_hovel_music() -> void:
+	var music_manager = _get_music_manager()
+	if music_manager != null and music_manager.has_method("play_hovel_music"):
+		music_manager.play_hovel_music()
+
+
+func _stop_hovel_music() -> void:
+	var music_manager = _get_music_manager()
+	if music_manager != null and music_manager.has_method("stop_hovel_music"):
+		music_manager.stop_hovel_music()

@@ -39,6 +39,7 @@ var selected_deck_card_instance_ids: Array = []
 
 
 func _ready() -> void:
+	_play_hovel_music()
 	loader = GAME_DATA_LOADER_SCRIPT.new()
 	loader.build_card_registry()
 	_load_player_profile()
@@ -428,6 +429,7 @@ func _on_go_fight_pressed() -> void:
 	if not _can_leave_scene():
 		status_label.text = "Select at least %d cards before fighting." % MINIMUM_DECK_SIZE
 		return
+	_stop_hovel_music()
 	get_tree().change_scene_to_file(COMBAT_SCENE_PATH)
 
 
@@ -500,3 +502,19 @@ func _update_grid_columns() -> void:
 	var available_width: float = maxf(card_scroll.size.x - 16.0, TILE_WIDTH)
 	var columns := int(floor(available_width / (TILE_WIDTH + 16.0)))
 	card_grid.columns = clampi(columns, 1, 5)
+
+
+func _get_music_manager():
+	return get_node_or_null("/root/MusicManager")
+
+
+func _play_hovel_music() -> void:
+	var music_manager = _get_music_manager()
+	if music_manager != null and music_manager.has_method("play_hovel_music"):
+		music_manager.play_hovel_music()
+
+
+func _stop_hovel_music() -> void:
+	var music_manager = _get_music_manager()
+	if music_manager != null and music_manager.has_method("stop_hovel_music"):
+		music_manager.stop_hovel_music()
