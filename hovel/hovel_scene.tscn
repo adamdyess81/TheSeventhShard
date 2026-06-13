@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://bcjmtaa73u4jp"]
 
 [ext_resource type="Script" uid="uid://dwapb7jhjopnk" path="res://hovel/hovel_scene.gd" id="1"]
-[ext_resource type="AudioStream" uid="uid://pcqtqkdfkr2c" path="res://audio/music/The Hovel.ogg" id="2_tvubw"]
 
 [node name="HovelScene" type="Control" unique_id=2020094156]
 layout_mode = 3
@@ -131,30 +130,30 @@ layout_mode = 2
 text = "15"
 horizontal_alignment = 2
 
-[node name="ScrapRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows"]
+[node name="ScrapRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows" unique_id=1117328994]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/ScrapRow"]
+[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/ScrapRow" unique_id=318374684]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Scrap Materials"
 
-[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/ScrapRow"]
+[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/ScrapRow" unique_id=1395766298]
 layout_mode = 2
 text = "0"
 horizontal_alignment = 2
 
-[node name="EssenceRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows"]
+[node name="EssenceRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows" unique_id=359428008]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/EssenceRow"]
+[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/EssenceRow" unique_id=593921867]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Magic Essence"
 
-[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/EssenceRow"]
+[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/EssenceRow" unique_id=571766657]
 layout_mode = 2
 text = "0"
 horizontal_alignment = 2
@@ -286,7 +285,3 @@ autowrap_mode = 3
 [node name="CloseButton" type="Button" parent="InventoryOverlay/InventoryCenter/InventoryPanel/InventoryContent" unique_id=1451186042]
 layout_mode = 2
 text = "Close"
-
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=1284631450]
-stream = ExtResource("2_tvubw")
-autoplay = true

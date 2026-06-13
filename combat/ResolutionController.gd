@@ -598,12 +598,12 @@ func _apply_potion_to_player(match_state: MatchCombatState, potion) -> void:
         handled_special = true
 
     if _has_special_rule(potion, "defense"):
-        match_state.player_state.add_shield_bonus(_get_special_rule_value(potion, "defense", 1))
+        match_state.player_state.add_shield_bonus(_get_card_runtime_value(potion))
         match_state.refresh_active_buffs_on_cards()
         handled_special = true
 
     if _has_special_rule(potion, "power"):
-        match_state.player_state.add_weapon_bonus(_get_special_rule_value(potion, "power", 1))
+        match_state.player_state.add_weapon_bonus(_get_card_runtime_value(potion))
         match_state.refresh_active_buffs_on_cards()
         handled_special = true
 

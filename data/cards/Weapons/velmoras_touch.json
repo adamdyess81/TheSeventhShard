@@ -1,0 +1,23 @@
+{
+  "id": "velmoras_touch",
+  "name": "Velmora's Touch",
+  "family": "weapon",
+  "subtype": "melee",
+  "rarity": "unique",
+  "base_value": 10,
+  "description": "Instantly kills any monster. Reduces Boss remaining health by 50%",
+  "tags": ["unique", "weapon"],
+  "keywords": [],
+  "target_rules": ["enemy_card", "hand_slot"],
+  "special_rules": ["instant_kill", "crushing_blow"],
+  "consumed_on_use": true,
+  "auto_resolve_on_hand_place": false,
+  "can_be_trashed": true,
+  "can_go_to_hand": true,
+  "can_go_to_backpack": true,
+  "can_be_used_from_backpack": false,
+  "requires_hand_to_use": true,
+  "occupies_two_hands": false,
+  "art_ref": "res://art/cards/Velmora's Touch.png",
+  "icon_ref": null
+}

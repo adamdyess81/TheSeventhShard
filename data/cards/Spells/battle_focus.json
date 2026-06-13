@@ -4,7 +4,7 @@
   "family": "spell",
   "subtype": "effect",
   "rarity": "common",
-  "base_value": 0,
+  "base_value": 1,
   "description": "Auto Resolved in Hand. Refreshes both hands.",
   "tags": ["spell", "effect", "tempo"],
   "keywords": [],

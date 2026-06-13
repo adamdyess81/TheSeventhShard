@@ -5,7 +5,7 @@
   "subtype": "battle_buff",
   "rarity": "uncommon",
   "base_value": 1,
-  "description": "Auto-resolve in hand. During the next round, your shields gain +1 value.",
+  "description": "Auto-resolve in hand. For the remainder of the match, your weapons gain +Value of Defense Potion.",
   "tags": ["potion", "buff", "shield"],
   "keywords": [],
   "target_rules": ["player_avatar", "hand_slot"],

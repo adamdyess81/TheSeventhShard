@@ -4,7 +4,7 @@
   "family": "potion",
   "subtype": "cleanse",
   "rarity": "common",
-  "base_value": 0,
+  "base_value": 1,
   "description": "Auto-resolve in hand. Remove Poison and Disease effects from the player.",
   "tags": ["potion", "cleanse"],
   "keywords": [],

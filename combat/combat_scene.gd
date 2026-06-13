@@ -1775,12 +1775,12 @@ func _apply_runtime_potion_effect(card) -> void:
         handled_special = true
 
     if _has_special_rule(card, "defense"):
-        match_state.player_state.add_shield_bonus(_get_special_rule_value(card, "defense", 1))
+        match_state.player_state.add_shield_bonus(_get_card_runtime_value(card))
         match_state.refresh_active_buffs_on_cards()
         handled_special = true
 
     if _has_special_rule(card, "power"):
-        match_state.player_state.add_weapon_bonus(_get_special_rule_value(card, "power", 1))
+        match_state.player_state.add_weapon_bonus(_get_card_runtime_value(card))
         match_state.refresh_active_buffs_on_cards()
         handled_special = true
 
