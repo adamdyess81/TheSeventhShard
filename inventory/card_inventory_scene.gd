@@ -9,6 +9,7 @@ const GAME_DATA_LOADER_SCRIPT = preload("res://core/GameDataLoader.gd")
 const PROFILE_DECK_SCRIPT = preload("res://core/ProfileDeck.gd")
 const PROGRESSION_SCRIPT = preload("res://core/Progression.gd")
 const CARD_AFFIX_LIBRARY_SCRIPT = preload("res://core/CardAffixLibrary.gd")
+const CARD_SALVAGE_SCRIPT = preload("res://core/CardSalvage.gd")
 const CARD_BACK_TEXTURE = preload("res://art/ui/CardBack.png")
 const PANEL_FILL = Color("18110d")
 const PANEL_BORDER = Color("75563c")
@@ -55,6 +56,7 @@ func _ready() -> void:
 
 func _load_player_profile() -> void:
 	player_profile_data = loader.load_json(PLAYER_PROFILE_PATH)
+	CARD_SALVAGE_SCRIPT.ensure_profile_resource_fields(player_profile_data)
 
 	var owned = player_profile_data.get("owned_card_counts", {})
 	if owned is Dictionary:
@@ -100,7 +102,9 @@ func _refresh_scene() -> void:
 func _refresh_summary() -> void:
 	var total_cards := _get_total_selected_cards()
 	var max_deck_size := _get_effective_max_deck_size()
-	deck_summary_label.text = "Deck: %d cards | Minimum: %d | Max: %d" % [
+	deck_summary_label.text = "Scrap: %d | Essence: %d\nDeck: %d cards | Minimum: %d | Max: %d" % [
+		int(player_profile_data.get("scrap_materials", 0)),
+		int(player_profile_data.get("magic_essence", 0)),
 		total_cards,
 		MINIMUM_DECK_SIZE,
 		max_deck_size
@@ -236,6 +240,12 @@ func _build_card_instance_tile(card_instance: Dictionary) -> Control:
 	add_button.pressed.connect(_on_add_card_instance.bind(instance_id))
 	controls.add_child(add_button)
 
+	var salvage_button := Button.new()
+	salvage_button.text = _build_salvage_button_text(display_data, card_instance.get("affix_ids", []))
+	salvage_button.disabled = not CARD_SALVAGE_SCRIPT.is_salvageable(display_data)
+	salvage_button.pressed.connect(_on_salvage_card_instance.bind(instance_id))
+	stack.add_child(salvage_button)
+
 	return tile
 
 func _build_instance_display_data(card_instance: Dictionary) -> Dictionary:
@@ -368,6 +378,12 @@ func _build_card_tile(card_id: String, owned_quantity: int, selected_quantity: i
 	add_button.pressed.connect(_on_add_card.bind(card_id))
 	controls.add_child(add_button)
 
+	var salvage_button := Button.new()
+	salvage_button.text = _build_salvage_button_text(card_data)
+	salvage_button.disabled = not CARD_SALVAGE_SCRIPT.is_salvageable(card_data)
+	salvage_button.pressed.connect(_on_salvage_card.bind(card_id))
+	stack.add_child(salvage_button)
+
 	return tile
 
 
@@ -416,6 +432,57 @@ func _on_remove_card(card_id: String) -> void:
 
 	_save_selected_deck()
 	_refresh_scene()
+
+
+func _on_salvage_card(card_id: String) -> void:
+	var card_data: Dictionary = loader.get_card(card_id)
+	var result := CARD_SALVAGE_SCRIPT.salvage_card_stack(player_profile_data, card_data, card_id)
+	if not bool(result.get("ok", false)):
+		status_label.text = "Could not salvage %s." % _get_card_name(card_id)
+		return
+
+	owned_card_counts = player_profile_data.get("owned_card_counts", {}).duplicate(true)
+	selected_deck_counts = player_profile_data.get("selected_deck_card_counts", {}).duplicate(true)
+	_save_player_profile()
+	_refresh_scene()
+	status_label.text = "Salvaged %s for %s." % [
+		_get_card_name(card_id),
+		_format_salvage_reward_text(int(result.get("scrap_materials", 0)), int(result.get("magic_essence", 0)))
+	]
+	status_label.modulate = TEXT_SUCCESS
+
+
+func _on_salvage_card_instance(instance_id: String) -> void:
+	if instance_id == "":
+		return
+
+	var card_instance := _find_owned_card_instance(instance_id)
+	if card_instance.is_empty():
+		status_label.text = "Could not find that affixed card to salvage."
+		status_label.modulate = TEXT_ERROR
+		return
+
+	var card_id := str(card_instance.get("card_id", "")).strip_edges()
+	var base_card_data: Dictionary = loader.get_card(card_id)
+	var affix_ids = card_instance.get("affix_ids", [])
+	if not (affix_ids is Array):
+		affix_ids = []
+
+	var result := CARD_SALVAGE_SCRIPT.salvage_card_instance(player_profile_data, base_card_data, instance_id, affix_ids)
+	if not bool(result.get("ok", false)):
+		status_label.text = "Could not salvage %s." % _get_instance_display_name(card_instance)
+		status_label.modulate = TEXT_ERROR
+		return
+
+	owned_card_instances = player_profile_data.get("owned_card_instances", []).duplicate(true)
+	selected_deck_card_instance_ids = player_profile_data.get("selected_deck_card_instance_ids", []).duplicate(true)
+	_save_player_profile()
+	_refresh_scene()
+	status_label.text = "Salvaged %s for %s." % [
+		_get_instance_display_name(card_instance),
+		_format_salvage_reward_text(int(result.get("scrap_materials", 0)), int(result.get("magic_essence", 0)))
+	]
+	status_label.modulate = TEXT_SUCCESS
 
 
 func _on_return_pressed() -> void:
@@ -502,6 +569,35 @@ func _update_grid_columns() -> void:
 	var available_width: float = maxf(card_scroll.size.x - 16.0, TILE_WIDTH)
 	var columns := int(floor(available_width / (TILE_WIDTH + 16.0)))
 	card_grid.columns = clampi(columns, 1, 5)
+
+
+func _find_owned_card_instance(instance_id: String) -> Dictionary:
+	for card_instance in owned_card_instances:
+		if card_instance is Dictionary and str(card_instance.get("instance_id", "")).strip_edges() == instance_id:
+			return card_instance
+	return {}
+
+
+func _build_salvage_button_text(card_data: Dictionary, affix_ids: Array = []) -> String:
+	if not CARD_SALVAGE_SCRIPT.is_salvageable(card_data):
+		return "Cannot Salvage"
+
+	var rewards := CARD_SALVAGE_SCRIPT.calculate_salvage_rewards(card_data, affix_ids)
+	return "Salvage (%s)" % _format_salvage_reward_text(
+		int(rewards.get("scrap_materials", 0)),
+		int(rewards.get("magic_essence", 0))
+	)
+
+
+func _format_salvage_reward_text(scrap_materials: int, magic_essence: int) -> String:
+	var parts: Array[String] = []
+	if scrap_materials > 0:
+		parts.append("%d Scrap" % scrap_materials)
+	if magic_essence > 0:
+		parts.append("%d Essence" % magic_essence)
+	if parts.is_empty():
+		return "No salvage reward"
+	return " + ".join(parts)
 
 
 func _get_music_manager():

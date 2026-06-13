@@ -12,6 +12,7 @@ const HOVEL_SHOP_SCRIPT = preload("res://core/HovelShop.gd")
 const PROGRESSION_SCRIPT = preload("res://core/Progression.gd")
 const PROFILE_DECK_SCRIPT = preload("res://core/ProfileDeck.gd")
 const RUN_CONTEXT_SCRIPT = preload("res://core/RunContext.gd")
+const CARD_SALVAGE_SCRIPT = preload("res://core/CardSalvage.gd")
 const MINIMUM_DECK_SIZE := 15
 const HOVEL_SHOP_RULES_PATH := "res://data/rewards/hovel_shop_common.json"
 const KNIGHT_CLASS_PATH := "res://data/classes/knight.json"
@@ -28,6 +29,8 @@ const RESET_HOVEL_SHOP_LEVEL := 1
 @onready var xp_value = $Root/Content/StatsPanel/StatsContent/StatsRows/ExperienceRow/Value
 @onready var level_value = $Root/Content/StatsPanel/StatsContent/StatsRows/LevelRow/Value
 @onready var deck_size_value = $Root/Content/StatsPanel/StatsContent/StatsRows/DeckSizeRow/Value
+@onready var scrap_value = $Root/Content/StatsPanel/StatsContent/StatsRows/ScrapRow/Value
+@onready var essence_value = $Root/Content/StatsPanel/StatsContent/StatsRows/EssenceRow/Value
 @onready var opponent_selector = $Root/Content/ActionPanel/ActionContent/OpponentSection/OpponentSelector
 @onready var opponent_details_label = $Root/Content/ActionPanel/ActionContent/OpponentSection/OpponentDetailsLabel
 @onready var status_label = $Root/Content/ActionPanel/ActionContent/StatusLabel
@@ -69,6 +72,8 @@ func _ready() -> void:
 
 func _load_player_profile() -> void:
 	player_profile_data = loader.load_json(PLAYER_PROFILE_PATH)
+	if CARD_SALVAGE_SCRIPT.ensure_profile_resource_fields(player_profile_data):
+		_save_player_profile()
 
 
 func _save_player_profile() -> void:
@@ -160,6 +165,8 @@ func _refresh_stats() -> void:
 	]
 	level_value.text = str(int(progress.get("level", 1)))
 	deck_size_value.text = str(max_deck_size)
+	scrap_value.text = str(int(player_profile_data.get("scrap_materials", 0)))
+	essence_value.text = str(int(player_profile_data.get("magic_essence", 0)))
 
 
 func _load_available_encounters() -> void:
@@ -315,6 +322,8 @@ func reset_player_profile_to_knight_baseline() -> void:
 	player_profile_data["owned_relic_ids"] = []
 	player_profile_data["owned_rune_ids"] = []
 	player_profile_data["persistent_gold"] = RESET_PERSISTENT_GOLD
+	player_profile_data["scrap_materials"] = 0
+	player_profile_data["magic_essence"] = 0
 	player_profile_data["player_level"] = RESET_PLAYER_LEVEL
 	player_profile_data["progression_flag_ids"] = []
 	player_profile_data["saved_loadout_ids"] = ["loadout_knight_starter_01"]
@@ -327,8 +336,8 @@ func reset_player_profile_to_knight_baseline() -> void:
 	player_profile_data["hovel_shop_state"] = {}
 	player_profile_data.erase("last_battle_reward_summary")
 	player_profile_data["unlocked_boss_ids"] = ["ossaran_lich"]
-	player_profile_data["selected_deck_card_instance_ids"] = {}
-	player_profile_data["owned_card_instances"] = {}
+	player_profile_data["selected_deck_card_instance_ids"] = []
+	player_profile_data["owned_card_instances"] = []
 
 
 func _build_card_counts_from_entries(entries) -> Dictionary:

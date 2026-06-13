@@ -131,6 +131,34 @@ layout_mode = 2
 text = "15"
 horizontal_alignment = 2
 
+[node name="ScrapRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/ScrapRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Scrap Materials"
+
+[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/ScrapRow"]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 2
+
+[node name="EssenceRow" type="HBoxContainer" parent="Root/Content/StatsPanel/StatsContent/StatsRows"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Label" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/EssenceRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Magic Essence"
+
+[node name="Value" type="Label" parent="Root/Content/StatsPanel/StatsContent/StatsRows/EssenceRow"]
+layout_mode = 2
+text = "0"
+horizontal_alignment = 2
+
 [node name="ActionPanel" type="PanelContainer" parent="Root/Content" unique_id=397982995]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2

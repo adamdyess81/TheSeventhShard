@@ -31,6 +31,8 @@ func _test_reset_restores_knight_baseline() -> void:
 	hovel.player_profile_data = {
 		"active_class_id": "knight",
 		"persistent_gold": 999,
+		"scrap_materials": 123,
+		"magic_essence": 456,
 		"player_level": 12,
 		"total_xp": 3165,
 		"max_deck_size_base": 99,
@@ -60,6 +62,8 @@ func _test_reset_restores_knight_baseline() -> void:
 	_expect(int(hovel.player_profile_data.get("player_level", 0)) == 1, "Reset should restore player level 1.")
 	_expect(int(hovel.player_profile_data.get("total_xp", -1)) == 0, "Reset should restore 0 XP.")
 	_expect(int(hovel.player_profile_data.get("persistent_gold", -1)) == 0, "Reset should restore 0 gold.")
+	_expect(int(hovel.player_profile_data.get("scrap_materials", -1)) == 0, "Reset should restore 0 scrap materials.")
+	_expect(int(hovel.player_profile_data.get("magic_essence", -1)) == 0, "Reset should restore 0 magic essence.")
 	_expect(int(hovel.player_profile_data.get("max_deck_size_base", 0)) == 15, "Reset should restore a 15-card max deck base.")
 	_expect(int(hovel.player_profile_data.get("starting_health_base", 0)) == 20, "Reset should restore 20 base health.")
 	_expect(hovel.player_profile_data.get("owned_relic_ids", []).is_empty(), "Reset should clear owned relics.")
@@ -81,3 +85,5 @@ func _test_reset_restores_knight_baseline() -> void:
 	_expect(int(selected_deck.get("large_health_potion", 0)) == 2, "Reset should restore the Knight starter deck selection.")
 	_expect(int(selected_deck.get("small_shield", 0)) == 4, "Reset should restore the Knight starter deck selection.")
 	_expect(int(selected_deck.get("short_sword", 0)) == 4, "Reset should restore the Knight starter deck selection.")
+	_expect(hovel.player_profile_data.get("selected_deck_card_instance_ids", []) is Array, "Reset should restore selected affixed deck ids as an array.")
+	_expect(hovel.player_profile_data.get("owned_card_instances", []) is Array, "Reset should restore owned affixed card instances as an array.")
