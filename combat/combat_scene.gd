@@ -1191,20 +1191,33 @@ func _update_slot_card_view(card_canvas: Control, placeholder_texture: TextureRe
   placeholder_texture.visible = true
   placeholder_texture.texture = placeholder
   placeholder_texture.modulate = Color(1, 1, 1, 1)
+
   if slot_card_view != null and is_instance_valid(slot_card_view):
    slot_card_view.visible = false
    slot_card_view.tooltip_text = ""
+
   return ""
 
  slot_card_view = _ensure_slot_card_view(card_canvas, slot_name)
+
+ if slot_card_view == null:
+  push_warning("Could not create slot card view for slot: %s" % slot_name)
+  return next_card_id
+
+ _position_slot_card_view(card_canvas, slot_card_view)
+
  placeholder_texture.visible = false
  placeholder_texture.modulate = Color(1, 1, 1, 1)
+
  if slot_card_view.has_method("set_drag_source"):
   slot_card_view.set_drag_source(slot_name)
+
  if slot_card_view.has_method("setup"):
   slot_card_view.setup(card, -1)
+
  slot_card_view.visible = true
  slot_card_view.modulate = Color(1, 1, 1, 1)
+
  return next_card_id
 
 
@@ -1225,15 +1238,30 @@ func _set_legacy_slot_labels_visible(slot_name: String, is_visible: bool) -> voi
 
 
 func _ensure_slot_card_view(card_canvas: Control, slot_name: String) -> Control:
+ if card_canvas == null:
+  push_warning("Missing card canvas for slot: %s" % slot_name)
+  return null
+
  var existing_view := _get_slot_card_view(slot_name)
  if existing_view != null and is_instance_valid(existing_view):
+  _position_slot_card_view(card_canvas, existing_view)
   return existing_view
 
  var card_view = CARD_VIEW_SCENE.instantiate()
+
+ if card_view == null:
+  push_warning("Could not instantiate card view for slot: %s" % slot_name)
+  return null
+
  card_view.name = "%sCardView" % _humanize_card_name(slot_name).replace(" ", "")
- card_view.custom_minimum_size = Vector2(220, 300)
  card_canvas.add_child(card_view)
- card_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+ card_view.custom_minimum_size = EMPTY_BOARD_SLOT_SIZE
+ card_view.size = EMPTY_BOARD_SLOT_SIZE
+ card_view.scale = Vector2.ONE
+ card_view.rotation = 0.0
+
+ _position_slot_card_view(card_canvas, card_view)
 
  if card_view.has_method("set_drag_source"):
   card_view.set_drag_source(slot_name)
@@ -1241,6 +1269,27 @@ func _ensure_slot_card_view(card_canvas: Control, slot_name: String) -> Control:
  _set_slot_card_view(slot_name, card_view)
  return card_view
 
+func _position_slot_card_view(card_canvas: Control, card_view: Control) -> void:
+ if card_canvas == null:
+  return
+
+ if card_view == null or not is_instance_valid(card_view):
+  return
+
+ card_view.anchor_left = 0.0
+ card_view.anchor_top = 0.0
+ card_view.anchor_right = 0.0
+ card_view.anchor_bottom = 0.0
+
+ card_view.offset_left = 0.0
+ card_view.offset_top = 0.0
+ card_view.offset_right = EMPTY_BOARD_SLOT_SIZE.x
+ card_view.offset_bottom = EMPTY_BOARD_SLOT_SIZE.y
+
+ card_view.size = EMPTY_BOARD_SLOT_SIZE
+
+ var centered_position := (card_canvas.size - EMPTY_BOARD_SLOT_SIZE) * 0.5
+ card_view.position = centered_position.round()
 
 func _get_slot_card_view(slot_name: String) -> Control:
  match slot_name:
