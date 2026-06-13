@@ -7,32 +7,32 @@
 		"offers": [
 			{
 				"card_id": "energy_burst",
-				"offer_id": "shop_1_0_365014",
-				"player_level_at_roll": 11.0,
-				"price": 25.0,
+				"offer_id": "shop_1_0_356767",
+				"player_level_at_roll": 11,
+				"price": 25,
 				"rarity": "common",
-				"shop_level": 1.0
+				"shop_level": 1
 			},
 			{
-				"card_id": "energy_burst",
-				"offer_id": "shop_1_1_732429",
-				"player_level_at_roll": 11.0,
-				"price": 25.0,
+				"card_id": "cure_potion",
+				"offer_id": "shop_1_1_546613",
+				"player_level_at_roll": 11,
+				"price": 25,
 				"rarity": "common",
-				"shop_level": 1.0
+				"shop_level": 1
 			},
 			{
-				"card_id": "large_health_potion",
-				"offer_id": "shop_1_2_992806",
-				"player_level_at_roll": 11.0,
-				"price": 60.0,
-				"rarity": "uncommon",
-				"shop_level": 1.0
+				"card_id": "small_health_potion",
+				"offer_id": "shop_1_2_611441",
+				"player_level_at_roll": 11,
+				"price": 25,
+				"rarity": "common",
+				"shop_level": 1
 			}
 		],
-		"player_level_at_refresh": 11.0,
+		"player_level_at_refresh": 11,
 		"refresh_trigger": "after_battle",
-		"shop_level": 1.0,
+		"shop_level": 1,
 		"shop_table_id": "hovel_shop_common"
 	},
 	"hovel_upgrade_ids": [],
@@ -43,10 +43,10 @@
 				"affix_ids": [
 					"golden"
 				],
-				"card_id": "spiked_shield",
-				"instance_id": "card_instance_000002",
+				"card_id": "short_sword",
+				"instance_id": "card_instance_000003",
 				"is_affixed": true,
-				"rarity": "rare"
+				"rarity": "common"
 			}
 		],
 		"boss_drop_table_id": "ossaran_lich_boss_drops",
@@ -54,58 +54,58 @@
 		"boss_kill": true,
 		"boss_name": "Ossaran Lich",
 		"chest_carry_state": {
-			"backpack_chest_count": 0.0,
+			"backpack_chest_count": 0,
 			"backpack_chest_ids": [],
 			"has_carried_chest": false,
 			"left_hand_has_chest": false,
 			"right_hand_has_chest": false,
-			"total_carried_chest_count": 0.0,
-			"tracked_carried_chest_count": 0.0
+			"total_carried_chest_count": 0,
+			"tracked_carried_chest_count": 0
 		},
 		"hovel_shop_state": {
 			"last_refresh_source": "battle_end",
 			"offers": [
 				{
 					"card_id": "energy_burst",
-					"offer_id": "shop_1_0_365014",
-					"player_level_at_roll": 11.0,
-					"price": 25.0,
+					"offer_id": "shop_1_0_356767",
+					"player_level_at_roll": 11,
+					"price": 25,
 					"rarity": "common",
-					"shop_level": 1.0
+					"shop_level": 1
 				},
 				{
-					"card_id": "energy_burst",
-					"offer_id": "shop_1_1_732429",
-					"player_level_at_roll": 11.0,
-					"price": 25.0,
+					"card_id": "cure_potion",
+					"offer_id": "shop_1_1_546613",
+					"player_level_at_roll": 11,
+					"price": 25,
 					"rarity": "common",
-					"shop_level": 1.0
+					"shop_level": 1
 				},
 				{
-					"card_id": "large_health_potion",
-					"offer_id": "shop_1_2_992806",
-					"player_level_at_roll": 11.0,
-					"price": 60.0,
-					"rarity": "uncommon",
-					"shop_level": 1.0
+					"card_id": "small_health_potion",
+					"offer_id": "shop_1_2_611441",
+					"player_level_at_roll": 11,
+					"price": 25,
+					"rarity": "common",
+					"shop_level": 1
 				}
 			],
-			"player_level_at_refresh": 11.0,
+			"player_level_at_refresh": 11,
 			"refresh_trigger": "after_battle",
-			"shop_level": 1.0,
+			"shop_level": 1,
 			"shop_table_id": "hovel_shop_common"
 		},
 		"outcome": "victory",
-		"persistent_gold_after": 210.0,
-		"persistent_gold_awarded": 20.0,
-		"persistent_gold_before": 190.0,
-		"player_level": 11.0,
+		"persistent_gold_after": 230,
+		"persistent_gold_awarded": 20,
+		"persistent_gold_before": 210,
+		"player_level": 11,
 		"reward_profile_id": "baseline_match_rewards",
-		"round_number": 23.0,
-		"temporary_gold_collected": 20.0
+		"round_number": 22,
+		"temporary_gold_collected": 20
 	},
 	"max_deck_size_base": 15.0,
-	"next_card_instance_number": 3.0,
+	"next_card_instance_number": 4,
 	"notes": "First baseline profile for prototype testing.",
 	"owned_card_counts": {
 		"battle_focus": 1.0,
@@ -134,12 +134,19 @@
 			],
 			"card_id": "spiked_shield",
 			"instance_id": "card_instance_000002"
+		},
+		{
+			"affix_ids": [
+				"golden"
+			],
+			"card_id": "short_sword",
+			"instance_id": "card_instance_000003"
 		}
 	],
 	"owned_relic_ids": [],
 	"owned_rune_ids": [],
-	"persistent_gold": 210.0,
-	"player_level": 11.0,
+	"persistent_gold": 230,
+	"player_level": 11,
 	"player_profile_id": "player_main",
 	"profile_name": "Main Profile",
 	"progression_flag_ids": [],
@@ -147,19 +154,21 @@
 		"loadout_knight_starter_01"
 	],
 	"selected_deck_card_counts": {
-		"dagger": 1,
-		"energy_burst": 3,
-		"large_health_potion": 3,
-		"large_shield": 2,
-		"shift_fate": 1,
-		"short_sword": 9,
-		"small_health_potion": 5
+		"dagger": 1.0,
+		"energy_burst": 3.0,
+		"large_health_potion": 3.0,
+		"large_shield": 2.0,
+		"shift_fate": 1.0,
+		"short_sword": 9.0,
+		"small_health_potion": 3.0,
+		"small_shield": 1.0
 	},
 	"selected_deck_card_instance_ids": [
-		"card_instance_000001"
+		"card_instance_000001",
+		"card_instance_000002"
 	],
 	"starting_health_base": 20.0,
-	"total_xp": 2610.0,
+	"total_xp": 2746,
 	"unlocked_boss_ids": [
 		"ossaran_lich",
 		"gravebound_warden",
