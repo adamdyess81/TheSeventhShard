@@ -9,6 +9,10 @@ var board_index: int = -1
 var drag_source: String = "board"
 var _is_setup_ready: bool = false
 var value_label_base_position: Vector2
+var value_label_base_size: Vector2
+
+const BASE_CARD_SIZE := Vector2(220, 300)
+const BASE_VALUE_FONT_SIZE := 18
 
 @onready var card_canvas: Control = %CardCanvas
 @onready var art_rect: TextureRect = %ArtRect
@@ -18,7 +22,11 @@ var value_label_base_position: Vector2
 
 func _ready() -> void:
 	value_label_base_position = value_label.position
+	value_label_base_size = value_label.size
 	_is_setup_ready = true
+	resized.connect(_on_card_view_resized)
+	card_canvas.resized.connect(_on_card_view_resized)
+	_sync_value_label_layout()
 	if card_data != null:
 		_apply_setup()
 
@@ -37,6 +45,7 @@ func set_drag_source(source: String) -> void:
 
 func _apply_setup() -> void:
 	_apply_visual_theme()
+	_sync_value_label_layout()
 	_apply_card_art()
 	_apply_card_foil()
 	
@@ -246,7 +255,42 @@ func _apply_visual_theme() -> void:
 	family_label.add_theme_font_size_override("font_size", 12)
 
 	value_label.add_theme_color_override("font_color", Color("ffffff"))
-	value_label.add_theme_font_size_override("font_size", 18)
+	value_label.add_theme_font_size_override("font_size", BASE_VALUE_FONT_SIZE)
+
+
+func _on_card_view_resized() -> void:
+	_sync_value_label_layout()
+
+
+func _sync_value_label_layout() -> void:
+	if value_label == null or card_canvas == null:
+		return
+
+	var rendered_size: Vector2 = card_canvas.size
+	if rendered_size.x <= 0.0 or rendered_size.y <= 0.0:
+		rendered_size = size
+	if rendered_size.x <= 0.0 or rendered_size.y <= 0.0:
+		rendered_size = BASE_CARD_SIZE
+
+	var scale_factor: Vector2 = Vector2(
+		rendered_size.x / BASE_CARD_SIZE.x,
+		rendered_size.y / BASE_CARD_SIZE.y
+	)
+	var uniform_scale: float = min(scale_factor.x, scale_factor.y)
+
+	value_label.position = Vector2(
+		round(value_label_base_position.x * scale_factor.x),
+		round(value_label_base_position.y * scale_factor.y)
+	)
+	value_label.size = Vector2(
+		round(value_label_base_size.x * scale_factor.x),
+		round(value_label_base_size.y * scale_factor.y)
+	)
+	value_label.custom_minimum_size = value_label.size
+	value_label.add_theme_font_size_override(
+		"font_size",
+		max(1, int(round(BASE_VALUE_FONT_SIZE * uniform_scale)))
+	)
 	
 
 
