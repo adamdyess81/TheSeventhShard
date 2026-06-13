@@ -1185,6 +1185,7 @@ func _update_slot_card_view(card_canvas: Control, placeholder_texture: TextureRe
   next_card_id = _get_card_unique_key(card)
 
  var slot_card_view: Control = _get_slot_card_view(slot_name)
+ _set_legacy_slot_labels_visible(slot_name, false)
 
  if card == null:
   placeholder_texture.visible = true
@@ -1205,6 +1206,22 @@ func _update_slot_card_view(card_canvas: Control, placeholder_texture: TextureRe
  slot_card_view.visible = true
  slot_card_view.modulate = Color(1, 1, 1, 1)
  return next_card_id
+
+
+func _set_legacy_slot_labels_visible(slot_name: String, is_visible: bool) -> void:
+ match slot_name:
+  "left_hand":
+   left_hand_value_label.visible = is_visible
+   left_hand_name_label.visible = is_visible
+   left_hand_type_label.visible = is_visible
+  "right_hand":
+   right_hand_value_label.visible = is_visible
+   right_hand_name_label.visible = is_visible
+   right_hand_type_label.visible = is_visible
+  "backpack":
+   backpack_value_label.visible = is_visible
+   backpack_name_label.visible = is_visible
+   backpack_type_label.visible = is_visible
 
 
 func _ensure_slot_card_view(card_canvas: Control, slot_name: String) -> Control:

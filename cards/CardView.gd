@@ -79,7 +79,7 @@ func _get_drag_data(_at_position):
 		if combat_scene == null or not combat_scene.can_drag_slot_card(drag_source):
 			return null
 
-	var preview = duplicate()
+	var preview = _build_drag_preview()
 	set_drag_preview(preview)
 	modulate.a = 0.35
 
@@ -100,17 +100,23 @@ func _can_drop_data(_at_position, data) -> bool:
 
 	var source := String(data.get("source", "")).strip_edges()
 	var dragged_family := String(data.get("card_family", "")).strip_edges()
-	if source not in ["left_hand", "right_hand"]:
-		return false
-
-	if _get_card_family() != "monster":
-		return false
 
 	var combat_scene = get_tree().get_first_node_in_group("combat_scene")
 	if combat_scene == null:
 		return false
 
 	if combat_scene.has_method("is_modal_open") and combat_scene.is_modal_open():
+		return false
+
+	if source == "board" and dragged_family == "monster":
+		if drag_source in ["left_hand", "right_hand"] and _get_card_family() == "shield":
+			return combat_scene.can_drop_on_slot(drag_source, data)
+		return false
+
+	if source not in ["left_hand", "right_hand"]:
+		return false
+
+	if _get_card_family() != "monster":
 		return false
 
 	if dragged_family == "weapon":
@@ -129,7 +135,33 @@ func _drop_data(_at_position, data) -> void:
 		return
 
 	var source := String(data.get("source", "")).strip_edges()
-	combat_scene.handle_slot_card_drop_on_board(source, board_index)
+	if source == "board":
+		var board_index := int(data.get("board_index", -1))
+		if board_index == -1:
+			return
+		if drag_source == "left_hand":
+			combat_scene.handle_drop_to_left_hand(board_index)
+		elif drag_source == "right_hand":
+			combat_scene.handle_drop_to_right_hand(board_index)
+		return
+	combat_scene.handle_slot_card_drop_on_board(source, self.board_index)
+
+
+func _build_drag_preview() -> Control:
+	var preview_root := Control.new()
+	preview_root.custom_minimum_size = size
+	preview_root.size = size
+
+	var canvas_preview = card_canvas.duplicate()
+	canvas_preview.position = Vector2.ZERO
+	canvas_preview.scale = Vector2.ONE
+	canvas_preview.rotation = 0.0
+	canvas_preview.size = size
+	if canvas_preview is Control:
+		canvas_preview.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	preview_root.add_child(canvas_preview)
+	return preview_root
 
 
 func _apply_card_art() -> void:
