@@ -2,6 +2,11 @@ extends SceneTree
 
 const COMBAT_SCENE_SCRIPT = preload("res://combat/combat_scene.gd")
 const CARD_AFFIX_LIBRARY_SCRIPT = preload("res://core/CardAffixLibrary.gd")
+const MATCH_COMBAT_STATE_SCRIPT = preload("res://combat/MatchCombatState.gd")
+const PLAYER_COMBAT_STATE_SCRIPT = preload("res://combat/PlayerCombatState.gd")
+const BOSS_COMBAT_STATE_SCRIPT = preload("res://combat/BossCombatState.gd")
+const BOARD_STATE_SCRIPT = preload("res://combat/BoardState.gd")
+const SHARED_DECK_STATE_SCRIPT = preload("res://combat/SharedDeckState.gd")
 
 var _failures: Array[String] = []
 
@@ -21,10 +26,13 @@ func _init() -> void:
 func _run_tests() -> void:
 	_test_missing_boss_drop_table_fails_soft()
 	_test_named_boss_drop_table_loads()
+	_test_named_chest_reward_table_loads()
 	_test_boss_drop_grant_creates_affixed_reward_instance()
 	_test_nonmatching_outcome_does_not_grant_boss_drop()
 	_test_reward_affix_candidates_are_family_filtered()
 	_test_reward_affix_roll_stays_inside_family_pool()
+	_test_reward_card_roll_from_rarity_excludes_non_loot_cards()
+	_test_carried_chests_grant_extra_rewards_on_survival()
 	_test_affix_gameplay_effects_apply_to_card_data()
 	_test_affix_discard_gold_bonus_is_reported()
 
@@ -52,6 +60,14 @@ func _test_named_boss_drop_table_loads() -> void:
 	var table: Dictionary = scene._load_boss_drop_table("ossaran_lich")
 	_expect(str(table.get("boss_id", "")) == "ossaran_lich", "Boss drop table loader should resolve ossaran_lich by naming convention.")
 	_expect(int(table.get("drop_count", 0)) == 1, "Ossaran Lich boss drop table should expose drop_count 1 for Phase 2.")
+	scene.free()
+
+
+func _test_named_chest_reward_table_loads() -> void:
+	var scene = _build_combat_scene()
+	var table: Dictionary = scene._load_chest_reward_table("small_chest")
+	_expect(str(table.get("id", "")) == "small_chest", "Chest reward table loader should resolve the small chest table.")
+	_expect(float(table.get("affix_chance", -1.0)) == 0.0, "Small chest reward table should default to no affix chance.")
 	scene.free()
 
 
@@ -145,6 +161,66 @@ func _test_reward_affix_roll_stays_inside_family_pool() -> void:
 		_expect(spell_affix in ["golden", "overcharged", "quick"], "Spell reward affix rolls should never leave the spell pool.")
 		_expect(shield_affix in ["golden", "hard", "quick"], "Shield reward affix rolls should never leave the shield pool.")
 		_expect(potion_affix in ["golden", "potent", "quick"], "Potion reward affix rolls should never leave the potion pool.")
+	scene.free()
+
+
+func _test_reward_card_roll_from_rarity_excludes_non_loot_cards() -> void:
+	var scene = _build_combat_scene()
+	for _i in range(20):
+		var common_card_id := scene._roll_card_id_from_reward_rarity("common")
+		var rare_card_id := scene._roll_card_id_from_reward_rarity("rare")
+		var common_card: Dictionary = scene.data_loader.get_card(common_card_id)
+		var rare_card: Dictionary = scene.data_loader.get_card(rare_card_id)
+
+		_expect(common_card_id != "", "Common chest reward rolls should resolve a card id.")
+		_expect(rare_card_id != "", "Rare chest reward rolls should resolve a card id.")
+		_expect(str(common_card.get("rarity", "")) == "common", "Common chest reward rolls should stay inside the common rarity pool.")
+		_expect(str(rare_card.get("rarity", "")) == "rare", "Rare chest reward rolls should stay inside the rare rarity pool.")
+		_expect(str(common_card.get("family", "")) not in ["monster", "coin", "chest"], "Chest rewards should not roll monsters, coins, or other chests.")
+		_expect(str(rare_card.get("family", "")) not in ["monster", "coin", "chest"], "Rare chest rewards should not roll monsters, coins, or other chests.")
+	scene.free()
+
+
+func _test_carried_chests_grant_extra_rewards_on_survival() -> void:
+	var scene = _build_combat_scene()
+	scene.player_profile_data = {
+		"owned_card_counts": {},
+		"owned_card_instances": [],
+		"next_card_instance_number": 1
+	}
+	scene.current_reward_profile = {
+		"survival_outcome": {
+			"keep_carried_chests": true
+		}
+	}
+
+	var match_state = MATCH_COMBAT_STATE_SCRIPT.new()
+	var player_state = PLAYER_COMBAT_STATE_SCRIPT.new()
+	player_state.setup(15, 2, 15)
+	var boss_state = BOSS_COMBAT_STATE_SCRIPT.new()
+	boss_state.setup("ossaran_lich", "Ossaran Lich", 12)
+	var board_state = BOARD_STATE_SCRIPT.new()
+	board_state.setup(4)
+	var shared_deck = SHARED_DECK_STATE_SCRIPT.new()
+	shared_deck.setup([])
+	match_state.setup(player_state, boss_state, board_state, shared_deck, 1)
+
+	player_state.set_left_hand_card(scene.data_loader.get_card("small_chest").duplicate(true))
+	player_state.add_to_backpack(scene.data_loader.get_card("large_chest").duplicate(true))
+	scene.match_state = match_state
+
+	var rewards: Array = scene._grant_carried_chest_rewards("survival")
+	var owned_counts: Dictionary = scene.player_profile_data.get("owned_card_counts", {})
+	var total_count := 0
+	for value in owned_counts.values():
+		total_count += int(value)
+
+	_expect(rewards.size() == 2, "Each carried chest should grant one extra reward on survival.")
+	_expect(total_count + scene.player_profile_data.get("owned_card_instances", []).size() == 2, "Chest rewards should persist into inventory as two total granted cards.")
+	for reward in rewards:
+		_expect(reward is Dictionary, "Chest reward entries should be dictionaries.")
+		if reward is Dictionary:
+			_expect(str(reward.get("source_chest_id", "")) in ["small_chest", "large_chest"], "Chest rewards should record which chest created them.")
 	scene.free()
 
 

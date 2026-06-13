@@ -73,6 +73,7 @@ const DEFAULT_BOSS_NAME := "Ossaran Lich"
 const DEFAULT_MONSTER_DECK_ID := "ossaran_lich_deck"
 const BOSS_DIRECTORY_PATH := "res://data/bosses"
 const DECK_DIRECTORY_PATH := "res://data/decks"
+const CHEST_REWARD_TABLE_DIRECTORY_PATH := "res://data/rewards/chests"
 @onready var player_health_label = $RootLayout/StageCenter/Stage/TopBar/PlayerHealthLabel
 @onready var boss_health_label = $RootLayout/StageCenter/Stage/TopBar/BossHealthLabel
 @onready var round_label = $RootLayout/StageCenter/Stage/TopBar/RoundLabel
@@ -2338,6 +2339,7 @@ func _show_battle_end_modal(outcome: String) -> void:
     var banked_gold_text := "Persistent Gold Banked: %d" % persistent_gold_awarded
     var total_gold_text := "Persistent Gold Total: %d" % persistent_gold_after
     var boss_reward_text := _build_boss_reward_text(reward_summary)
+    var chest_reward_text := _build_chest_reward_text(reward_summary)
     var xp_text := "XP Gained: %d" % xp_gained
     if xp_multiplier > 1:
         xp_text = "XP Gained: %d (%d x%d)" % [xp_gained, xp_base, xp_multiplier]
@@ -2364,6 +2366,7 @@ func _show_battle_end_modal(outcome: String) -> void:
             banked_gold_text,
             total_gold_text,
             boss_reward_text,
+            chest_reward_text,
             xp_text,
             int(player_profile_data.get("player_level", 1)),
             int(player_profile_data.get("total_xp", 0))
@@ -2442,6 +2445,7 @@ func _apply_phase_one_battle_rewards(outcome: String) -> Dictionary:
     reward_summary["reward_profile_id"] = str(current_match_config.get("reward_profile_id", "")).strip_edges()
     reward_summary["boss_drop_table_id"] = str(current_boss_drop_table.get("id", "")).strip_edges()
     reward_summary["boss_drop_rewards"] = _grant_boss_drop_rewards(outcome)
+    reward_summary["chest_rewards"] = _grant_carried_chest_rewards(outcome)
     var hovel_shop_state: Dictionary = HOVEL_SHOP_SCRIPT.refresh_shop_state(
         player_profile_data,
         data_loader,
@@ -2491,6 +2495,18 @@ func _load_boss_drop_table(boss_id: String) -> Dictionary:
         return {}
 
     return data_loader.load_json(boss_drop_table_path)
+
+
+func _load_chest_reward_table(chest_card_id: String) -> Dictionary:
+    var normalized_chest_card_id := chest_card_id.strip_edges()
+    if normalized_chest_card_id == "":
+        return {}
+
+    var chest_reward_table_path := "%s/%s.json" % [CHEST_REWARD_TABLE_DIRECTORY_PATH, normalized_chest_card_id]
+    if not FileAccess.file_exists(chest_reward_table_path):
+        return {}
+
+    return data_loader.load_json(chest_reward_table_path)
 
 
 func _grant_boss_drop_rewards(outcome: String) -> Array:
@@ -2546,10 +2562,110 @@ func _grant_boss_drop_rewards(outcome: String) -> Array:
 
     return granted_rewards
 
-func _roll_reward_affix_id(card_id: String) -> String:
-    var affix_chance := 1.0
+func _grant_carried_chest_rewards(outcome: String) -> Array:
+    if outcome not in ["victory", "survival"]:
+        return []
 
-    if randf() > affix_chance:
+    if not _should_keep_carried_chests(outcome):
+        return []
+
+    var carried_chest_ids := _get_carried_chest_card_ids()
+    if carried_chest_ids.is_empty():
+        return []
+
+    var granted_rewards: Array = []
+    for chest_card_id in carried_chest_ids:
+        var chest_reward := _grant_chest_reward(chest_card_id)
+        if chest_reward.is_empty():
+            continue
+        granted_rewards.append(chest_reward)
+
+    return granted_rewards
+
+
+func _should_keep_carried_chests(outcome: String) -> bool:
+    if current_reward_profile.is_empty():
+        return outcome in ["victory", "survival"]
+
+    var reward_rule: Dictionary = {}
+    match outcome:
+        "victory":
+            reward_rule = current_reward_profile.get("defeat_victory", {})
+        "survival":
+            reward_rule = current_reward_profile.get("survival_outcome", {})
+        _:
+            reward_rule = {}
+
+    if reward_rule.is_empty():
+        return outcome in ["victory", "survival"]
+
+    return bool(reward_rule.get("keep_carried_chests", false))
+
+
+func _get_carried_chest_card_ids() -> Array[String]:
+    var chest_card_ids: Array[String] = []
+    if match_state == null or match_state.player_state == null:
+        return chest_card_ids
+
+    var left_hand_card = match_state.player_state.left_hand_card
+    if _get_card_family(left_hand_card) == "chest":
+        chest_card_ids.append(_get_card_id(left_hand_card))
+
+    var right_hand_card = match_state.player_state.right_hand_card
+    if _get_card_family(right_hand_card) == "chest":
+        chest_card_ids.append(_get_card_id(right_hand_card))
+
+    for card in match_state.player_state.backpack_cards:
+        if _get_card_family(card) == "chest":
+            chest_card_ids.append(_get_card_id(card))
+
+    return chest_card_ids
+
+
+func _grant_chest_reward(chest_card_id: String) -> Dictionary:
+    var chest_reward_table := _load_chest_reward_table(chest_card_id)
+    if chest_reward_table.is_empty():
+        return {}
+
+    var reward_rarity := _roll_weighted_rarity(chest_reward_table.get("rarity_rolls", []))
+    if reward_rarity == "":
+        return {}
+
+    var reward_card_id := _roll_card_id_from_reward_rarity(reward_rarity)
+    if reward_card_id == "":
+        return {}
+
+    var affix_chance := float(chest_reward_table.get("affix_chance", 0.0))
+    var affix_id := _roll_reward_affix_id(reward_card_id, affix_chance)
+    if affix_id == "":
+        _grant_reward_card_to_inventory(reward_card_id)
+        return {
+            "source_chest_id": chest_card_id,
+            "card_id": reward_card_id,
+            "rarity": reward_rarity,
+            "instance_id": "",
+            "affix_ids": [],
+            "is_affixed": false
+        }
+
+    var card_instance := _grant_affixed_reward_card_to_inventory(reward_card_id, affix_id)
+    return {
+        "source_chest_id": chest_card_id,
+        "card_id": reward_card_id,
+        "rarity": reward_rarity,
+        "instance_id": str(card_instance.get("instance_id", "")),
+        "affix_ids": card_instance.get("affix_ids", []),
+        "is_affixed": true
+    }
+
+
+func _roll_reward_affix_id(card_id: String, affix_chance: float = 1.0) -> String:
+    var normalized_affix_chance := clampf(affix_chance, 0.0, 1.0)
+
+    if normalized_affix_chance <= 0.0:
+        return ""
+
+    if randf() > normalized_affix_chance:
         return ""
 
     var base_card_data: Dictionary = data_loader.get_card(card_id)
@@ -2567,6 +2683,67 @@ func _get_reward_affix_roll_candidates(card_id: String) -> Array[Dictionary]:
 
     var card_family := str(base_card_data.get("family", "")).strip_edges().to_lower()
     return CARD_AFFIX_LIBRARY_SCRIPT.get_roll_candidates_for_family(card_family)
+
+
+func _roll_weighted_rarity(raw_rolls) -> String:
+    if not (raw_rolls is Array):
+        return ""
+
+    var total_weight := 0
+    var weighted_rolls: Array[Dictionary] = []
+    for roll in raw_rolls:
+        if not (roll is Dictionary):
+            continue
+
+        var weight := maxi(int(roll.get("weight", 0)), 0)
+        if weight <= 0:
+            continue
+
+        total_weight += weight
+        weighted_rolls.append(roll)
+
+    if total_weight <= 0 or weighted_rolls.is_empty():
+        return ""
+
+    var selection := randi() % total_weight
+    var running_weight := 0
+    for roll in weighted_rolls:
+        running_weight += int(roll.get("weight", 0))
+        if selection < running_weight:
+            return str(roll.get("rarity", "")).strip_edges()
+
+    return str(weighted_rolls[weighted_rolls.size() - 1].get("rarity", "")).strip_edges()
+
+
+func _roll_card_id_from_reward_rarity(rarity: String) -> String:
+    var normalized_rarity := rarity.strip_edges().to_lower()
+    if normalized_rarity == "":
+        return ""
+
+    var eligible_card_ids: Array[String] = []
+    for raw_card_id in data_loader.card_registry.keys():
+        var card_id := str(raw_card_id).strip_edges()
+        if card_id == "":
+            continue
+
+        var card_data = data_loader.card_registry.get(card_id, {})
+        if not (card_data is Dictionary):
+            continue
+
+        var card_family := str(card_data.get("family", "")).strip_edges().to_lower()
+        if card_family in ["monster", "coin", "chest"]:
+            continue
+
+        var card_rarity := str(card_data.get("rarity", "")).strip_edges().to_lower()
+        if card_rarity != normalized_rarity:
+            continue
+
+        eligible_card_ids.append(card_id)
+
+    if eligible_card_ids.is_empty():
+        return ""
+
+    return eligible_card_ids[randi() % eligible_card_ids.size()]
 
 func _grant_affixed_reward_card_to_inventory(card_id: String, affix_id: String) -> Dictionary:
     if player_profile_data.is_empty():
@@ -2712,6 +2889,34 @@ func _build_boss_reward_text(reward_summary: Dictionary) -> String:
         return "Boss Reward: None"
 
     return "Boss Reward: %s" % ", ".join(reward_names)
+
+
+func _build_chest_reward_text(reward_summary: Dictionary) -> String:
+    var rewards = reward_summary.get("chest_rewards", [])
+    if not (rewards is Array) or rewards.is_empty():
+        return "Chest Reward: None"
+
+    var reward_names: Array[String] = []
+    for reward in rewards:
+        if not (reward is Dictionary):
+            continue
+
+        var card_id := str(reward.get("card_id", "")).strip_edges()
+        if card_id == "":
+            continue
+
+        var affix_ids = reward.get("affix_ids", [])
+        if not (affix_ids is Array):
+            affix_ids = []
+
+        var source_chest_id := str(reward.get("source_chest_id", "")).strip_edges()
+        var chest_name := _humanize_card_name(source_chest_id) if source_chest_id != "" else "Chest"
+        reward_names.append("%s -> %s" % [chest_name, _get_reward_card_name(card_id, affix_ids)])
+
+    if reward_names.is_empty():
+        return "Chest Reward: None"
+
+    return "Chest Reward: %s" % ", ".join(reward_names)
 
 
 func _get_reward_card_name(card_id: String, affix_ids: Array = []) -> String:

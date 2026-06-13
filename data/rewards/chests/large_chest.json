@@ -1,0 +1,11 @@
+{
+  "id": "large_chest",
+  "name": "Large Chest Rewards",
+  "rarity_rolls": [
+    { "rarity": "common", "weight": 55 },
+    { "rarity": "uncommon", "weight": 35 },
+    { "rarity": "rare", "weight": 10 }
+  ],
+  "affix_chance": 0.0,
+  "notes": "Large chests can grant commons, uncommons, and a small chance at a rare reward."
+}

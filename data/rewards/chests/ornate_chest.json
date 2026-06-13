@@ -1,0 +1,10 @@
+{
+  "id": "ornate_chest",
+  "name": "Ornate Chest Rewards",
+  "rarity_rolls": [
+    { "rarity": "uncommon", "weight": 65 },
+    { "rarity": "rare", "weight": 35 }
+  ],
+  "affix_chance": 0.2,
+  "notes": "Ornate chests favor high-rarity rewards and can occasionally grant an affixed card."
+}
