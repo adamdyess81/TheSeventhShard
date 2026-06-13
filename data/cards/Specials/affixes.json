@@ -1,12 +1,56 @@
 {
-    "golden": {
-        "id": "golden",
-        "display_name": "Golden",
-        "name_position": "prefix",
-        "description": "Gain this card's value in coins when discarded.",
-        "foil": true,
-        "trigger": "on_discard",
-        "effect": "gain_gold_equal_to_card_value",
-        "weight": 10
-    }
+	"golden": {
+		"id": "golden",
+		"display_name": "Golden",
+		"name_position": "prefix",
+		"description": "Gain this card's value in coins when discarded.",
+		"foil": true,
+		"trigger": "on_discard",
+		"effect": "gain_gold_equal_to_card_value",
+		"weight": 10
+	},
+	"sharp": {
+		"id": "sharp",
+		"display_name": "Sharp",
+		"name_position": "prefix",
+		"description": "Adds +1 to this card's value.",
+		"foil": true,
+		"trigger": "passive",
+		"effect": "increase_card_value",
+		"weight": 10,
+		"families": ["weapon"]
+	},
+	"overcharged": {
+		"id": "overcharged",
+		"display_name": "Overcharged",
+		"name_position": "prefix",
+		"description": "Adds +1 to this card's value.",
+		"foil": true,
+		"trigger": "passive",
+		"effect": "increase_card_value",
+		"weight": 10,
+		"families": ["spell"]
+	},
+	"potent": {
+		"id": "potent",
+		"display_name": "Potent",
+		"name_position": "prefix",
+		"description": "Adds +1 to this card's value.",
+		"foil": true,
+		"trigger": "passive",
+		"effect": "increase_card_value",
+		"weight": 10,
+		"families": ["potion"]
+	},
+	"hard": {
+		"id": "hard",
+		"display_name": "Hard",
+		"name_position": "prefix",
+		"description": "Adds +1 to this card's value.",
+		"foil": true,
+		"trigger": "passive",
+		"effect": "increase_card_value",
+		"weight": 10,
+		"families": ["shield"]
+	}
 }

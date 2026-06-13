@@ -13,6 +13,7 @@ const OUTCOME_CONTROLLER_SCRIPT = preload("res://combat/OutcomeController.gd")
 const COMBAT_CONTROLLER_SCRIPT = preload("res://combat/CombatController.gd")
 const RUN_CONTEXT_SCRIPT = preload("res://core/RunContext.gd")
 const HOVEL_SHOP_SCRIPT = preload("res://core/HovelShop.gd")
+const CARD_AFFIX_LIBRARY_SCRIPT = preload("res://core/CardAffixLibrary.gd")
 const SHIFT_FATE_PREVIEW_COUNT := 6
 const SHIFT_FATE_SELECTION_COUNT := 3
 
@@ -630,23 +631,9 @@ func _build_instance_combat_card_data(card_instance: Dictionary) -> Dictionary:
     combat_card_data["instance_id"] = str(card_instance.get("instance_id", "")).strip_edges()
     combat_card_data["affix_ids"] = affix_ids
 
-    if affix_ids.has("golden"):
-        _apply_golden_affix_to_card_data(combat_card_data, base_card_data, card_id)
+    CARD_AFFIX_LIBRARY_SCRIPT.apply_affixes_to_card_data(combat_card_data, base_card_data, card_id, affix_ids)
 
     return combat_card_data
-
-func _apply_golden_affix_to_card_data(card_data: Dictionary, base_card_data: Dictionary, card_id: String) -> void:
-    var base_name := str(base_card_data.get("name", card_id))
-    card_data["name"] = "Golden " + base_name
-    card_data["is_foil"] = true
-
-    var base_description := str(base_card_data.get("description", "")).strip_edges()
-    var golden_text := "Golden: Gain this card's value in coins when discarded."
-
-    if base_description == "":
-        card_data["description"] = golden_text
-    else:
-        card_data["description"] = base_description + "\n\n" + golden_text
 
 func set_status(message: String) -> void:
  status_label.text = message
@@ -2394,7 +2381,7 @@ func _grant_boss_drop_rewards(outcome: String) -> Array:
         if card_id == "":
             continue
 
-        var affix_id := _roll_reward_affix_id()
+        var affix_id := _roll_reward_affix_id(card_id)
 
         if affix_id == "":
             _grant_reward_card_to_inventory(card_id)
@@ -2419,13 +2406,27 @@ func _grant_boss_drop_rewards(outcome: String) -> Array:
 
     return granted_rewards
 
-func _roll_reward_affix_id() -> String:
-    var affix_chance := 1
+func _roll_reward_affix_id(card_id: String) -> String:
+    var affix_chance := 1.0
 
     if randf() > affix_chance:
         return ""
 
-    return "golden"
+    var base_card_data: Dictionary = data_loader.get_card(card_id)
+    if base_card_data.is_empty():
+        return ""
+
+    var card_family := str(base_card_data.get("family", "")).strip_edges().to_lower()
+    return CARD_AFFIX_LIBRARY_SCRIPT.roll_affix_id_for_family(card_family)
+
+
+func _get_reward_affix_roll_candidates(card_id: String) -> Array[Dictionary]:
+    var base_card_data: Dictionary = data_loader.get_card(card_id)
+    if base_card_data.is_empty():
+        return []
+
+    var card_family := str(base_card_data.get("family", "")).strip_edges().to_lower()
+    return CARD_AFFIX_LIBRARY_SCRIPT.get_roll_candidates_for_family(card_family)
 
 func _grant_affixed_reward_card_to_inventory(card_id: String, affix_id: String) -> Dictionary:
     if player_profile_data.is_empty():
@@ -2561,7 +2562,11 @@ func _build_boss_reward_text(reward_summary: Dictionary) -> String:
         if card_id == "":
             continue
 
-        reward_names.append(_get_reward_card_name(card_id))
+        var affix_ids = reward.get("affix_ids", [])
+        if not (affix_ids is Array):
+            affix_ids = []
+
+        reward_names.append(_get_reward_card_name(card_id, affix_ids))
 
     if reward_names.is_empty():
         return "Boss Reward: None"
@@ -2569,11 +2574,13 @@ func _build_boss_reward_text(reward_summary: Dictionary) -> String:
     return "Boss Reward: %s" % ", ".join(reward_names)
 
 
-func _get_reward_card_name(card_id: String) -> String:
+func _get_reward_card_name(card_id: String, affix_ids: Array = []) -> String:
     var card_data: Dictionary = data_loader.get_card(card_id)
     if card_data.is_empty():
         return card_id
-    return str(card_data.get("name", card_id))
+
+    var base_name := str(card_data.get("name", card_id))
+    return CARD_AFFIX_LIBRARY_SCRIPT.build_affixed_name(base_name, affix_ids)
 
 
 func _save_player_profile() -> void:

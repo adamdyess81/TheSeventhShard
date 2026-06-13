@@ -58,6 +58,10 @@ func _scan_card_folder(path: String) -> void:
   if dir.current_is_dir():
    _scan_card_folder(full_path)
   elif file_name.ends_with(".json"):
+   if file_name == "affixes.json":
+    file_name = dir.get_next()
+    continue
+
    var card_data := load_json(full_path)
    if card_data.has("id"):
     var card_id = card_data["id"]

@@ -8,6 +8,7 @@ const DEFAULT_MAX_DECK_SIZE := 15
 const GAME_DATA_LOADER_SCRIPT = preload("res://core/GameDataLoader.gd")
 const PROFILE_DECK_SCRIPT = preload("res://core/ProfileDeck.gd")
 const PROGRESSION_SCRIPT = preload("res://core/Progression.gd")
+const CARD_AFFIX_LIBRARY_SCRIPT = preload("res://core/CardAffixLibrary.gd")
 const CARD_BACK_TEXTURE = preload("res://art/ui/CardBack.png")
 const PANEL_FILL = Color("18110d")
 const PANEL_BORDER = Color("75563c")
@@ -251,18 +252,7 @@ func _build_instance_display_data(card_instance: Dictionary) -> Dictionary:
 	display_data["instance_id"] = str(card_instance.get("instance_id", "")).strip_edges()
 	display_data["affix_ids"] = affix_ids
 
-	if affix_ids.has("golden"):
-		var base_name := str(base_card_data.get("name", card_id))
-		display_data["name"] = "Golden " + base_name
-		display_data["is_foil"] = true
-
-		var base_description := str(base_card_data.get("description", "")).strip_edges()
-		var golden_text := "Golden: Gain this card's value in coins when discarded."
-
-		if base_description == "":
-			display_data["description"] = golden_text
-		else:
-			display_data["description"] = base_description + "\n\n" + golden_text
+	CARD_AFFIX_LIBRARY_SCRIPT.apply_affixes_to_card_data(display_data, base_card_data, card_id, affix_ids)
 
 	return display_data
 
@@ -471,10 +461,7 @@ func _get_instance_display_name(card_instance: Dictionary) -> String:
 	if not (affix_ids is Array):
 		return base_name
 
-	if affix_ids.has("golden"):
-		return "Golden " + base_name
-
-	return base_name
+	return CARD_AFFIX_LIBRARY_SCRIPT.build_affixed_name(base_name, affix_ids)
 
 func _save_player_profile() -> void:
 	var file := FileAccess.open(PLAYER_PROFILE_PATH, FileAccess.WRITE)
