@@ -17,6 +17,7 @@
 		"foil": true,
 		"trigger": "passive",
 		"effect": "increase_card_value",
+		"effect_amount": 1,
 		"weight": 10,
 		"families": ["weapon"]
 	},
@@ -28,6 +29,7 @@
 		"foil": true,
 		"trigger": "passive",
 		"effect": "increase_card_value",
+		"effect_amount": 1,
 		"weight": 10,
 		"families": ["spell"]
 	},
@@ -39,6 +41,7 @@
 		"foil": true,
 		"trigger": "passive",
 		"effect": "increase_card_value",
+		"effect_amount": 1,
 		"weight": 10,
 		"families": ["potion"]
 	},
@@ -50,7 +53,19 @@
 		"foil": true,
 		"trigger": "passive",
 		"effect": "increase_card_value",
+		"effect_amount": 1,
 		"weight": 10,
 		"families": ["shield"]
+	},
+	"quick": {
+		"id": "quick",
+		"display_name": "quick",
+		"name_position": "prefix",
+		"description": "Adds Rush 1 to the card",
+		"foil": true,
+		"trigger": "passive",
+		"effect": "special:Rush",
+		"effect_amount": 1,
+		"weight": 10,
 	}
 }
