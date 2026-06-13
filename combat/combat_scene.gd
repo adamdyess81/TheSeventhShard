@@ -2359,19 +2359,18 @@ func _show_battle_end_modal(outcome: String) -> void:
         banked_gold_text = "Persistent Gold Banked: 0"
         total_gold_text = "Persistent Gold Total: %d" % int(player_profile_data.get("persistent_gold", persistent_gold_after))
 
-    end_modal_stats.text = "Rounds: %d\n%s" % [
-        match_state.round_number,
-        "%s\n%s\n%s\n%s\n%s\nLevel: %d\nTotal XP: %d" % [
-            gold_text,
-            banked_gold_text,
-            total_gold_text,
-            boss_reward_text,
-            chest_reward_text,
-            xp_text,
-            int(player_profile_data.get("player_level", 1)),
-            int(player_profile_data.get("total_xp", 0))
-        ]
+    var stat_lines := [
+        "Rounds: %d" % match_state.round_number,
+        gold_text,
+        banked_gold_text,
+        total_gold_text,
+        boss_reward_text,
+        chest_reward_text,
+        xp_text,
+        "Level: %d" % int(player_profile_data.get("player_level", 1)),
+        "Total XP: %d" % int(player_profile_data.get("total_xp", 0))
     ]
+    end_modal_stats.text = "\n".join(stat_lines)
     move_child(end_modal_overlay, get_child_count() - 1)
     end_modal_overlay.visible = true
     retry_button.disabled = false
