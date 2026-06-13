@@ -168,6 +168,7 @@ var shift_fate_required_selection_count := SHIFT_FATE_SELECTION_COUNT
 var left_hand_slot_card_view: Control = null
 var right_hand_slot_card_view: Control = null
 var backpack_slot_card_view: Control = null
+var last_discard_bonus_gold := 0
 
 
 func _ready() -> void:
@@ -1325,6 +1326,34 @@ func _get_card_runtime_value(card) -> int:
  return 0
 
 
+func _get_card_affix_ids(card) -> Array:
+ if _is_runtime_card(card):
+  var affix_ids = card.card_data.get("affix_ids", [])
+  return affix_ids if affix_ids is Array else []
+
+ if card is Dictionary:
+  var affix_ids = card.get("affix_ids", [])
+  return affix_ids if affix_ids is Array else []
+
+ return []
+
+
+func _apply_runtime_discard_affix_benefits(card) -> int:
+ if match_state == null or match_state.player_state == null:
+  return 0
+
+ var bonus_gold := CARD_AFFIX_LIBRARY_SCRIPT.get_on_discard_gold_bonus(
+  _get_card_affix_ids(card),
+  _get_card_runtime_value(card)
+ )
+ if bonus_gold <= 0:
+  return 0
+
+ match_state.player_state.add_temporary_gold(bonus_gold)
+ _play_sfx(_load_common_sfx(GAIN_COINS_SFX_PATH))
+ return bonus_gold
+
+
 func _get_card_id(card) -> String:
  if _is_runtime_card(card):
   return card.card_id
@@ -1555,6 +1584,7 @@ func handle_slot_to_slot_drop(source_slot: String, target_slot: String) -> void:
     if restart_pending or source_slot == target_slot:
         return
 
+    last_discard_bonus_gold = 0
     var moved := false
     var moved_card = get_slot_card(source_slot)
 
@@ -1578,11 +1608,16 @@ func handle_slot_to_slot_drop(source_slot: String, target_slot: String) -> void:
             return
         if target_slot == "discard":
             _play_sfx(_load_common_sfx(DISCARD_SFX_PATH))
+            if last_discard_bonus_gold > 0:
+                set_status("Discarded %s for %d gold." % [_humanize_card_name(_get_card_id(moved_card)), last_discard_bonus_gold])
+            else:
+                set_status("Moved card from %s to %s." % [source_slot.replace("_", " "), target_slot.replace("_", " ")])
         elif target_slot == "backpack":
             _play_loot_drop_sfx(moved_card, "backpack")
+            set_status("Moved card from %s to %s." % [source_slot.replace("_", " "), target_slot.replace("_", " ")])
         elif target_slot in ["left_hand", "right_hand"]:
             _play_loot_drop_sfx(moved_card, target_slot)
-        set_status("Moved card from %s to %s." % [source_slot.replace("_", " "), target_slot.replace("_", " ")])
+            set_status("Moved card from %s to %s." % [source_slot.replace("_", " "), target_slot.replace("_", " ")])
     else:
         set_status("Could not move card from %s to %s." % [source_slot.replace("_", " "), target_slot.replace("_", " ")])
 
@@ -1597,6 +1632,7 @@ func _discard_backpack_card() -> bool:
     if card == null:
         return false
 
+    last_discard_bonus_gold = _apply_runtime_discard_affix_benefits(card)
     _mark_runtime_card_resolved(card)
     _mark_runtime_card_destroyed(card)
     return true
@@ -1614,6 +1650,7 @@ func _discard_hand_card(is_left_hand: bool) -> bool:
         match_state.player_state.clear_right_hand_card()
         match_state.player_state.exhaust_right_hand()
 
+    last_discard_bonus_gold = _apply_runtime_discard_affix_benefits(card)
     _mark_runtime_card_resolved(card)
     _mark_runtime_card_exhausted(card)
     _mark_runtime_card_destroyed(card)
@@ -2970,13 +3007,22 @@ func handle_drop_to_discard(board_index: int) -> void:
 
  print("handle_drop_to_discard called with index: ", board_index)
 
+ var active_cards = match_state.board_state.get_active_cards()
+ var card = null
+ if board_index >= 0 and board_index < active_cards.size():
+  card = active_cards[board_index]
+
  var success = combat_controller.trash_player_card_from_board(board_index)
 
  if success:
+  last_discard_bonus_gold = _apply_runtime_discard_affix_benefits(card)
   _play_sfx(_load_common_sfx(DROP_CARD_SFX_PATH))
   _play_sfx(_load_common_sfx(DISCARD_SFX_PATH))
   await _animate_board_card_resolution(board_index)
-  set_status("Discarded card without benefit.")
+  if last_discard_bonus_gold > 0:
+   set_status("Discarded %s for %d gold." % [_humanize_card_name(_get_card_id(card)), last_discard_bonus_gold])
+  else:
+   set_status("Discarded card without benefit.")
  else:
   set_status("Only item cards can be discarded.")
 

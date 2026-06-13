@@ -59,13 +59,13 @@
 	},
 	"quick": {
 		"id": "quick",
-		"display_name": "quick",
+		"display_name": "Quick",
 		"name_position": "prefix",
-		"description": "Adds Rush 1 to the card",
+		"description": "Adds Rush 1 to the card.",
 		"foil": true,
 		"trigger": "passive",
 		"effect": "special:Rush",
 		"effect_amount": 1,
-		"weight": 10,
+		"weight": 10
 	}
 }
