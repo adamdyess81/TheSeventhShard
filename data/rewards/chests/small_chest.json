@@ -2,8 +2,8 @@
   "id": "small_chest",
   "name": "Small Chest Rewards",
   "rarity_rolls": [
-    { "rarity": "common", "weight": 0 },
-    { "rarity": "uncommon", "weight": 100 }
+    { "rarity": "common", "weight": 70 },
+    { "rarity": "uncommon", "weight": 30 }
   ],
   "affix_chance": 0.0,
   "notes": "Small chests mostly grant commons, with a smaller chance for uncommon rewards."

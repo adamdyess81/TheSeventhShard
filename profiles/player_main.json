@@ -7,32 +7,32 @@
 		"offers": [
 			{
 				"card_id": "energy_burst",
-				"offer_id": "shop_1_0_936956",
-				"player_level_at_roll": 17,
-				"price": 25,
+				"offer_id": "shop_1_0_935846",
+				"player_level_at_roll": 18.0,
+				"price": 25.0,
 				"rarity": "common",
-				"shop_level": 1
+				"shop_level": 1.0
 			},
 			{
-				"card_id": "energy_burst",
-				"offer_id": "shop_1_1_380806",
-				"player_level_at_roll": 17,
-				"price": 25,
+				"card_id": "battle_focus",
+				"offer_id": "shop_1_1_669230",
+				"player_level_at_roll": 18.0,
+				"price": 25.0,
 				"rarity": "common",
-				"shop_level": 1
+				"shop_level": 1.0
 			},
 			{
-				"card_id": "cure_potion",
-				"offer_id": "shop_1_2_956034",
-				"player_level_at_roll": 17,
-				"price": 25,
+				"card_id": "small_health_potion",
+				"offer_id": "shop_1_2_265722",
+				"player_level_at_roll": 18.0,
+				"price": 25.0,
 				"rarity": "common",
-				"shop_level": 1
+				"shop_level": 1.0
 			}
 		],
-		"player_level_at_refresh": 17,
+		"player_level_at_refresh": 18.0,
 		"refresh_trigger": "after_battle",
-		"shop_level": 1,
+		"shop_level": 1.0,
 		"shop_table_id": "hovel_shop_common"
 	},
 	"hovel_upgrade_ids": [],
@@ -40,94 +40,103 @@
 		"boss_difficulty": "baseline",
 		"boss_drop_rewards": [
 			{
-				"affix_ids": [
-					"overcharged"
-				],
-				"card_id": "fire_bolt",
-				"instance_id": "card_instance_000071",
-				"is_affixed": true,
-				"rarity": "uncommon"
+				"affix_ids": [],
+				"card_id": "velmoras_touch",
+				"instance_id": "",
+				"is_affixed": false,
+				"rarity": "unique"
 			}
 		],
-		"boss_drop_table_id": "ossaran_lich_boss_drops",
-		"boss_id": "ossaran_lich",
+		"boss_drop_table_id": "velmora_hallow_reliquary_boss_drops",
+		"boss_id": "velmora_hallow_reliquary",
 		"boss_kill": true,
-		"boss_name": "Ossaran Lich",
+		"boss_name": "Velmora, The Hallow Reliquary",
 		"chest_carry_state": {
-			"backpack_chest_count": 0,
-			"backpack_chest_ids": [],
-			"has_carried_chest": false,
+			"backpack_chest_count": 1.0,
+			"backpack_chest_ids": [
+				"large_chest"
+			],
+			"has_carried_chest": true,
 			"left_hand_has_chest": false,
 			"right_hand_has_chest": false,
-			"total_carried_chest_count": 0,
-			"tracked_carried_chest_count": 0
+			"total_carried_chest_count": 1.0,
+			"tracked_carried_chest_count": 0.0
 		},
-		"chest_rewards": [],
+		"chest_rewards": [
+			{
+				"affix_ids": [],
+				"card_id": "fire_bolt",
+				"instance_id": "",
+				"is_affixed": false,
+				"rarity": "uncommon",
+				"source_chest_id": "large_chest"
+			}
+		],
 		"hovel_shop_state": {
 			"last_refresh_source": "battle_end",
 			"offers": [
 				{
 					"card_id": "energy_burst",
-					"offer_id": "shop_1_0_936956",
-					"player_level_at_roll": 17,
-					"price": 25,
+					"offer_id": "shop_1_0_935846",
+					"player_level_at_roll": 18.0,
+					"price": 25.0,
 					"rarity": "common",
-					"shop_level": 1
+					"shop_level": 1.0
 				},
 				{
-					"card_id": "energy_burst",
-					"offer_id": "shop_1_1_380806",
-					"player_level_at_roll": 17,
-					"price": 25,
+					"card_id": "battle_focus",
+					"offer_id": "shop_1_1_669230",
+					"player_level_at_roll": 18.0,
+					"price": 25.0,
 					"rarity": "common",
-					"shop_level": 1
+					"shop_level": 1.0
 				},
 				{
-					"card_id": "cure_potion",
-					"offer_id": "shop_1_2_956034",
-					"player_level_at_roll": 17,
-					"price": 25,
+					"card_id": "small_health_potion",
+					"offer_id": "shop_1_2_265722",
+					"player_level_at_roll": 18.0,
+					"price": 25.0,
 					"rarity": "common",
-					"shop_level": 1
+					"shop_level": 1.0
 				}
 			],
-			"player_level_at_refresh": 17,
+			"player_level_at_refresh": 18.0,
 			"refresh_trigger": "after_battle",
-			"shop_level": 1,
+			"shop_level": 1.0,
 			"shop_table_id": "hovel_shop_common"
 		},
 		"outcome": "victory",
-		"persistent_gold_after": 980,
-		"persistent_gold_awarded": 0,
-		"persistent_gold_before": 980,
-		"player_level": 17,
+		"persistent_gold_after": 1629.0,
+		"persistent_gold_awarded": 50.0,
+		"persistent_gold_before": 1579.0,
+		"player_level": 18.0,
 		"reward_profile_id": "baseline_match_rewards",
-		"round_number": 12,
-		"temporary_gold_collected": 0
+		"round_number": 13.0,
+		"temporary_gold_collected": 50.0
 	},
-	"magic_essence": 36.0,
+	"magic_essence": 37,
 	"max_deck_size_base": 15.0,
-	"next_card_instance_number": 72,
+	"next_card_instance_number": 85.0,
 	"notes": "First baseline profile for prototype testing.",
 	"owned_card_counts": {
-		"axe": 1.0,
+		"axe": 2.0,
 		"banishing_sigil": 6.0,
 		"bastard_sword": 1.0,
-		"battle_focus": 5.0,
-		"cure_potion": 8.0,
+		"battle_focus": 7.0,
+		"cure_potion": 9.0,
 		"dagger": 3.0,
 		"defense_potion": 1.0,
 		"energy_burst": 7.0,
-		"fire_bolt": 2.0,
+		"fire_bolt": 4.0,
 		"large_health_potion": 2.0,
-		"large_shield": 1.0,
+		"large_shield": 2.0,
 		"power_potion": 2.0,
-		"recall": 1.0,
+		"recall": 2.0,
 		"short_bow": 1.0,
 		"short_sword": 12.0,
-		"small_health_potion": 13.0,
-		"small_shield": 12.0,
-		"stasis_hex": 1.0,
+		"small_health_potion": 14.0,
+		"small_shield": 13.0,
+		"velmoras_touch": 2.0,
 		"ward_of_ash": 1.0
 	},
 	"owned_card_instances": [
@@ -417,27 +426,117 @@
 			],
 			"card_id": "fire_bolt",
 			"instance_id": "card_instance_000071"
+		},
+		{
+			"affix_ids": [
+				"quick"
+			],
+			"card_id": "battle_focus",
+			"instance_id": "card_instance_000072"
+		},
+		{
+			"affix_ids": [
+				"quick"
+			],
+			"card_id": "bastard_sword",
+			"instance_id": "card_instance_000073"
+		},
+		{
+			"affix_ids": [
+				"golden"
+			],
+			"card_id": "spiked_shield",
+			"instance_id": "card_instance_000074"
+		},
+		{
+			"affix_ids": [
+				"hard"
+			],
+			"card_id": "spiked_shield",
+			"instance_id": "card_instance_000075"
+		},
+		{
+			"affix_ids": [
+				"overcharged"
+			],
+			"card_id": "shift_fate",
+			"instance_id": "card_instance_000076"
+		},
+		{
+			"affix_ids": [
+				"potent"
+			],
+			"card_id": "defense_potion",
+			"instance_id": "card_instance_000077"
+		},
+		{
+			"affix_ids": [
+				"golden"
+			],
+			"card_id": "short_bow",
+			"instance_id": "card_instance_000078"
+		},
+		{
+			"affix_ids": [
+				"golden"
+			],
+			"card_id": "fire_bolt",
+			"instance_id": "card_instance_000079"
+		},
+		{
+			"affix_ids": [
+				"quick"
+			],
+			"card_id": "small_health_potion",
+			"instance_id": "card_instance_000080"
+		},
+		{
+			"affix_ids": [
+				"quick"
+			],
+			"card_id": "spiked_shield",
+			"instance_id": "card_instance_000081"
+		},
+		{
+			"affix_ids": [
+				"hard"
+			],
+			"card_id": "large_shield",
+			"instance_id": "card_instance_000082"
+		},
+		{
+			"affix_ids": [
+				"overcharged"
+			],
+			"card_id": "recall",
+			"instance_id": "card_instance_000083"
+		},
+		{
+			"affix_ids": [
+				"golden"
+			],
+			"card_id": "short_sword",
+			"instance_id": "card_instance_000084"
 		}
 	],
 	"owned_relic_ids": [],
 	"owned_rune_ids": [],
-	"persistent_gold": 980,
-	"player_level": 17,
+	"persistent_gold": 1629.0,
+	"player_level": 18.0,
 	"player_profile_id": "player_main",
 	"profile_name": "Main Profile",
 	"progression_flag_ids": [],
 	"saved_loadout_ids": [
 		"loadout_knight_starter_01"
 	],
-	"scrap_materials": 24.0,
+	"scrap_materials": 24,
 	"selected_deck_card_counts": {
-		"bastard_sword": 1.0,
-		"defense_potion": 1.0,
-		"power_potion": 2.0,
-		"recall": 1.0,
-		"short_sword": 8.0,
-		"small_health_potion": 5.0,
-		"ward_of_ash": 1.0
+		"bastard_sword": 1,
+		"defense_potion": 1,
+		"large_health_potion": 1,
+		"power_potion": 2,
+		"velmoras_touch": 1,
+		"ward_of_ash": 1
 	},
 	"selected_deck_card_instance_ids": [
 		"card_instance_000017",
@@ -451,10 +550,23 @@
 		"card_instance_000042",
 		"card_instance_000044",
 		"card_instance_000046",
-		"card_instance_000059"
+		"card_instance_000059",
+		"card_instance_000073",
+		"card_instance_000068",
+		"card_instance_000057",
+		"card_instance_000065",
+		"card_instance_000063",
+		"card_instance_000060",
+		"card_instance_000054",
+		"card_instance_000055",
+		"card_instance_000071",
+		"card_instance_000051",
+		"card_instance_000076",
+		"card_instance_000077",
+		"card_instance_000023"
 	],
 	"starting_health_base": 20.0,
-	"total_xp": 7413,
+	"total_xp": 9158.0,
 	"unlocked_boss_ids": [
 		"ossaran_lich",
 		"gravebound_warden",
