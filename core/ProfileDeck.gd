@@ -38,6 +38,28 @@ static func get_total_cards(deck_counts: Dictionary) -> int:
 	return total
 
 
+static func get_total_cards_with_instances(deck_counts: Dictionary, selected_instance_ids: Array = []) -> int:
+	return get_total_cards(deck_counts) + selected_instance_ids.size()
+
+
+static func get_validation_error(
+	deck_counts: Dictionary,
+	min_cards: int,
+	max_cards: int,
+	card_registry: Dictionary = {},
+	selected_instance_ids: Array = [],
+	owned_card_instances: Array = []
+) -> String:
+	var total := get_total_cards_with_instances(deck_counts, selected_instance_ids)
+	if total < min_cards:
+		return "below_min"
+	if total > max_cards:
+		return "above_max"
+	if has_duplicate_unique_cards(deck_counts, card_registry, selected_instance_ids, owned_card_instances):
+		return "duplicate_unique"
+	return ""
+
+
 static func is_valid(
 	deck_counts: Dictionary,
 	min_cards: int,
@@ -46,14 +68,14 @@ static func is_valid(
 	selected_instance_ids: Array = [],
 	owned_card_instances: Array = []
 ) -> bool:
-	var total := get_total_cards(deck_counts)
-	if total < min_cards or total > max_cards:
-		return false
-
-	if has_duplicate_unique_cards(deck_counts, card_registry, selected_instance_ids, owned_card_instances):
-		return false
-
-	return true
+	return get_validation_error(
+		deck_counts,
+		min_cards,
+		max_cards,
+		card_registry,
+		selected_instance_ids,
+		owned_card_instances
+	) == ""
 
 
 static func has_duplicate_unique_cards(

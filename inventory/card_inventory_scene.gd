@@ -109,24 +109,26 @@ func _refresh_summary() -> void:
 		MINIMUM_DECK_SIZE,
 		max_deck_size
 	]
-	var duplicate_unique_ids := PROFILE_DECK_SCRIPT.get_duplicate_unique_card_ids(
+	var validation_error := PROFILE_DECK_SCRIPT.get_validation_error(
 		selected_deck_counts,
+		MINIMUM_DECK_SIZE,
+		max_deck_size,
 		loader.card_registry,
 		selected_deck_card_instance_ids,
 		owned_card_instances
 	)
-	if not duplicate_unique_ids.is_empty():
+	if validation_error == "duplicate_unique":
 		status_label.text = "Only one copy of each unique card can be in the deck."
 		status_label.modulate = TEXT_ERROR
-	elif _can_leave_scene():
-		status_label.text = "Deck is valid."
-		status_label.modulate = TEXT_SUCCESS
-	elif total_cards < MINIMUM_DECK_SIZE:
+	elif validation_error == "below_min":
 		status_label.text = "Select at least %d cards before leaving." % MINIMUM_DECK_SIZE
 		status_label.modulate = TEXT_ERROR
-	else:
+	elif validation_error == "above_max":
 		status_label.text = "Deck exceeds max size of %d." % max_deck_size
 		status_label.modulate = TEXT_ERROR
+	else:
+		status_label.text = "Deck is valid."
+		status_label.modulate = TEXT_SUCCESS
 
 func _get_total_selected_cards() -> int:
 	return PROFILE_DECK_SCRIPT.get_total_cards(selected_deck_counts) + selected_deck_card_instance_ids.size()

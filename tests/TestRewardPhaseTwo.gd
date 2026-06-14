@@ -36,6 +36,7 @@ func _run_tests() -> void:
 	_test_unique_reward_cards_do_not_roll_affixes()
 	_test_boss_special_unique_roll_happens_before_rarity_table()
 	_test_profile_deck_rejects_duplicate_unique_counts()
+	_test_profile_deck_counts_selected_instances_toward_size_limits()
 	_test_carried_chests_grant_extra_rewards_on_survival()
 	_test_affix_gameplay_effects_apply_to_card_data()
 	_test_affix_discard_gold_bonus_is_reported()
@@ -250,6 +251,23 @@ func _test_profile_deck_rejects_duplicate_unique_counts() -> void:
 	_expect(
 		PROFILE_DECK_SCRIPT.is_valid({"velmoras_touch": 1, "test_unique_two": 1, "short_sword": 1}, 1, 30, card_registry),
 		"Deck validation should allow multiple different unique cards."
+	)
+
+
+func _test_profile_deck_counts_selected_instances_toward_size_limits() -> void:
+	var selected_instance_ids := ["card_instance_000001", "card_instance_000002"]
+
+	_expect(
+		PROFILE_DECK_SCRIPT.is_valid({"short_sword": 29}, 1, 31, {}, selected_instance_ids, []),
+		"Deck validation should treat selected affixed instances as part of the current deck size."
+	)
+	_expect(
+		PROFILE_DECK_SCRIPT.get_validation_error({"short_sword": 29}, 1, 31, {}, selected_instance_ids, []) == "",
+		"Deck validation error should stay clear when stack cards plus selected instances exactly match the max size."
+	)
+	_expect(
+		PROFILE_DECK_SCRIPT.get_validation_error({"short_sword": 30}, 1, 31, {}, selected_instance_ids, []) == "above_max",
+		"Deck validation should flag decks that exceed max size once selected instances are included."
 	)
 
 

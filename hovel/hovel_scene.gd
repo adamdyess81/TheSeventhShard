@@ -386,21 +386,19 @@ func _on_go_fight_pressed() -> void:
 	var player_level := int(player_profile_data.get("player_level", 1))
 	var max_deck_size_base := int(player_profile_data.get("max_deck_size_base", DEFAULT_MAX_DECK_SIZE))
 	var max_deck_size := PROGRESSION_SCRIPT.get_effective_max_deck_size(max_deck_size_base, player_level)
-	if not PROFILE_DECK_SCRIPT.is_valid(
+	var validation_error := PROFILE_DECK_SCRIPT.get_validation_error(
 		selected_deck_counts,
 		MINIMUM_DECK_SIZE,
 		max_deck_size,
 		loader.card_registry,
 		player_profile_data.get("selected_deck_card_instance_ids", []),
 		player_profile_data.get("owned_card_instances", [])
-	):
-		if PROFILE_DECK_SCRIPT.has_duplicate_unique_cards(
-			selected_deck_counts,
-			loader.card_registry,
-			player_profile_data.get("selected_deck_card_instance_ids", []),
-			player_profile_data.get("owned_card_instances", [])
-		):
+	)
+	if validation_error != "":
+		if validation_error == "duplicate_unique":
 			status_label.text = "Deck invalid. Only one copy of each unique card can be equipped."
+		elif validation_error == "above_max":
+			status_label.text = "Deck invalid. Open Card Inventory and trim the deck to %d cards or fewer." % max_deck_size
 		else:
 			status_label.text = "Deck invalid. Open Card Inventory and build a deck between %d and %d cards." % [MINIMUM_DECK_SIZE, max_deck_size]
 		return
