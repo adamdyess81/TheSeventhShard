@@ -13,8 +13,13 @@ func resolve_enemy_to_player(match_state: MatchCombatState, board_index: int) ->
         return false
 
     var damage := _get_effective_monster_value(match_state, card)
+
+    var player_health_before := int(match_state.player_state.current_health)
     match_state.player_state.take_damage(damage)
+    var player_damage_taken := maxi(player_health_before - int(match_state.player_state.current_health), 0)
+
     _apply_monster_unblocked_specials(match_state, card)
+    _apply_monster_resolution_if_player_damaged(match_state, card, player_damage_taken)
     _apply_monster_resolved_specials(match_state, card)
     _mark_card_resolved(card)
     match_state.board_state.remove_card_at(board_index)
@@ -217,6 +222,9 @@ func use_left_hand_weapon_on_boss(match_state: MatchCombatState) -> bool:
     if match_state.player_state.left_hand_exhausted:
         return false
 
+    if _is_boss_protected_by_ossuary_veil(match_state):
+        return false
+
     return _use_weapon_on_boss(match_state, weapon, true)
 
 
@@ -231,6 +239,9 @@ func use_right_hand_weapon_on_boss(match_state: MatchCombatState) -> bool:
         return false
 
     if match_state.player_state.right_hand_exhausted:
+        return false
+
+    if _is_boss_protected_by_ossuary_veil(match_state):
         return false
 
     return _use_weapon_on_boss(match_state, weapon, false)
@@ -305,6 +316,10 @@ func use_right_hand_potion(match_state: MatchCombatState) -> bool:
 
 
 func use_left_hand_spell_on_monster(match_state: MatchCombatState, board_index: int) -> bool:
+
+    if _is_boss_protected_by_ossuary_veil(match_state):
+         return false
+
     var spell = match_state.player_state.left_hand_card
     return _use_spell_on_monster(match_state, board_index, spell, true)
 
@@ -320,6 +335,10 @@ func use_left_hand_spell_on_boss(match_state: MatchCombatState) -> bool:
 
 
 func use_right_hand_spell_on_boss(match_state: MatchCombatState) -> bool:
+
+    if _is_boss_protected_by_ossuary_veil(match_state):
+        return false
+
     var spell = match_state.player_state.right_hand_card
     return _use_spell_on_boss(match_state, spell, false)
 
@@ -346,7 +365,7 @@ func _use_weapon_on_monster(match_state: MatchCombatState, board_index: int, wea
         return false
 
     var adjacent_monsters := _get_adjacent_monster_refs(active_cards, board_index)
-    var attack_value := _get_weapon_attack_value_for_use(weapon)
+    var attack_value := _get_weapon_attack_value_for_monster_use(match_state, weapon, monster)
     var attack_result := _deal_damage_to_monster(match_state, monster, attack_value, "melee")
 
     if _has_special_rule(weapon, "sweep"):
@@ -399,6 +418,10 @@ func _use_spell_on_monster(match_state: MatchCombatState, board_index: int, spel
 
 
 func _use_spell_on_boss(match_state: MatchCombatState, spell, is_left_hand: bool) -> bool:
+
+    if _is_boss_protected_by_ossuary_veil(match_state):
+        return false
+
     if not _can_use_hand_spell(match_state, spell, is_left_hand):
         return false
     if not _spell_targets(spell, "boss"):
@@ -459,15 +482,20 @@ func _apply_board_burst_spell(match_state: MatchCombatState, spell) -> void:
 
     var active_cards := match_state.board_state.get_active_cards()
     var targets: Array = []
+
     for card in active_cards:
         if card != null and _get_card_family(card) == "monster":
             targets.append(card)
 
     for target in targets:
-        _deal_damage_to_monster(match_state, target, damage,"spell")
+        _deal_damage_to_monster(match_state, target, damage, "spell")
+
+    if _is_boss_protected_by_ossuary_veil(match_state):
+        return
 
     var boss_health_before := match_state.boss_state.current_health
     match_state.boss_state.take_damage(damage)
+
     if boss_health_before > match_state.boss_state.current_health:
         match_state.trigger_boss_retaliation_on_player_attack()
 
@@ -559,13 +587,71 @@ func _resolve_monster_into_shield(match_state: MatchCombatState, board_index: in
             match_state.player_state.exhaust_right_hand()
 
         if overflow_damage > 0:
-            match_state.player_state.take_damage(overflow_damage)
+           var player_health_before := int(match_state.player_state.current_health)
+           match_state.player_state.take_damage(overflow_damage)
+           var player_damage_taken := maxi(player_health_before - int(match_state.player_state.current_health), 0)
+
+           _apply_monster_resolution_if_player_damaged(match_state, monster, player_damage_taken)
 
     return true
 
+func _apply_monster_resolution_if_player_damaged(match_state: MatchCombatState, monster, player_damage_taken: int) -> void:
+    if player_damage_taken <= 0:
+        return
+
+    if not _has_special_rule(monster, "resolution"):
+        return
+
+    _resolve_all_player_poison_counters(match_state, monster)
+
+
+func _resolve_all_player_poison_counters(match_state: MatchCombatState, source_monster) -> void:
+    if match_state == null or match_state.player_state == null:
+        return
+
+    var poison_amount := _get_player_poison_counter_count(match_state)
+
+    if poison_amount <= 0:
+        return
+
+    match_state.player_state.take_damage(poison_amount)
+    match_state.player_state.clear_poison()
+
+    match_state.queue_event("player_poison_resolved", {
+        "amount": poison_amount,
+        "reason": "resolution",
+        "source_card_id": _get_card_id(source_monster)
+    })
+
+
+func _get_player_poison_counter_count(match_state: MatchCombatState) -> int:
+    if match_state == null or match_state.player_state == null:
+        return 0
+
+    var player_state = match_state.player_state
+
+    if player_state.has_method("get_poison_counter_count"):
+        return int(player_state.get_poison_counter_count())
+
+    if player_state.has_method("get_poison_counters"):
+        return int(player_state.get_poison_counters())
+
+    var poison_counters = player_state.get("poison_counters")
+    if poison_counters != null:
+        return int(poison_counters)
+
+    var poison_counter_count = player_state.get("poison_counter_count")
+    if poison_counter_count != null:
+        return int(poison_counter_count)
+
+    return 0
 
 func _use_weapon_on_boss(match_state: MatchCombatState, weapon, is_left_hand: bool) -> bool:
-    var weapon_value := _get_weapon_attack_value_for_use(weapon)
+
+    if _is_boss_protected_by_ossuary_veil(match_state):
+        return false
+
+    var weapon_value := _get_weapon_attack_value_for_boss_use(match_state, weapon)
     var boss_health_before := match_state.boss_state.current_health
     match_state.boss_state.take_damage(weapon_value)
     var boss_damage_dealt: int = maxi(boss_health_before - match_state.boss_state.current_health, 0)
@@ -579,6 +665,16 @@ func _use_weapon_on_boss(match_state: MatchCombatState, weapon, is_left_hand: bo
     _finalize_weapon_after_attack(match_state, weapon, is_left_hand, boss_result, true)
     return true
 
+func _get_weapon_attack_value_for_boss_use(match_state: MatchCombatState, weapon) -> int:
+    if _has_special_rule(weapon, "crushing_blow"):
+        var boss_current_health := int(match_state.boss_state.current_health)
+
+        if boss_current_health <= 0:
+            return 0
+
+        return maxi(int(ceil(float(boss_current_health) * 0.5)), 1)
+
+    return _get_weapon_attack_value_for_use(weapon)
 
 func _get_card_id(card) -> String:
     if card is CardRuntimeState:
@@ -672,12 +768,64 @@ func _apply_monster_resolved_specials(match_state: MatchCombatState, monster) ->
     if _has_special_rule(monster, "spite"):
         match_state.player_state.take_damage(_get_special_rule_value(monster, "spite", 1))
 
+func _get_weapon_attack_value_for_monster_use(match_state: MatchCombatState, weapon, monster) -> int:
+    if _has_special_rule(weapon, "instant_kill"):
+        var monster_value := _get_effective_monster_value(match_state, monster)
+        var armor_value := _get_special_rule_value(monster, "armored", 0)
+        return monster_value + armor_value
 
+    return _get_weapon_attack_value_for_use(weapon)
+    
 func _get_weapon_attack_value_for_use(weapon) -> int:
     if _has_special_rule(weapon, "split"):
         return 1
     return _get_card_runtime_value(weapon)
 
+func _is_boss_protected_by_ossuary_veil(match_state: MatchCombatState) -> bool:
+    if match_state == null:
+        return false
+
+    if not _boss_has_special_rule(match_state, "ossuary_veil"):
+        return false
+
+    return _get_active_monster_count(match_state) >= 3
+
+
+func _get_active_monster_count(match_state: MatchCombatState) -> int:
+    var count := 0
+    var active_cards := match_state.board_state.get_active_cards()
+
+    for card in active_cards:
+        if card != null and _get_card_family(card) == "monster":
+            count += 1
+
+    return count
+
+
+func _boss_has_special_rule(match_state: MatchCombatState, special_rule: String) -> bool:
+    if match_state == null or match_state.boss_state == null:
+        return false
+
+    var boss = match_state.boss_state
+
+    if boss.has_method("has_special_rule"):
+        return boss.has_special_rule(special_rule)
+
+    var special_rules = boss.get("special_rules")
+    if special_rules is Array:
+        return special_rule in special_rules
+
+    var boss_data = boss.get("boss_data")
+    if boss_data is Dictionary:
+        var boss_special_rules = boss_data.get("special_rules", [])
+        return boss_special_rules is Array and special_rule in boss_special_rules
+
+    var card_data = boss.get("card_data")
+    if card_data is Dictionary:
+        var card_special_rules = card_data.get("special_rules", [])
+        return card_special_rules is Array and special_rule in card_special_rules
+
+    return false
 
 func _get_adjacent_monster_refs(active_cards: Array, board_index: int) -> Array:
     var adjacent: Array = []

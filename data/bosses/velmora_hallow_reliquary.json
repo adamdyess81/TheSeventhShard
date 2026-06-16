@@ -7,16 +7,8 @@
   "theme_tags": ["ossara", "guardian", "reliquary", "prototype"],
   "base_health": 26,
   "has_special_rules": true,
-  "special_rule_ids": ["reliquary_benediction"],
-  "special_values": {
-    "soul_counter_threshold": 3,
-    "hallowed_benediction_value_bonus": 1,
-    "martyrdom_bonus_soul": 1,
-    "reliquary_counter_source": "resolved_monsters"
-  },
+  "special_rule_ids": ["ossuary_veil", "soul_collector"],
   "global_rule_ids": [],
-  "board_cap_modifier": 0,
-  "unresolved_card_cap_modifier": 0,
   "art_ref": "res://art/cards/Velmora.png",
-  "notes": "Ossara guardian. Whenever a monster is resolved, Velmora gains 1 Soul Counter. At 3 Soul Counters, clear them and at the beginning of the next round release Hallowed Benediction, giving all monsters +1 value for that round. Martyrdom grants an additional Soul Counter during this fight."
+  "notes": "Ossara guardian. Ossuary Veil: Velmora cannot be damaged while 3 or more monsters remain on the board. Soul Collector: Whenever the player kills a monster, Velmora heals 1 health. For monsters with Martyrdom, Velmora heals 2 health."
 }

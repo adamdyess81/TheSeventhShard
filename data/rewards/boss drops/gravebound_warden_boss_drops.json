@@ -9,8 +9,8 @@
   "special_roll_chance": 0.0,
   "special_entries": [],
   "rarity_rolls": [
-    { "rarity": "common", "weight": 55 },
-    { "rarity": "uncommon", "weight": 40 },
+    { "rarity": "common", "weight": 40 },
+    { "rarity": "uncommon", "weight": 55 },
     { "rarity": "rare", "weight": 5 }
   ],
   "notes": "Baseline victory reward table for the Gravebound Warden."

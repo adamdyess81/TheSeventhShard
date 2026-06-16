@@ -4,7 +4,7 @@
   "family": "weapon",
   "subtype": "melee",
   "rarity": "unique",
-  "base_value": 10,
+  "base_value": 1,
   "description": "Instantly kills any monster. Reduces Boss remaining health by 50%",
   "tags": ["unique", "weapon"],
   "keywords": [],

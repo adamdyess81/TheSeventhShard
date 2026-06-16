@@ -3,8 +3,8 @@
   "name": "Ornate Chest Rewards",
   "rarity_rolls": [
     { "rarity": "uncommon", "weight": 60 },
-    { "rarity": "rare", "weight": 35 },
-    { "rarity": "unique", "weight": 5 }
+    { "rarity": "rare", "weight": 38 },
+    { "rarity": "unique", "weight": 2 }
   ],
   "affix_chance": 0.2,
   "notes": "Ornate chests favor high-rarity rewards, can rarely grant a unique card, and can occasionally grant an affixed non-unique card."

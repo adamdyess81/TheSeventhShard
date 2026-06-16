@@ -9,9 +9,9 @@
   "special_roll_chance": 0.0,
   "special_entries": [],
   "rarity_rolls": [
-    { "rarity": "common", "weight": 30 },
-    { "rarity": "uncommon", "weight": 55 },
-    { "rarity": "rare", "weight": 5 }
+    { "rarity": "common", "weight": 25 },
+    { "rarity": "uncommon", "weight": 65 },
+    { "rarity": "rare", "weight": 10 }
   ],
   "notes": "Baseline victory reward table for the Spore Matriarch."
 }

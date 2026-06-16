@@ -2671,7 +2671,7 @@ func _grant_chest_reward(chest_card_id: String) -> Dictionary:
     }
 
 
-func _roll_reward_affix_id(card_id: String, affix_chance: float = 1.0) -> String:
+func _roll_reward_affix_id(card_id: String, affix_chance: float = 0.35) -> String:
     var normalized_affix_chance := clampf(affix_chance, 0.0, 1.0)
 
     if normalized_affix_chance <= 0.0:
