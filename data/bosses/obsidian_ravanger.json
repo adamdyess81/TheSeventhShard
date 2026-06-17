@@ -1,0 +1,20 @@
+{
+  "id": "obsidian_ravanger",
+  "name": "Obsidian Ravanger",
+  "branch_id": "kharketh",
+  "guardian_id": "ithrak",
+  "boss_type": "baseline",
+  "theme_tags": ["kharketh", "fire", "baseline", "prototype"],
+  "base_health": 16,
+  "has_special_rules": true,
+  "special_rule_ids": ["retaliation"],
+  "special_values": {
+    "retaliation": 3
+  },
+  "global_rule_ids": [],
+  "board_cap_modifier": 0,
+  "unresolved_card_cap_modifier": 0,
+  "art_ref": "res://art/cards/Obsidian Ravanger.png",
+  "monster_deck_id": "obsidian_ravanger_deck",
+  "notes": "Baseline Ossara boss. Whenever the player damages Gravebound Warden, he retaliates for 3 damage."
+}

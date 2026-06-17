@@ -8,10 +8,12 @@
 [ext_resource type="Texture2D" uid="uid://deuf62lc3xk7n" path="res://art/ui/RightHand Placement Card.png" id="5_6ggyu"]
 [ext_resource type="Texture2D" uid="uid://cy8xyafcik6rj" path="res://art/ui/Backpack Placement Card.png" id="6_7f78p"]
 [ext_resource type="Texture2D" uid="uid://mk8ed4edrh6v" path="res://art/ui/Trash Placement Card.png" id="7_w6j6n"]
-[ext_resource type="Texture2D" uid="uid://bdkuuu4t8rdv5" path="res://art/backgrounds/Ossara-Titled-Arena.png" id="8_bg"]
 [ext_resource type="Texture2D" uid="uid://crfty4ni1hpdn" path="res://art/ui/CardBack.png" id="9_deck"]
 [ext_resource type="AudioStream" uid="uid://2jmsu0mrviyw" path="res://audio/music/Battle Triumph.ogg" id="11_victory_music"]
 [ext_resource type="AudioStream" uid="uid://dvbnybi6nge8c" path="res://audio/music/Defeat.ogg" id="12_defeat_music"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_qordd"]
+load_path = "res://.godot/imported/Ossara-Titled-Arena.png-a1e6a8bfa17fe3063d49ffef3b91021c.ctex"
 
 [node name="CombatScene" type="Control" unique_id=72309142]
 layout_mode = 3
@@ -33,6 +35,7 @@ mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
 [node name="Background" type="TextureRect" parent="." unique_id=184310001]
+texture_filter = 6
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -40,7 +43,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("8_bg")
+texture = SubResource("CompressedTexture2D_qordd")
 expand_mode = 1
 stretch_mode = 6
 

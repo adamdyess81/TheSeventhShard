@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bdkuuu4t8rdv5"
-path="res://.godot/imported/Ossara-Titled-Arena.png-a1e6a8bfa17fe3063d49ffef3b91021c.ctex"
+uid="uid://cypufxqftc8hw"
+path="res://.godot/imported/Kharketh-Titled-Arena-blured.png-90134157e73314507bd937d94652786f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/backgrounds/Ossara-Titled-Arena.png"
-dest_files=["res://.godot/imported/Ossara-Titled-Arena.png-a1e6a8bfa17fe3063d49ffef3b91021c.ctex"]
+source_file="res://art/backgrounds/Kharketh-Titled-Arena-blured.png"
+dest_files=["res://.godot/imported/Kharketh-Titled-Arena-blured.png-90134157e73314507bd937d94652786f.ctex"]
 
 [params]
 
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

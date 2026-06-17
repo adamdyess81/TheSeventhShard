@@ -29,7 +29,7 @@ const CARD_VIEW_SCENE = preload("res://cards/card_view.tscn")
 const LEFT_HAND_PLACEHOLDER = preload("res://art/ui/LeftHand Placement Card.png")
 const RIGHT_HAND_PLACEHOLDER = preload("res://art/ui/RightHand Placement Card.png")
 const BACKPACK_PLACEHOLDER = preload("res://art/ui/Backpack Placement Card.png")
-const BACKGROUND_TEXTURE = preload("res://art/backgrounds/Ossara-Titled-Arena-blured.png")
+#const BACKGROUND_TEXTURE = preload("res://art/backgrounds/Ossara-Titled-Arena-blured.png")
 const CARD_BACK_TEXTURE = preload("res://art/ui/CardBack.png")
 const PLAYER_DAMAGE_SLASH_TEXTURE = preload("res://art/ui/DamageSlash50.png")
 const SWORD_DAMAGE_SLASH_TEXTURE = preload("res://art/ui/SwordDamageSlash.png")
@@ -138,6 +138,15 @@ const CHEST_REWARD_TABLE_DIRECTORY_PATH := "res://data/rewards/chests"
 @onready var right_hand_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/RightHandLabel
 @onready var backpack_label = $RootLayout/StageCenter/Stage/PlayArea/LoadoutCenter/LoadoutGroup/LabelRow/BackpackLabel
 
+@onready var background_texture_rect: TextureRect = $Background
+
+const DEFAULT_BRANCH_ID := "ossara"
+
+const BRANCH_BACKGROUND_PATHS := {
+    "ossara": "res://art/backgrounds/Ossara-Titled-Arena-blured.png",
+    "kharketh": "res://art/backgrounds/Kharketh-Titled-Arena-blured.png"
+}
+
 var match_state = null
 var resolution_controller = null
 var outcome_controller = null
@@ -171,6 +180,26 @@ var right_hand_slot_card_view: Control = null
 var backpack_slot_card_view: Control = null
 var last_discard_bonus_gold := 0
 
+func _apply_combat_background_for_boss_data(boss_data: Dictionary) -> void:
+    if background_texture_rect == null:
+        return
+
+    var branch_id := str(boss_data.get("branch_id", DEFAULT_BRANCH_ID)).to_lower()
+    var background_path := str(BRANCH_BACKGROUND_PATHS.get(
+        branch_id,
+        BRANCH_BACKGROUND_PATHS[DEFAULT_BRANCH_ID]
+    ))
+
+    if not ResourceLoader.exists(background_path):
+        push_warning("Missing combat background for branch '%s': %s" % [branch_id, background_path])
+        background_path = BRANCH_BACKGROUND_PATHS[DEFAULT_BRANCH_ID]
+
+    var background_texture := load(background_path)
+
+    if background_texture is Texture2D:
+        background_texture_rect.texture = background_texture
+    else:
+        push_warning("Combat background path did not load as Texture2D: %s" % background_path)
 
 func _ready() -> void:
     _stop_hovel_music()
@@ -519,6 +548,7 @@ func _build_battle_match_state() -> void:
     var selected_battle: Dictionary = RUN_CONTEXT_SCRIPT.get_battle_selection()
     var boss_id := str(selected_battle.get("boss_id", match_config.get("boss_id", DEFAULT_BOSS_ID))).strip_edges()
     var boss_data := _load_boss_data(boss_id)
+    _apply_combat_background_for_boss_data(boss_data)
     current_boss_data = boss_data.duplicate(true)
     current_boss_drop_table = _load_boss_drop_table(boss_id)
     var monster_deck_id := str(selected_battle.get("monster_deck_id", "")).strip_edges()
@@ -588,8 +618,8 @@ func _build_battle_match_state() -> void:
         resolution_controller,
         outcome_controller
     )
-    if background_texture != null:
-        background_texture.texture = BACKGROUND_TEXTURE
+    #if background_texture != null:
+        #background_texture.texture = BACKGROUND_TEXTURE
     if deck_card_texture != null:
         deck_card_texture.texture = CARD_BACK_TEXTURE
 
